@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { pool } from '@/lib/db';
+import { pool } from '../../lib/db';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
@@ -14,12 +14,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
        LIMIT ? OFFSET ?`,
       [pageSize, offset]
     );
-    const [countRows] = await pool.query(`SELECT COUNT(*) as total FROM products`);
+
+    const [countRows] = await pool.query(`SELECT COUNT(*) AS total FROM products`);
     const total = (countRows as any)[0].total as number;
 
     res.status(200).json({ items: rows, total, page, pageSize });
   } catch (e: any) {
-    console.error(e);
     res.status(500).json({ error: 'products_api_error', message: e?.message || 'Unknown error' });
   }
 }
