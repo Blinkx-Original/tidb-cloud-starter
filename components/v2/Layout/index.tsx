@@ -1,17 +1,18 @@
 import * as React from 'react';
-import Header from './Header';
+import Header, { HeaderProps } from './Header';
 
 export interface LayoutProps {
   children: React.ReactNode;
+  headerProps?: HeaderProps; // <-- ahora el layout acepta props para el header
 }
 
-export default function CommonLayout({ children }: LayoutProps) {
+export default function CommonLayout({ children, headerProps }: LayoutProps) {
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Global Header */}
-      <Header />
+      {/* Global Header en todas las páginas */}
+      <Header {...(headerProps || {})} />
 
-      {/* Page content */}
+      {/* Contenido de la página */}
       <main className="flex-1">{children}</main>
     </div>
   );
