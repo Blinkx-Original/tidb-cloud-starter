@@ -1,3 +1,163 @@
+
+# 📘 Catalog Architecture – Governance & SOP
+
+This document explains the **architecture, naming conventions, and workflow** for our Catalog system.  
+It is the **reference guide** for development, SEO, affiliate integration, and lead management.
+
+---
+
+## 1. Concept
+
+The Catalog is the **core of SEO Armageddon**.  
+- Every **Product** represents an opportunity to monetize:  
+  - Affiliate item (Amazon, Capterra, SaaS tools, etc.)  
+  - Lead Management offer (ice machines, forklifts for rent, etc.)  
+  - Dropshipping item (real supplier inventory).  
+- Products are always grouped into **Categories**.  
+- Each Product automatically generates:  
+  1. A **Card** (square on the homepage or category page).  
+  2. A **Detail Page** (`/product/[slug]`).  
+  3. Zero or more **Listings** (affiliate links, offers, vendors).
+
+---
+
+## 2. Key Definitions
+
+- **Product**  
+  - Stored in the database table `products`.  
+  - Columns: `id, sku, name, slug, description, price, price_eur, image_url, category_name, category_slug`.  
+  - Can be affiliate, lead management, or dropshipping. We always call it *Product*.  
+
+- **Card**  
+  - The visual square on the homepage or category page.  
+  - Displays `image_url`, `name`, `category_name`, `price`.  
+  - Clicking a card opens the Product’s **Detail Page**.  
+
+- **Detail Page**  
+  - File: `pages/product/[slug].tsx`.  
+  - URL format: `/product/<slug>`.  
+  - Shows product info and its **Listings**.  
+  - Works like Capterra or Amazon product pages.  
+
+- **Listing**  
+  - Stored in the `listings` table.  
+  - Linked to a product by `product_id`.  
+  - Columns: `id, product_id, title, url, price, source`.  
+  - Each listing represents one offer (affiliate program, lead form, supplier link).  
+
+- **Category Page**  
+  - Future implementation: `pages/category/[slug].tsx`.  
+  - Shows only products with the same `category_slug`.  
+
+- **Homepage**  
+  - File: `pages/index.tsx`.  
+  - Displays a feed of product cards (paginated).  
+  - This is the current Vercel homepage.
+
+---
+
+## 3. Technical Architecture
+
+- **Frontend**: Next.js 13 + React 18, deployed on Vercel.  
+- **Database**: TiDB Cloud (schema `bookshop`).  
+- **DB Access**: `lib/db.ts` using `mysql2/promise`.  
+- **API Endpoints**:  
+  - `pages/api/products.ts` → Returns products (paginated).  
+  - `pages/api/product/[slug].ts` (optional) → Returns single product + listings.  
+
+---
+
+## 4. Workflow
+
+1. **Upload Products**  
+   - Data comes from CSV import into `bookshop.products`.  
+
+2. **Create Listings**  
+   - Add affiliate offers or lead management offers into `bookshop.listings`.  
+   - Example:  
+     ```sql
+     INSERT INTO listings (product_id, title, url, price, source)
+     VALUES (1, 'Demo Offer', 'https://example.com', 1499.00, 'Affiliate');
+     ```
+
+3. **Homepage**  
+   - Displays products as cards.  
+
+4. **Detail Page**  
+   - `/product/[slug]` shows the product’s info and its listings.  
+
+---
+
+## 5. Naming Conventions
+
+We always use the same words:  
+
+- **Product** = any item in the system (affiliate, dropshipping, lead).  
+- **Card** = the homepage/category square.  
+- **Detail Page** = `/product/[slug].tsx`.  
+- **Listing** = one affiliate/offer entry linked to a Product.  
+- **Category Page** = product cards filtered by category.  
+
+---
+
+## 6. Editing Guidelines
+
+- **Homepage design** → `pages/index.tsx`.  
+- **Card design** → `components/v2/Cards/ShoppingItemCardList.tsx`.  
+- **Detail Page design** → `pages/product/[slug].tsx`.  
+- **Categories**  
+  - Currently still use “Bookshop / Bookstore” text.  
+  - Must be replaced with our categories.  
+  - File: `pages/index.tsx` and `components/v2/Layout.tsx`.  
+- **Menus / Headers** → Defined in `components/v2/Layout.tsx`.  
+- **Site Title** → `<title>` in `pages/index.tsx` and `[slug].tsx`.  
+
+---
+
+## 7. Content Structure
+
+- Above the cards (homepage or category) we must have:  
+  - An **H1** → main keyword / intro.  
+  - Optional **H2/H3** → supporting text.  
+- This header text is editable directly in the React components.  
+
+---
+
+## 8. Dummy vs Real Data
+
+- **Dummy Data**: used for testing (e.g., `Demo Offer`, `https://example.com`).  
+- **Real Data**: loaded by CSV or direct SQL insert.  
+
+---
+
+## 9. Vision
+
+- Extend with:  
+  - **Category pages** (`/category/[slug]`).  
+  - **Search and filters** (by category, price, attributes).  
+  - **Affiliate monetization**: every listing links to external programs.  
+  - **Lead management**: listings become quote forms (RFP / RFQ).  
+- Unified Catalog → covers affiliate, dropshipping, and lead management.
+
+---
+
+# ✅ Summary
+
+- Every **Product** = card + detail page + listings.  
+- Homepage shows **Cards**.  
+- Cards link to **Detail Pages**.  
+- Detail Pages show **Listings**.  
+- Categories group Products.  
+- All content editable via specific React files and TiDB tables.  
+
+This is the **Catalog Architecture SOP**.  
+It defines naming, structure, and workflow to avoid confusion.  
+Always refer here before making changes.
+
+
+# OLDER VERSION UNTIL SEPTEMBER 19, 2025
+
+
 # Bookshop Demo
 
 Bookshop is a virtual online bookstore application through which you can find books of various categories and rate the books.
