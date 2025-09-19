@@ -113,6 +113,91 @@ We always use the same words:
 - **Site Title** → `<title>` in `pages/index.tsx` and `[slug].tsx`.  
 
 ---
+# 🔝 Header & Homepage Title Customization (Copy–paste this whole block into your README)
+
+This section explains how to customize the **site header** (logo + title) and the **homepage heading/subtitle**. Both are at the very top of the site.
+
+---
+
+## Global Header (visible on all pages)
+
+**File:** `components/v2/Layout/Header.tsx`  
+Contains:
+- Logo icon (currently `BookOpenIcon` from `@heroicons/react`)
+- Site title text (currently `BlinkX`)
+- Navigation (menu, cart, etc.)
+
+### Change the site title
+Open `components/v2/Layout/Header.tsx` and find the brand block:
+
+<NextLink href='/' className='btn btn-ghost normal-case text-xl'>
+  <BookOpenIcon className='w-6 h-6' />
+  BlinkX
+</NextLink>
+
+Replace `BlinkX` with your brand (e.g., `BlinkX Catalog`, `Industrial Marketplace`, etc.).  
+Longer text works, but keep it short for headers.
+
+### Change the logo (icon → PNG/JPG/SVG)
+Current line:
+
+<BookOpenIcon className='w-6 h-6' />
+
+To use your own logo image, upload the file to `/public/logo.png` and replace the icon with:
+
+<img src="/logo.png" alt="BlinkX Logo" className="w-6 h-6" />
+
+(Adjust size via the Tailwind classes, e.g., `h-8 w-auto`.)
+
+👉 Any page wrapped with the global layout (`components/v2/Layout/index.tsx`) will show this header automatically.
+
+---
+
+## Homepage Heading (H1 + subtitle)
+
+**File:** `pages/index.tsx`  
+Find the heading block near the top of the page:
+
+<h1 className="text-2xl font-bold">BlinkX Catalog</h1>
+<p className="text-gray-500">Products, affiliates, and lead listings.</p>
+
+- Change `BlinkX Catalog` to update the main **H1** on the homepage.
+- Change the paragraph text to update the subtitle.
+- You can add more elements here (another `h2`, a CTA button, a longer intro) if needed.
+
+👉 This only affects the homepage (`/`). Other pages (product detail, categories) still show the global header from `Header.tsx`.
+
+---
+
+## Page <title> (browser tab text)
+
+Each page sets its `<title>` inside a React `<Head>` block.
+
+Example in `pages/index.tsx`:
+
+<Head>
+  <title>BlinkX – Industrial Catalog</title>
+  <meta name="description" content="BlinkX Catalog Homepage" />
+</Head>
+
+Example in `pages/product/[slug].tsx`:
+
+<Head>
+  <title>{product?.name} – BlinkX</title>
+  <meta name="description" content={product?.description || product?.name} />
+</Head>
+
+---
+
+## Quick Reference
+
+- Header title text → edit in `components/v2/Layout/Header.tsx`
+- Header logo image → replace icon with `<img src="/logo.png" />` and add file to `/public`
+- Homepage H1/subtitle → edit in `pages/index.tsx`
+- Browser tab `<title>`/description → edit `<Head>` in each page
+
+
+---
 
 ## 7. Content Structure
 
