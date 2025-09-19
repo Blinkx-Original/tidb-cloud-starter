@@ -2,6 +2,8 @@ import type { GetServerSideProps, NextPage } from 'next';
 import Head from 'next/head';
 import CommonLayout from '../../components/v2/Layout'; // <-- envuelve con el layout (muestra Header)
 import { pool } from '../../lib/db';
+import Breadcrumbs from '../../components/v2/Breadcrumbs';
+
 
 type Product = {
   id: number;
