@@ -1,9 +1,8 @@
 import type { GetServerSideProps, NextPage } from 'next';
 import Head from 'next/head';
-import CommonLayout from '../../components/v2/Layout'; // <-- envuelve con el layout (muestra Header)
+import CommonLayout from '../../components/v2/Layout';
 import { pool } from '../../lib/db';
 import Breadcrumbs from '../../components/v2/breadcrumbs';
-
 
 type Product = {
   id: number;
@@ -15,6 +14,7 @@ type Product = {
   price: number | null;
   image_url: string | null;
   category_name: string | null;
+  category_slug: string | null; // <-- necesario para el breadcrumb
 };
 
 type Listing = {
@@ -30,8 +30,10 @@ type Props = { product: Product | null; listings: Listing[] };
 export const getServerSideProps: GetServerSideProps<Props> = async (ctx) => {
   const slug = String(ctx.params?.slug || '');
   const [rows] = await pool.query(
-    `SELECT id, sku, name, slug, description, price_eur, price, image_url, category_name
-     FROM products WHERE slug = ? LIMIT 1`,
+    `SELECT id, sku, name, slug, description, price_eur, price, image_url, category_name, category_slug
+     FROM products
+     WHERE slug = ?
+     LIMIT 1`,
     [slug]
   );
   const product = (rows as any[])[0] || null;
@@ -73,8 +75,20 @@ const ProductPage: NextPage<Props> = ({ product, listings }) => {
         <meta name="description" content={product.description || product.name} />
       </Head>
 
-      {/* ⬇️ AHORA SIEMPRE HAY HEADER PORQUE USAMOS CommonLayout */}
       <CommonLayout>
+        {/* Breadcrumbs */}
+        <div className="max-w-5xl mx-auto px-4 md:px-8 pt-4">
+          <Breadcrumbs
+            items={[
+              { label: 'Home', href: '/' },
+              product.category_slug
+                ? { label: product.category_name || product.category_slug, href: '#' } // cambia '#' por `/category/${product.category_slug}` cuando exista la página
+                : { label: 'Uncategorized' },
+              { label: product.name },
+            ]}
+          />
+        </div>
+
         <div className="max-w-5xl mx-auto p-4 md:p-8">
           {/* Card principal */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border rounded-2xl p-5 shadow-sm">
