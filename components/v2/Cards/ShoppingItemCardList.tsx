@@ -1,48 +1,43 @@
 import * as React from 'react';
-
-import { useRecoilState, useRecoilValueLoadable } from 'recoil';
-
-import ShoopingItemCard from 'components/v2/Cards/ShoppingItemCard';
+import { useEffect, useState } from 'react';
+import { useRecoilState } from 'recoil';
 import { homePageBookSumState } from 'atoms';
-import { homePageQuery } from 'selectors';
 
-export interface BookListProps {
-  page: number;
-  pageSize: number;
-}
+type Item = {
+  id: number;
+  name: string;
+  slug: string;
+  image_url?: string | null;
+  price_eur?: number | null;
+  price?: number | null;
+  category_name?: string | null;
+};
 
-export default function BookList(props: BookListProps) {
-  const { page, pageSize } = props;
-  const bookListLoadable = useRecoilValueLoadable(homePageQuery);
-  const [homePageBookSum, setHomePageBookSum] = useRecoilState(homePageBookSumState);
-  switch (bookListLoadable.state) {
-    case 'hasValue':
-      setHomePageBookSum(bookListLoadable.contents.total);
-      return (
-        <>
-          {!!homePageBookSum && (
-            <div className='text-sm text-gray-500 pb-4'>{`${
-              pageSize * (page - 1) + 1
-            } ~ ${
-              pageSize * page > homePageBookSum
-                ? homePageBookSum
-                : pageSize * page
-            } of over ${homePageBookSum} results`}</div>
-          )}
-          <div className='grid grid-cols-1 gap-x-2 gap-y-10 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 xl:gap-x-8'>
-            {bookListLoadable.contents?.content?.map((book) => (
-              <ShoopingItemCard key={book.id} {...book} />
-            ))}
-          </div>
-        </>
-      );
-    case 'loading':
-      return (
-        <div className='flex items-center justify-center'>
-          <span className='loading loading-bars loading-lg'></span>
-        </div>
-      );
-    case 'hasError':
-      throw bookListLoadable.contents;
-  }
-}
+export default function ShoppingItemCardList({ page, pageSize }: { page: number; pageSize: number }) {
+  const [items, setItems] = useState<Item[]>([]);
+  const [, setSum] = useRecoilState(homePageBookSumState);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+    setLoading(true);
+    fetch(`/api/products?page=${page}&pageSize=${pageSize}`)
+      .then(r => r.json())
+      .then(data => {
+        if (!mounted) return;
+        setItems(data.items || []);
+        setSum(data.total || 0);
+      })
+      .catch(() => {
+        if (!mounted) return;
+        setItems([]);
+        setSum(0);
+      })
+      .finally(() => mounted && setLoading(false));
+    return () => { mounted = false; };
+  }, [page, pageSize, setSum]);
+
+  if (loading) return <div>Loading…</div>;
+
+  if (!items.length) {
+    return <div className="text-center text-gray-500 py-8">No p
