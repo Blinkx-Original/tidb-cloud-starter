@@ -3,7 +3,7 @@ import NextLink from 'next/link';
 import {
   Bars3Icon,
   ShoppingCartIcon,
-  BookOpenIcon,
+  BookOpenIcon, // Replace with <img /> if you want a custom logo
 } from '@heroicons/react/24/outline';
 
 import BookTypeMenu from 'components/v2/Layout/BookTypeMenu';
@@ -19,46 +19,42 @@ export interface HeaderProps {
 export default function Header(props: HeaderProps) {
   const { hideMenu } = props;
 
-  const [shoppingCart, setShoppingCart] = useRecoilState(shoppingCartState);
+  const [shoppingCart] = useRecoilState(shoppingCartState);
 
   return (
     <>
-      <div className='navbar bg-base-100 mx-auto max-w-7xl mt-4 shadow-xl rounded-box'>
-        <div className='navbar-start'>
+      <div className="navbar bg-base-100 mx-auto max-w-7xl mt-4 shadow-xl rounded-box">
+        <div className="navbar-start">
           {!hideMenu && (
-            <div className='dropdown'>
+            <div className="dropdown">
               <label
                 tabIndex={0}
-                className='btn btn-ghost btn-circle content-center'
+                className="btn btn-ghost btn-circle content-center"
               >
-                <Bars3Icon className='w-6 h-6' />
+                <Bars3Icon className="w-6 h-6" />
               </label>
               <BookTypeMenu />
             </div>
           )}
         </div>
-        <div className='navbar-center'>
-          <NextLink href='/' className='btn btn-ghost normal-case text-xl'>
-            <BookOpenIcon className='w-6 h-6' />
-            Bookstore
+
+        <div className="navbar-center">
+          <NextLink href="/" className="btn btn-ghost normal-case text-xl gap-2">
+            {/* Logo: replace with <img src="/logo.png" /> if needed */}
+            <BookOpenIcon className="w-6 h-6" />
+            <span className="font-semibold tracking-tight">BlinkX</span>
           </NextLink>
         </div>
-        <div className='navbar-end'>
-          <NextLink href='/cart' className='btn btn-ghost btn-circle'>
-            <div className='indicator'>
-              <ShoppingCartIcon className='w-6 h-6' />
-              <span className='badge badge-sm indicator-item'>
+
+        <div className="navbar-end">
+          <NextLink href="/cart" className="btn btn-ghost btn-circle">
+            <div className="indicator">
+              <ShoppingCartIcon className="w-6 h-6" />
+              <span className="badge badge-sm indicator-item">
                 {calcCartItemSum(shoppingCart)}
               </span>
             </div>
           </NextLink>
-
-          {/* <button className='btn btn-ghost btn-circle'>
-              <div className='indicator'>
-                <UserIcon className='w-6 h-6' />
-                <span className='badge badge-xs badge-primary indicator-item'></span>
-              </div>
-            </button> */}
         </div>
       </div>
     </>
