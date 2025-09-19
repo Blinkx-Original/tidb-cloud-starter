@@ -9,9 +9,10 @@ export interface LayoutProps {
 
 export default function CommonLayout({ children, headerProps }: LayoutProps) {
   return (
-    <div className="min-h-screen flex flex-col">
+    // ⬇️ padding-bottom en el wrapper, no margen en main
+    <div className="min-h-screen flex flex-col pb-10">
       <Header {...(headerProps || {})} />
-      <main className="flex-1 mb-9">{children}</main>
+      <main className="flex-1">{children}</main>
       <Footer />
     </div>
   );
