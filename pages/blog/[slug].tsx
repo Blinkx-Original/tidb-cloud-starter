@@ -2,23 +2,22 @@
 import * as React from 'react';
 import type { GetStaticPaths, GetStaticProps, NextPage } from 'next';
 import Head from 'next/head';
+import NextLink from 'next/link';
 import CommonLayout from 'components/v2/Layout';
+import StickyFooterCTA from 'components/v2/StickyFooterCTA';
 import { getAllPostSlugs, getPostBySlug } from 'lib/posts';
 
 type Props = {
   title: string;
   date?: string;
   html: string;
-  tags?: string[];
-  category?: string;
+  ctaLabel?: string;
+  ctaUrl?: string;
 };
 
 export const getStaticPaths: GetStaticPaths = async () => {
   const slugs = getAllPostSlugs();
-  return {
-    paths: slugs.map((slug) => ({ params: { slug } })),
-    fallback: false,
-  };
+  return { paths: slugs.map((slug) => ({ params: { slug } })), fallback: false };
 };
 
 export const getStaticProps: GetStaticProps<Props> = async ({ params }) => {
@@ -27,15 +26,17 @@ export const getStaticProps: GetStaticProps<Props> = async ({ params }) => {
   return {
     props: {
       title: meta.title,
-      date: meta.date,
+      date: meta.date || null,
       html,
-      tags: meta.tags || null,
-      category: meta.category || null,
+      ctaLabel: meta.cta_label || 'Go to offer',
+      ctaUrl: meta.cta_url || '/contact',
     } as any,
   };
 };
 
-const PostPage: NextPage<Props> = ({ title, date, html, tags, category }) => {
+const PostPage: NextPage<Props> = ({ title, date, html, ctaLabel, ctaUrl }) => {
+  const isExternal = ctaUrl ? /^https?:\/\//i.test(ctaUrl) : false;
+
   return (
     <>
       <Head>
@@ -47,33 +48,29 @@ const PostPage: NextPage<Props> = ({ title, date, html, tags, category }) => {
         <div className="max-w-3xl mx-auto px-4 mt-12">
           <div className="bg-white shadow-sm border rounded-2xl p-8">
             <h1 className="text-3xl font-bold">{title}</h1>
+            {date && <div className="text-sm text-gray-500 mt-1">{new Date(date).toLocaleDateString()}</div>}
 
-            <div className="text-sm text-gray-500 mt-1 flex items-center gap-2">
-              {date && <span>{new Date(date).toLocaleDateString()}</span>}
-              {category && (
-                <>
-                  <span>•</span>
-                  <span>{category}</span>
-                </>
+            <article className="prose prose-neutral mt-6" dangerouslySetInnerHTML={{ __html: html }} />
+
+            <div className="mt-8">
+              {isExternal ? (
+                <a href={ctaUrl!} className="btn" target="_blank" rel="noopener nofollow">
+                  {ctaLabel}
+                </a>
+              ) : (
+                <NextLink href={ctaUrl!} className="btn">
+                  {ctaLabel}
+                </NextLink>
               )}
             </div>
-
-            {tags && tags.length > 0 && (
-              <div className="mt-3 flex flex-wrap gap-2">
-                {tags.map((t) => (
-                  <span key={t} className="px-2 py-0.5 rounded-full border text-xs text-gray-600">
-                    {t}
-                  </span>
-                ))}
-              </div>
-            )}
-
-            <article
-              className="prose prose-neutral mt-6"
-              dangerouslySetInnerHTML={{ __html: html }}
-            />
           </div>
         </div>
+
+        {/* Spacer so content isn't hidden behind the sticky footer */}
+        <div className="h-24 sm:h-20" aria-hidden />
+
+        {/* Sticky footer CTA */}
+        <StickyFooterCTA title={title} buttonLabel={ctaLabel || 'Go to offer'} href={ctaUrl || '/contact'} />
       </CommonLayout>
     </>
   );
