@@ -12,7 +12,9 @@ export type PostMeta = {
   excerpt?: string;
   tags?: string[];
   category?: string;
-  cta?: string; // futuro: manejar lead forms/CTAs
+  // Campos de CTA en snake_case para coincidir con el frontmatter y con tu uso en [slug].tsx
+  cta_label?: string;
+  cta_url?: string;
 };
 
 const POSTS_DIR = path.join(process.cwd(), 'posts');
@@ -39,23 +41,27 @@ export function getAllPostsMeta(): PostMeta[] {
       const full = path.join(POSTS_DIR, filename);
       const file = fs.readFileSync(full, 'utf8');
       const { data } = matter(file);
-      return {
+
+      const meta: PostMeta = {
         slug,
         title: String(data.title ?? slug),
         date: data.date ? String(data.date) : undefined,
         excerpt: data.excerpt ? String(data.excerpt) : undefined,
         tags: Array.isArray(data.tags) ? data.tags.map(String) : undefined,
         category: data.category ? String(data.category) : undefined,
-        cta: data.cta ? String(data.cta) : undefined,
+        cta_label: data.cta_label ? String(data.cta_label) : undefined,
+        cta_url: data.cta_url ? String(data.cta_url) : undefined,
       };
+      return meta;
     });
 
-  // más reciente primero
   metas.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
   return metas;
 }
 
-export async function getPostBySlug(slug: string): Promise<{ meta: PostMeta; html: string }> {
+export async function getPostBySlug(
+  slug: string
+): Promise<{ meta: PostMeta; html: string }> {
   ensurePostsDir();
   const full = path.join(POSTS_DIR, `${slug}.md`);
   const file = fs.readFileSync(full, 'utf8');
@@ -70,7 +76,8 @@ export async function getPostBySlug(slug: string): Promise<{ meta: PostMeta; htm
     excerpt: data.excerpt ? String(data.excerpt) : undefined,
     tags: Array.isArray(data.tags) ? data.tags.map(String) : undefined,
     category: data.category ? String(data.category) : undefined,
-    cta: data.cta ? String(data.cta) : undefined,
+    cta_label: data.cta_label ? String(data.cta_label) : undefined,
+    cta_url: data.cta_url ? String(data.cta_url) : undefined,
   };
 
   return { meta, html: htmlString };
