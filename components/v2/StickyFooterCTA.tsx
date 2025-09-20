@@ -41,6 +41,14 @@ function LinkButton({
 }
 
 export default function StickyFooterCTA({ title, buttonLabel, href }: Props) {
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    // Espera al siguiente frame para que Tailwind pueda animar del estado inicial al final
+    const id = requestAnimationFrame(() => setMounted(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
+
   if (!title || !buttonLabel || !href) return null;
 
   return (
@@ -49,23 +57,31 @@ export default function StickyFooterCTA({ title, buttonLabel, href }: Props) {
       aria-label="Sticky call to action"
       className="fixed inset-x-0 bottom-0 z-50"
     >
-      {/* Bar container */}
-      <div className="bg-white border-t shadow-lg">
-        {/* Safe area for iOS bottom insets */}
+      {/* Contenedor con fondo gris suave y borde sutil */}
+      <div
+        className={[
+          "bg-gray-50 border-t border-gray-200 shadow-lg transition-all duration-500 ease-out",
+          mounted ? "translate-y-0 opacity-100" : "translate-y-6 opacity-0"
+        ].join(" ")}
+      >
+        {/* Safe area para iOS */}
         <div
           className="max-w-7xl mx-auto px-3 py-3"
           style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 12px)' }}
         >
           <div className="flex items-center gap-3">
-            {/* Left: title (takes remaining space) */}
+            {/* Izquierda: título (más grande) */}
             <div className="flex-1 min-w-0">
-              <div className="font-semibold truncate">{title}</div>
+              <div className="font-semibold text-base sm:text-lg text-black truncate">
+                {title}
+              </div>
             </div>
-            {/* Right: button (50% width on mobile, auto on ≥sm) */}
+
+            {/* Derecha: botón (50% en móvil, auto en ≥sm) negro con texto blanco */}
             <LinkButton
               href={href}
               ariaLabel={buttonLabel}
-              className="btn w-1/2 sm:w-auto shrink-0"
+              className="btn w-1/2 sm:w-auto shrink-0 bg-black text-white border-black hover:opacity-90"
             >
               {buttonLabel}
             </LinkButton>
