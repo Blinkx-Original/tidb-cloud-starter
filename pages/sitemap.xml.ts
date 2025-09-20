@@ -1,5 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { pool } from '../lib/db';
+
+export const config = {
+  runtime: 'nodejs',
+};
 
 export default async function handler(_req: NextApiRequest, res: NextApiResponse) {
   const host = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com';
@@ -14,25 +17,28 @@ export default async function handler(_req: NextApiRequest, res: NextApiResponse
   ];
 
   try {
-    const [cats] = await pool.query(
+    // Import dinámico para que webpack no intente bundlear mysql2 en cliente
+    const { pool } = await import('../lib/db');
+
+    const [cats]: any = await pool.query(
       `SELECT DISTINCT COALESCE(category_slug,'uncategorized') AS slug
        FROM products WHERE category_slug IS NOT NULL`
     );
-    for (const row of cats as any[]) {
+    for (const row of cats) {
       urls.push(`${host}/category/${encodeURIComponent(row.slug)}`);
     }
 
-    const [prods] = await pool.query(`SELECT slug FROM products WHERE slug IS NOT NULL`);
-    for (const row of prods as any[]) {
+    const [prods]: any = await pool.query(`SELECT slug FROM products WHERE slug IS NOT NULL`);
+    for (const row of prods) {
       urls.push(`${host}/product/${encodeURIComponent(row.slug)}`);
     }
   } catch {
-    // if DB not reachable, still emit a minimal sitemap
+    // Si la DB no responde en build/SSR, emitimos igual un sitemap mínimo
   }
 
   const body = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${urls.map(u => `  <url><loc>${u}</loc></url>`).join('\n')}
+${urls.map((u) => `  <url><loc>${u}</loc></url>`).join('\n')}
 </urlset>`;
 
   res.setHeader('Content-Type', 'application/xml');
