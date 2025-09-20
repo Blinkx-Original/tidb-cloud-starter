@@ -54,7 +54,7 @@ const PostPage: NextPage<Props> = ({ title, date, html, ctaLabel, ctaUrl }) => {
 
             <div className="mt-8">
               {isExternal ? (
-                <a href={ctaUrl!} className="btn" target="_blank" rel="noopener nofollow">
+                <a href={ctaUrl!} className="btn" target="_blank" rel="noopener noreferrer nofollow">
                   {ctaLabel}
                 </a>
               ) : (
