@@ -3,7 +3,7 @@ import NextLink from 'next/link';
 import {
   Bars3Icon,
   ShoppingCartIcon,
-  BookOpenIcon, // Replace with <img /> if you want a custom logo
+  BookOpenIcon,
 } from '@heroicons/react/24/outline';
 
 import BookTypeMenu from 'components/v2/Layout/BookTypeMenu';
@@ -19,7 +19,7 @@ export interface HeaderProps {
 export default function Header(props: HeaderProps) {
   const { hideMenu } = props;
 
-  const [shoppingCart] = useRecoilState(shoppingCartState);
+  const [shoppingCart, setShoppingCart] = useRecoilState(shoppingCartState);
 
   return (
     <>
@@ -37,16 +37,21 @@ export default function Header(props: HeaderProps) {
             </div>
           )}
         </div>
-
         <div className="navbar-center">
-          <NextLink href="/" className="btn btn-ghost normal-case text-xl gap-2">
-            {/* Logo: replace with <img src="/logo.png" /> if needed */}
+          <NextLink href="/" className="btn btn-ghost normal-case text-xl">
             <BookOpenIcon className="w-6 h-6" />
-            <span className="font-semibold tracking-tight">BlinkX</span>
+            BlinkX
           </NextLink>
         </div>
+        <div className="navbar-end flex items-center gap-3">
+          {/* Categories pill */}
+          <NextLink
+            href="/categories"
+            className="px-4 py-2 rounded-full bg-black text-white text-sm font-medium hover:bg-gray-800 transition"
+          >
+            Categories
+          </NextLink>
 
-        <div className="navbar-end">
           <NextLink href="/cart" className="btn btn-ghost btn-circle">
             <div className="indicator">
               <ShoppingCartIcon className="w-6 h-6" />
