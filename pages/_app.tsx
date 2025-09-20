@@ -1,31 +1,14 @@
-import "../styles/globals.css";
-import type { AppProps } from "next/app";
-import { RecoilRoot, useRecoilSnapshot } from "recoil";
-import { useEffect } from "react";
-import { SnackbarProvider } from "notistack";
+import type { AppProps } from 'next/app';
+import { Analytics } from '@vercel/analytics/react';
+import 'styles/globals.css';
 
-function DebugObserver(): any {
-  const snapshot = useRecoilSnapshot();
-  useEffect(() => {
-    if (process.env.NODE_ENV !== "development") return;
-    console.debug("The following atoms were modified:");
-    for (const node of snapshot.getNodes_UNSTABLE({ isModified: true })) {
-      console.debug(node.key, snapshot.getLoadable(node));
-    }
-  }, [snapshot]);
-
-  return null;
-}
-
-function MyApp({ Component, pageProps }: AppProps) {
+export default function MyApp({ Component, pageProps }: AppProps) {
   return (
-    <RecoilRoot>
-      <DebugObserver />
-      <SnackbarProvider maxSnack={3} autoHideDuration={3000}>
-        <Component {...pageProps} />
-      </SnackbarProvider>
-    </RecoilRoot>
+    <>
+      <Component {...pageProps} />
+      {/* Vercel Analytics: cookieless y funciona en cualquier dominio */}
+      <Analytics />
+    </>
   );
 }
 
-export default MyApp;
