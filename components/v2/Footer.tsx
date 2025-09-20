@@ -13,19 +13,24 @@ export default function Footer() {
               Industrial catalog for products, affiliates, and lead listings.
             </p>
           </div>
+
           <div>
             <div className="text-xs font-semibold uppercase text-gray-500">Catalog</div>
             <ul className="mt-3 space-y-2">
               <li><NextLink href="/" className="hover:underline">Home</NextLink></li>
+              <li><NextLink href="/categories" className="hover:underline">Categories</NextLink></li>
             </ul>
           </div>
+
           <div>
             <div className="text-xs font-semibold uppercase text-gray-500">Company</div>
             <ul className="mt-3 space-y-2">
               <li><NextLink href="/about" className="hover:underline">About</NextLink></li>
               <li><NextLink href="/contact" className="hover:underline">Contact</NextLink></li>
+              <li><NextLink href="/blog" className="hover:underline">Blog</NextLink></li>
             </ul>
           </div>
+
           <div>
             <div className="text-xs font-semibold uppercase text-gray-500">Legal</div>
             <ul className="mt-3 space-y-2">
@@ -35,6 +40,7 @@ export default function Footer() {
             </ul>
           </div>
         </div>
+
         <div className="mt-8 pt-6 border-t flex flex-col sm:flex-row items-center justify-between text-xs text-gray-500 gap-3">
           <div>© {year} BlinkX. All rights reserved.</div>
           <div className="flex items-center gap-4">
