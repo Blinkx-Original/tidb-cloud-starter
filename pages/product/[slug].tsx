@@ -40,7 +40,6 @@ const fmt = (n?: number | null) => (typeof n === 'number' ? `€${n.toFixed(2)}`
 const ProductPage: NextPage<Props> = ({ product }) => {
   const primaryCtaLabel = 'Request a quote';   // change per project
   const primaryCtaHref = '/contact';           // could be an Amazon URL, etc.
-
   const isExternal = /^https?:\/\//i.test(primaryCtaHref);
 
   return (
@@ -90,7 +89,7 @@ const ProductPage: NextPage<Props> = ({ product }) => {
 
               <div className="mt-6">
                 {isExternal ? (
-                  <a href={primaryCtaHref} className="btn" target="_blank" rel="noopener nofollow">
+                  <a href={primaryCtaHref} className="btn" target="_blank" rel="noopener noreferrer nofollow">
                     {primaryCtaLabel}
                   </a>
                 ) : (
