@@ -27,7 +27,7 @@ function LinkButton({
         className={className}
         aria-label={ariaLabel}
         target="_blank"
-        rel="noopener nofollow"
+        rel="noopener noreferrer nofollow"
       >
         {children}
       </a>
@@ -75,3 +75,4 @@ export default function StickyFooterCTA({ title, buttonLabel, href }: Props) {
     </div>
   );
 }
+
