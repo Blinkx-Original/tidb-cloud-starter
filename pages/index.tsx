@@ -2,13 +2,14 @@ import * as React from 'react';
 import Head from 'next/head';
 import CommonLayout from 'components/v2/Layout';
 import dynamic from 'next/dynamic';
+import NextLink from 'next/link';
 import CategoryGrid from 'components/v2/CategoryGrid';
 
 const ProductList = dynamic(() => import('components/v2/Cards/ShoppingItemCardList'), { ssr: false });
 
 export default function HomePage() {
   const [page, setPage] = React.useState(1);
-  const pageSize = 6; // fewer featured products on homepage
+  const pageSize = 6; // featured
 
   return (
     <>
@@ -20,12 +21,8 @@ export default function HomePage() {
       <CommonLayout>
         {/* HERO TEXT (centered) */}
         <div className="max-w-3xl mx-auto text-center px-4 py-12">
-          <h1 className="text-4xl font-bold text-black font-sans mb-4">
-            BlinkX Catalog
-          </h1>
-          <h2 className="text-xl text-gray-600 font-sans mb-6">
-            Products, affiliates, and lead listings
-          </h2>
+          <h1 className="text-4xl font-bold text-black font-sans mb-4">BlinkX Catalog</h1>
+          <h2 className="text-xl text-gray-600 font-sans mb-6">Products, affiliates, and lead listings</h2>
           <p className="text-gray-500 font-sans leading-relaxed">
             Every deploy is remarkable. Chat with your team on real, production-grade UI,
             not just designs.
@@ -47,7 +44,9 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 pb-10">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-lg font-semibold">Featured products</h3>
-            <a href="/category/uncategorized" className="text-sm text-gray-500 hover:underline">Browse all</a>
+            <NextLink href="/categories" className="text-sm text-gray-500 hover:underline">
+              Browse all
+            </NextLink>
           </div>
           <ProductList page={page} pageSize={pageSize} />
 
@@ -69,4 +68,3 @@ export default function HomePage() {
     </>
   );
 }
-
