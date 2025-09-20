@@ -60,7 +60,7 @@ export default function StickyFooterCTA({ title, buttonLabel, href }: Props) {
       {/* Contenedor con fondo gris suave y borde sutil */}
       <div
         className={[
-          "bg-gray-50 border-t border-gray-200 shadow-lg transition-all duration-500 ease-out",
+          "bg-gray-100 border-t border-gray-200 shadow-lg transition-all duration-500 ease-out",
           mounted ? "translate-y-0 opacity-100" : "translate-y-6 opacity-0"
         ].join(" ")}
       >
