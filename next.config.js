@@ -2,24 +2,28 @@
 const nextConfig = {
   reactStrictMode: true,
   images: {
-    // Permite cargar imágenes remotas (placeholder, CDNs, etc.)
     remotePatterns: [
       { protocol: 'https', hostname: '**' },
-      { protocol: 'http', hostname: '**' },
-    ],
+      { protocol: 'http', hostname: '**' }
+    ]
   },
   webpack: (config, { isServer }) => {
     if (!isServer) {
-      // Evita que el bundle del cliente intente importar módulos de Node
       config.resolve.fallback = {
         ...config.resolve.fallback,
         net: false,
         tls: false,
-        fs: false,
+        fs: false
       };
     }
     return config;
   },
+  async rewrites() {
+    return [
+      { source: '/robots.txt', destination: '/api/robots.txt' },
+      { source: '/sitemap.xml', destination: '/api/sitemap.xml' }
+    ];
+  }
 };
 
 module.exports = nextConfig;
