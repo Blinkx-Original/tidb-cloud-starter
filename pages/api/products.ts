@@ -3,22 +3,22 @@ import { pool } from '../../lib/db';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const page = Math.max(parseInt(String(req.query.page || '1'), 10), 1);
-    const pageSize = Math.min(Math.max(parseInt(String(req.query.pageSize || '20'), 10), 1), 100);
+    const page = Math.max(parseInt(String(req.query.page || '1'), 10) || 1, 1);
+    const pageSizeRaw = parseInt(String(req.query.pageSize || '12'), 10) || 12;
+    const pageSize = Math.min(Math.max(pageSizeRaw, 1), 60); // cap to avoid abuse
     const offset = (page - 1) * pageSize;
 
-    const [rows] = await pool.query(
-      `SELECT id, sku, name, slug, description, price_eur, price, image_url, category_name, category_slug
+    const [items] = await pool.query(
+      `SELECT id, sku, name, slug, image_url, price_eur, price, category_name, category_slug, description
        FROM products
-       ORDER BY id
+       ORDER BY id ASC
        LIMIT ? OFFSET ?`,
       [pageSize, offset]
     );
 
-    const [countRows] = await pool.query(`SELECT COUNT(*) AS total FROM products`);
-    const total = (countRows as any)[0].total as number;
+    const [[{ total }]]: any = await pool.query(`SELECT COUNT(*) AS total FROM products`);
 
-    res.status(200).json({ items: rows, total, page, pageSize });
+    res.status(200).json({ items, page, pageSize, total });
   } catch (e: any) {
     res.status(500).json({ error: 'products_api_error', message: e?.message || 'Unknown error' });
   }
