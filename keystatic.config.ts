@@ -50,15 +50,14 @@ export default config({
         category: fields.text({ label: 'Category' }),
         cta_label: fields.text({
           label: 'CTA Label',
-          validation: { isRequired: false }, // optional field
+          validation: { isRequired: false },
         }),
         cta_url: fields.url({
           label: 'CTA URL',
-          validation: { isRequired: false }, // optional field
+          validation: { isRequired: false },
         }),
-        content: fields.markdoc({ label: 'Content' }), // or fields.md for Markdown
+        content: fields.markdoc({ label: 'Content' }),
       },
     }),
   },
 });
-
