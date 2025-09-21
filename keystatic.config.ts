@@ -1,17 +1,24 @@
-// keystatic.config.ts – must be at the root of the repo
+// keystatic.config.ts  ← REEMPLAZAR (archivo completo)
 import { config, collection, fields, singleton } from '@keystatic/core';
 
+function getRepoFromEnv(): { owner: string; name: string } | undefined {
+  const combo = process.env.KEYSTATIC_GITHUB_REPO;
+  if (combo) {
+    const [owner, name] = combo.split('/');
+    if (owner && name) return { owner, name };
+  }
+  const owner = process.env.KEYSTATIC_GITHUB_OWNER;
+  const name = process.env.KEYSTATIC_GITHUB_NAME;
+  if (owner && name) return { owner, name };
+  return undefined;
+}
+
+const repo = getRepoFromEnv();
+// Solo usamos Github si HAY repo válido; si falta, caemos a local SIEMPRE.
 const storage =
-  process.env.KEYSTATIC_STORAGE === 'github'
-    ? {
-        kind: 'github' as const,
-        repo: {
-          owner: process.env.KEYSTATIC_GITHUB_OWNER || '',
-          name: process.env.KEYSTATIC_GITHUB_NAME || '',
-          branch: process.env.KEYSTATIC_GITHUB_BRANCH || 'main',
-        },
-      }
-    : { kind: 'local' as const };
+  process.env.KEYSTATIC_STORAGE === 'github' && repo
+    ? ({ kind: 'github', repo } as const)
+    : ({ kind: 'local' } as const);
 
 export default config({
   storage,
@@ -38,6 +45,7 @@ export default config({
       label: 'Blog posts',
       slugField: 'title',
       path: 'posts/*',
+      // Un único archivo .md con frontmatter + body (compatible con gray-matter)
       format: { contentField: 'content' },
       schema: {
         title: fields.slug({ name: { label: 'Title' } }),
@@ -50,14 +58,16 @@ export default config({
         category: fields.text({ label: 'Category' }),
         cta_label: fields.text({
           label: 'CTA Label',
-          validation: { isRequired: false },
+          validation: { isOptional: true },
         }),
         cta_url: fields.url({
           label: 'CTA URL',
-          validation: { isRequired: false },
+          validation: { isOptional: true },
         }),
-        content: fields.markdoc({ label: 'Content' }),
+        content: fields.markdoc({ label: 'Content', extension: 'md' }),
       },
+      entryLayout: 'content',
     }),
   },
 });
+
