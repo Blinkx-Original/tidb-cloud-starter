@@ -20,10 +20,6 @@ const storage =
     ? ({ kind: 'github', repo } as const)
     : ({ kind: 'local' } as const);
 
-/** util: undefined/"" -> null */
-const toNull = <T,>(v: T | undefined | null | ''): T | null =>
-  v === undefined || v === '' ? null : (v as T);
-
 export default config({
   storage,
   ui: { brand: { name: 'BlinkX' } },
@@ -49,7 +45,7 @@ export default config({
     posts: collection({
       label: 'Blog posts',
       path: 'posts/*',
-      slugField: 'slug', // ← usamos slug manual, no autogenerado
+      slugField: 'slug', // el archivo se nombra por este campo
       format: { contentField: 'content' },
       schema: {
         title: fields.text({ label: 'Title', validation: { isRequired: true } }),
@@ -79,16 +75,6 @@ export default config({
         }),
       },
       entryLayout: 'content',
-      hooks: {
-        beforeWrite: async ({ item }) => {
-          return {
-            ...item,
-            cta_label: toNull<string>(item.cta_label as any),
-            cta_url: toNull<string>(item.cta_url as any),
-            tags: Array.isArray(item.tags) ? item.tags : [],
-          };
-        },
-      },
     }),
   },
 });
