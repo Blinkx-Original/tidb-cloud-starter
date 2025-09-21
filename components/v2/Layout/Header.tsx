@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
-import SearchPill from '@/components/v2/SearchPill';
+import SearchPill from '../SearchPill'; // ← relativo para evitar problemas de alias
 
 export default function Header() {
   const router = useRouter();
@@ -11,7 +11,6 @@ export default function Header() {
     <header className="sticky top-0 z-40 bg-white/80 backdrop-blur border-b border-neutral-200">
       <div className="mx-auto max-w-6xl px-4 h-16 flex items-center gap-3">
         <Link href="/" className="flex items-center gap-2" aria-label="Ir a inicio">
-          {/* Reemplaza /logo.png si tienes uno */}
           <Image src="/logo.png" alt="BlinkX" width={24} height={24} className="rounded" />
           <span className="font-semibold">BlinkX</span>
         </Link>
