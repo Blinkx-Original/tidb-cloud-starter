@@ -1,67 +1,42 @@
-import * as React from 'react';
-import NextLink from 'next/link';
-import {
-  Bars3Icon,
-  ShoppingCartIcon,
-  BookOpenIcon,
-} from '@heroicons/react/24/outline';
+// components/v2/Layout/Header.tsx
+import Link from 'next/link';
+import Image from 'next/image';
+import { useRouter } from 'next/router';
+import SearchPill from '@/components/v2/SearchPill';
 
-import BookTypeMenu from 'components/v2/Layout/BookTypeMenu';
-import { shoppingCartState } from 'atoms';
-import { useRecoilState } from 'recoil';
-
-import { calcCartItemSum } from 'lib/utils';
-
-export interface HeaderProps {
-  hideMenu?: boolean;
-}
-
-export default function Header(props: HeaderProps) {
-  const { hideMenu } = props;
-
-  const [shoppingCart, setShoppingCart] = useRecoilState(shoppingCartState);
+export default function Header() {
+  const router = useRouter();
 
   return (
-    <>
-      <div className="navbar bg-base-100 mx-auto max-w-7xl mt-4 shadow-xl rounded-box">
-        <div className="navbar-start">
-          {!hideMenu && (
-            <div className="dropdown">
-              <label
-                tabIndex={0}
-                className="btn btn-ghost btn-circle content-center"
-              >
-                <Bars3Icon className="w-6 h-6" />
-              </label>
-              <BookTypeMenu />
-            </div>
-          )}
-        </div>
-        <div className="navbar-center">
-          <NextLink href="/" className="btn btn-ghost normal-case text-xl">
-            <BookOpenIcon className="w-6 h-6" />
-            BlinkX
-          </NextLink>
-        </div>
-        <div className="navbar-end flex items-center gap-3">
-          {/* Categories pill */}
-          <NextLink
-            href="/categories"
-            className="px-4 py-2 rounded-full bg-black text-white text-sm font-medium hover:bg-gray-800 transition"
-          >
-            Categories
-          </NextLink>
+    <header className="sticky top-0 z-40 bg-white/80 backdrop-blur border-b border-neutral-200">
+      <div className="mx-auto max-w-6xl px-4 h-16 flex items-center gap-3">
+        <Link href="/" className="flex items-center gap-2" aria-label="Ir a inicio">
+          {/* Reemplaza /logo.png si tienes uno */}
+          <Image src="/logo.png" alt="BlinkX" width={24} height={24} className="rounded" />
+          <span className="font-semibold">BlinkX</span>
+        </Link>
 
-          <NextLink href="/cart" className="btn btn-ghost btn-circle">
-            <div className="indicator">
-              <ShoppingCartIcon className="w-6 h-6" />
-              <span className="badge badge-sm indicator-item">
-                {calcCartItemSum(shoppingCart)}
-              </span>
-            </div>
-          </NextLink>
+        {/* Pastilla de búsqueda: visible en md+, en móvil dejamos botón */}
+        <div className="flex-1 hidden md:flex justify-center">
+          <SearchPill size="sm" placeholder="Buscar productos…" />
         </div>
+
+        <nav className="flex items-center gap-2">
+          <Link
+            href="/categories"
+            className="px-3 py-1 rounded-full bg-black text-white text-sm hover:opacity-90"
+          >
+            Categorías
+          </Link>
+          <button
+            onClick={() => router.push('/search')}
+            className="md:hidden px-3 py-1 rounded-full border border-neutral-200 text-sm"
+            aria-label="Abrir búsqueda"
+          >
+            Buscar
+          </button>
+        </nav>
       </div>
-    </>
+    </header>
   );
 }
