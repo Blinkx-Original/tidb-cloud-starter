@@ -1,20 +1,25 @@
+// tsconfig.json  ← REEMPLAZAR (archivo completo)
 {
   "compilerOptions": {
-    "target": "es2015",
-    "lib": ["dom", "dom.iterable", "esnext"],
-    "allowJs": true,
-    "skipLibCheck": true,
-    "strict": true,
-    "forceConsistentCasingInFileNames": true,
-    "noEmit": true,
-    "esModuleInterop": true,
-    "module": "esnext",
-    "moduleResolution": "node",
+    "target": "ES2020",
+    "lib": ["dom", "dom.iterable", "es2020"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
     "resolveJsonModule": true,
-    "isolatedModules": true,
+    "esModuleInterop": true,
     "jsx": "preserve",
+    "strict": true,
+    "noEmit": true,
     "incremental": true,
-    "baseUrl": "."
+    "isolatedModules": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["*"],
+      "components/*": ["components/*"],
+      "lib/*": ["lib/*"]
+    }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
   "exclude": ["node_modules"]
