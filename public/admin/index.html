@@ -10,18 +10,17 @@
   </head>
   <body>
     <script>
-      // Config embebida: evita depender de /admin/config.yml
       const config = {
         backend: {
           name: "github",
           repo: "Blinkx-Original/tidb-cloud-starter",
           branch: "main",
-          base_url: "/api/decap",   // nuestros endpoints Next.js
+          base_url: "/api/decap",
           auth_endpoint: "auth"
         },
         media_folder: "public/uploads",
         public_folder: "/uploads",
-        publish_mode: "editorial_workflow", // opcional
+        publish_mode: "editorial_workflow",
         collections: [
           {
             name: "blog",
@@ -47,7 +46,7 @@
       };
 
       try {
-        CMS.init({ config });
+        CMS.init({ config, load_config_file: false }); // ← evita cargar config.yml
       } catch (e) {
         document.body.innerHTML =
           '<pre style="padding:16px;color:#111;background:#f6f6f6;overflow:auto;">' +
@@ -57,3 +56,4 @@
     </script>
   </body>
 </html>
+
