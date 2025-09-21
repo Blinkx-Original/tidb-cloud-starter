@@ -28,7 +28,7 @@ export default config({
   storage,
   ui: { brand: { name: 'BlinkX' } },
 
-  // Opcional: ajustes del "site"
+  // Ajustes globales opcionales
   singletons: {
     site: singleton({
       label: 'Site settings',
@@ -49,14 +49,14 @@ export default config({
     posts: collection({
       label: 'Blog posts',
       path: 'posts/*',
-      slugField: 'slug', // el archivo se nombra por este campo
-      format: { contentField: 'content' }, // frontmatter + body compatible con gray-matter
+      slugField: 'slug', // ← usamos slug manual, no autogenerado
+      format: { contentField: 'content' },
       schema: {
         title: fields.text({ label: 'Title', validation: { isRequired: true } }),
-        // Deriva el slug del title. (No usar 'label' aquí; la API no lo acepta en esta variante)
-        slug: fields.slug({
-          slugField: 'title',
+        slug: fields.text({
+          label: 'Slug',
           validation: { isRequired: true },
+          description: 'Usa guiones, ej: "mi-articulo-nuevo"',
         }),
         date: fields.date({ label: 'Date', validation: { isRequired: true } }),
         excerpt: fields.text({
@@ -70,7 +70,6 @@ export default config({
         }),
         category: fields.text({ label: 'Category', validation: { isRequired: true } }),
         cta_label: fields.text({ label: 'CTA Label', validation: { isRequired: false } }),
-        // Deja vacío o pon una URL http(s) válida; si escribes texto no-URL, fallará.
         cta_url: fields.url({ label: 'CTA URL', validation: { isRequired: false } }),
         content: fields.document({
           label: 'Content',
@@ -81,7 +80,6 @@ export default config({
       },
       entryLayout: 'content',
       hooks: {
-        // Antes de escribir el archivo, normalizamos campos opcionales para evitar `undefined`
         beforeWrite: async ({ item }) => {
           return {
             ...item,
