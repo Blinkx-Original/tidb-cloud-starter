@@ -1,6 +1,7 @@
-// keystatic.config.ts  ← REEMPLAZAR (archivo completo)
+// keystatic.config.ts
 import { config, collection, fields, singleton } from '@keystatic/core';
 
+/** Lee owner/name de env si usas GitHub; si no, usa storage local. */
 function getRepoFromEnv(): { owner: string; name: string } | undefined {
   const combo = process.env.KEYSTATIC_GITHUB_REPO;
   if (combo) {
@@ -12,19 +13,21 @@ function getRepoFromEnv(): { owner: string; name: string } | undefined {
   if (owner && name) return { owner, name };
   return undefined;
 }
-
 const repo = getRepoFromEnv();
-// Si faltan las envs de GitHub, caemos a modo local aunque KEYSTATIC_STORAGE=github.
 const storage =
   process.env.KEYSTATIC_STORAGE === 'github' && repo
     ? ({ kind: 'github', repo } as const)
     : ({ kind: 'local' } as const);
 
+/** util: undefined/"" -> null */
+const n = <T,>(v: T | undefined | null | ''): T | null =>
+  v === undefined || v === '' ? null : (v as T);
+
 export default config({
   storage,
-  ui: {
-    brand: { name: 'BlinkX' },
-  },
+  ui: { brand: { name: 'BlinkX' } },
+
+  // Opcional: ajustes del "site" (lo que ya tenías)
   singletons: {
     site: singleton({
       label: 'Site settings',
@@ -40,35 +43,56 @@ export default config({
       },
     }),
   },
+
   collections: {
     posts: collection({
       label: 'Blog posts',
-      slugField: 'title',
       path: 'posts/*',
-      // Un único archivo .md con frontmatter + body (compatible con gray-matter)
-      format: { contentField: 'content' },
+      slugField: 'slug', // <- el archivo se nombra por este campo
+      format: { contentField: 'content' }, // frontmatter + body compatible con gray-matter
       schema: {
-        title: fields.slug({ name: { label: 'Title' } }),
-        date: fields.date({ label: 'Date' }),
-        excerpt: fields.text({ label: 'Excerpt', multiline: true }),
+        title: fields.text({ label: 'Title', validation: { isRequired: true } }),
+        slug: fields.slug({
+          label: 'Slug',
+          slugField: 'title',
+          validation: { isRequired: true },
+        }),
+        date: fields.date({ label: 'Date', validation: { isRequired: true } }),
+        excerpt: fields.text({
+          label: 'Excerpt',
+          multiline: true,
+          validation: { isRequired: true },
+        }),
         tags: fields.array(fields.text({ label: 'Tag' }), {
           label: 'Tags',
-          itemLabel: (props) => props.value || 'tag',
+          itemLabel: props => props.value || 'tag',
         }),
-        category: fields.text({ label: 'Category' }),
-        cta_label: fields.text({
-          label: 'CTA Label',
-          validation: { isRequired: false }, // <- corregido
+        category: fields.text({ label: 'Category', validation: { isRequired: true } }),
+        cta_label: fields.text({ label: 'CTA Label', validation: { isRequired: false } }),
+        // Deja este campo vacío o pon una URL http(s) válida; si escribes texto suelto dará error.
+        cta_url: fields.url({ label: 'CTA URL', validation: { isRequired: false } }),
+        content: fields.document({
+          label: 'Content',
+          formatting: true,
+          links: true,
+          dividers: true,
         }),
-        cta_url: fields.url({
-          label: 'CTA URL',
-          validation: { isRequired: false }, // <- corregido
-        }),
-        content: fields.markdoc({ label: 'Content', extension: 'md' }),
       },
       entryLayout: 'content',
+      hooks: {
+        beforeWrite: async ({ item }) => {
+          // Normaliza para evitar undefined en Next.js
+          return {
+            ...item,
+            cta_label: n<string>(item.cta_label as any),
+            cta_url: n<string>(item.cta_url as any),
+            tags: Array.isArray(item.tags) ? item.tags : [],
+          };
+        },
+      },
     }),
   },
 });
+
 
 
