@@ -1,11 +1,10 @@
-// keystatic.config.ts – must be at the root of the repo
+// keystatic.config.ts – must be at the root of the repo
 import { config, collection, fields, singleton } from '@keystatic/core';
 
 const storage =
   process.env.KEYSTATIC_STORAGE === 'github'
     ? {
         kind: 'github' as const,
-        // In GitHub mode, repo must be an object { owner, name, branch }
         repo: {
           owner: process.env.KEYSTATIC_GITHUB_OWNER || '',
           name: process.env.KEYSTATIC_GITHUB_NAME || '',
@@ -26,7 +25,10 @@ export default config({
       format: { data: 'json' },
       schema: {
         heroTitle: fields.text({ label: 'Hero H1' }),
-        heroSubtitle: fields.text({ label: 'Hero H2', validation: { length: { max: 120 } } }),
+        heroSubtitle: fields.text({
+          label: 'Hero H2',
+          validation: { length: { max: 120 } },
+        }),
         heroText: fields.text({ label: 'Hero text', multiline: true }),
       },
     }),
@@ -46,10 +48,17 @@ export default config({
           itemLabel: (props) => props.value || 'tag',
         }),
         category: fields.text({ label: 'Category' }),
-        cta_label: fields.text({ label: 'CTA Label', validation: { isOptional: true } }),
-        cta_url: fields.url({ label: 'CTA URL', validation: { isOptional: true } }),
-        content: fields.markdoc({ label: 'Content' }), // or fields.md if you prefer Markdown
+        cta_label: fields.text({
+          label: 'CTA Label',
+          validation: { isRequired: false }, // optional field
+        }),
+        cta_url: fields.url({
+          label: 'CTA URL',
+          validation: { isRequired: false }, // optional field
+        }),
+        content: fields.markdoc({ label: 'Content' }), // or fields.md for Markdown
       },
     }),
   },
 });
+
