@@ -24,20 +24,47 @@ function getConfig(): PoolOptions {
     database: TIDB_DB,
     waitForConnections: true,
     connectionLimit: 5,
+    // TiDB Cloud recomienda TLS 1.2+
     ssl: { minVersion: 'TLSv1.2' },
   };
 }
 
-export function pool(): Pool {
+function getPool(): Pool {
   if (!_pool) _pool = mysql.createPool(getConfig());
   return _pool;
 }
 
-export async function query<T = any>(sql: string, params: any[] = []): Promise<T[]> {
-  const [rows] = await pool().execute(sql, params);
+/**
+ * PoolFactory: función invocable que devuelve el Pool,
+ * pero que además expone métodos .query y .execute
+ * para compatibilidad con código legado: pool.query(...)
+ */
+type PoolFactory = (() => Pool) & {
+  query<T = any>(sql: string, params?: any[]): Promise<T[]>;
+  execute(sql: string, params?: any[]): Promise<any>;
+};
+
+// función invocable
+const poolFunction = ((): Pool => getPool()) as PoolFactory;
+
+// métodos compatibles
+poolFunction.execute = async (sql: string, params: any[] = []) => {
+  return getPool().execute(sql, params);
+};
+poolFunction.query = async <T = any>(sql: string, params: any[] = []) => {
+  const [rows] = await getPool().execute(sql, params);
   return rows as T[];
+};
+
+// export: soporta ambos estilos -> pool() y pool.query(...)
+export const pool = poolFunction;
+
+// helper tipado recomendado
+export async function query<T = any>(sql: string, params: any[] = []): Promise<T[]> {
+  return pool.query<T>(sql, params);
 }
 
+// Tipo base esperado por las páginas del catálogo
 export type Product = {
   id: number;
   name: string;
