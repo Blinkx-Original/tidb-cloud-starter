@@ -1,70 +1,38 @@
-import * as React from 'react';
+// pages/index.tsx
 import Head from 'next/head';
-import CommonLayout from 'components/v2/Layout';
-import dynamic from 'next/dynamic';
-import NextLink from 'next/link';
-import CategoryGrid from 'components/v2/CategoryGrid';
+import CommonLayout from '@/components/v2';
+import SearchPill from '@/components/v2/SearchPill';
+import Link from 'next/link';
 
-const ProductList = dynamic(() => import('components/v2/Cards/ShoppingItemCardList'), { ssr: false });
-
-export default function HomePage() {
-  const [page, setPage] = React.useState(1);
-  const pageSize = 6; // featured
-
+export default function Home() {
   return (
-    <>
+    <CommonLayout>
       <Head>
-        <title>BlinkX – Industrial Catalog</title>
-        <meta name="description" content="BlinkX Catalog Homepage" />
+        <title>BlinkX — Catálogo</title>
       </Head>
 
-      <CommonLayout>
-        {/* HERO TEXT (centered) */}
-        <div className="max-w-3xl mx-auto text-center px-4 py-12">
-          <h1 className="text-4xl font-bold text-black font-sans mb-4">BlinkX Catalog</h1>
-          <h2 className="text-xl text-gray-600 font-sans mb-6">Products, affiliates, and lead listings</h2>
-          <p className="text-gray-500 font-sans leading-relaxed">
-            Every deploy is remarkable. Chat with your team on real, production-grade UI,
-            not just designs.
-          </p>
-        </div>
-
-        {/* CATEGORIES GRID */}
-        <div className="max-w-7xl mx-auto px-4 pb-10">
-          <div className="bg-white shadow-sm border rounded-2xl p-6">
-            <div className="mb-4">
-              <h3 className="text-lg font-semibold">Categories</h3>
-              <p className="text-sm text-gray-500">Explore the catalog by category.</p>
-            </div>
-            <CategoryGrid />
+      <main className="mx-auto max-w-6xl px-4">
+        {/* HERO */}
+        <section className="py-12 sm:py-16">
+          <div className="mx-auto max-w-3xl text-center">
+            <h1 className="text-3xl sm:text-4xl font-bold">Encuentra tu próximo producto</h1>
+            <p className="mt-3 text-neutral-600">
+              Búsqueda simple y rápida en todo el catálogo.
+            </p>
           </div>
-        </div>
 
-        {/* FEATURED PRODUCTS */}
-        <div className="max-w-7xl mx-auto px-4 pb-10">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-lg font-semibold">Featured products</h3>
-            <NextLink href="/categories" className="text-sm text-gray-500 hover:underline">
-              Browse all
-            </NextLink>
+          <div className="mt-6 flex justify-center">
+            <SearchPill size="lg" placeholder="Buscar por nombre, categoría o descripción…" autoFocus />
           </div>
-          <ProductList page={page} pageSize={pageSize} />
 
-          <div className="flex items-center justify-center gap-3 pt-10">
-            <button
-              className="btn"
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={page === 1}
-            >
-              ← Prev
-            </button>
-            <span className="text-sm text-gray-500">Page {page}</span>
-            <button className="btn" onClick={() => setPage((p) => p + 1)}>
-              Next →
-            </button>
+          {/* Links de ayuda */}
+          <div className="mt-4 text-center text-sm text-neutral-500">
+            Sugerencias: <Link href="/categories" className="underline">ver categorías</Link>
           </div>
-        </div>
-      </CommonLayout>
-    </>
+        </section>
+
+        {/* Aquí puedes listar productos destacados o últimas categorías (opcional) */}
+      </main>
+    </CommonLayout>
   );
 }
