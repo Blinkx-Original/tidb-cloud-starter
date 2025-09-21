@@ -17,7 +17,7 @@ function getRepoFromEnv(): { owner: string; name: string } | undefined {
 const repo = getRepoFromEnv();
 const branch = process.env.KEYSTATIC_GITHUB_BRANCH || 'main';
 
-// Si faltan las envs de GitHub, caemos a modo local (solo lectura en prod).
+// Si faltan las envs de GitHub, caemos a local (en prod no podrá escribir).
 const storage =
   process.env.KEYSTATIC_STORAGE === 'github' && repo
     ? ({ kind: 'github', repo, branch } as const)
@@ -27,8 +27,6 @@ export default config({
   storage,
   ui: {
     brand: { name: 'BlinkX' },
-    // fijamos ruta del panel para evitar conflictos de paths/cache
-    basePath: '/keystatic',
   },
 
   singletons: {
@@ -76,7 +74,7 @@ export default config({
         }),
         category: fields.text({ label: 'Category', validation: { isRequired: true } }),
         cta_label: fields.text({ label: 'CTA Label', validation: { isRequired: false } }),
-        // texto opcional (evita validador estricto de URL)
+        // texto opcional para evitar validador de URL
         cta_url: fields.text({
           label: 'CTA URL',
           validation: { isRequired: false },
@@ -93,3 +91,4 @@ export default config({
     }),
   },
 });
+
