@@ -4,9 +4,12 @@ import Image from 'next/image';
 import { useRouter } from 'next/router';
 import SearchPill from '../SearchPill';
 
-export type HeaderProps = {}; // ← exporta el tipo para evitar futuros errores
+export type HeaderProps = {
+  /** Oculta buscador y navegación (logo siempre visible) */
+  hideMenu?: boolean;
+};
 
-export default function Header(_props: HeaderProps) {
+export default function Header({ hideMenu = false }: HeaderProps) {
   const router = useRouter();
 
   return (
@@ -17,27 +20,31 @@ export default function Header(_props: HeaderProps) {
           <span className="font-semibold">BlinkX</span>
         </Link>
 
-        {/* Pastilla de búsqueda: visible en md+, en móvil dejamos botón */}
-        <div className="flex-1 hidden md:flex justify-center">
-          <SearchPill size="sm" placeholder="Buscar productos..." />
-        </div>
+        {!hideMenu && (
+          <div className="flex-1 hidden md:flex justify-center">
+            <SearchPill size="sm" placeholder="Buscar productos..." />
+          </div>
+        )}
 
-        <nav className="flex items-center gap-2">
-          <Link
-            href="/categories"
-            className="px-3 py-1 rounded-full bg-black text-white text-sm hover:opacity-90"
-          >
-            Categorías
-          </Link>
-          <button
-            onClick={() => router.push('/search')}
-            className="md:hidden px-3 py-1 rounded-full border border-neutral-200 text-sm"
-            aria-label="Abrir búsqueda"
-          >
-            Buscar
-          </button>
-        </nav>
+        {!hideMenu && (
+          <nav className="flex items-center gap-2">
+            <Link
+              href="/categories"
+              className="px-3 py-1 rounded-full bg-black text-white text-sm hover:opacity-90"
+            >
+              Categorías
+            </Link>
+            <button
+              onClick={() => router.push('/search')}
+              className="md:hidden px-3 py-1 rounded-full border border-neutral-200 text-sm"
+              aria-label="Abrir búsqueda"
+            >
+              Buscar
+            </button>
+          </nav>
+        )}
       </div>
     </header>
   );
 }
+
