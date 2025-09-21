@@ -2,9 +2,11 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
-import SearchPill from '../SearchPill'; // ← relativo para evitar problemas de alias
+import SearchPill from '../SearchPill';
 
-export default function Header() {
+export type HeaderProps = {}; // ← exporta el tipo para evitar futuros errores
+
+export default function Header(_props: HeaderProps) {
   const router = useRouter();
 
   return (
@@ -17,7 +19,7 @@ export default function Header() {
 
         {/* Pastilla de búsqueda: visible en md+, en móvil dejamos botón */}
         <div className="flex-1 hidden md:flex justify-center">
-          <SearchPill size="sm" placeholder="Buscar productos…" />
+          <SearchPill size="sm" placeholder="Buscar productos..." />
         </div>
 
         <nav className="flex items-center gap-2">
