@@ -14,7 +14,7 @@ function getRepoFromEnv(): { owner: string; name: string } | undefined {
 }
 
 const repo = getRepoFromEnv();
-// Solo usamos Github si HAY repo válido; si falta, caemos a local SIEMPRE.
+// Si faltan las envs de GitHub, caemos a modo local aunque KEYSTATIC_STORAGE=github.
 const storage =
   process.env.KEYSTATIC_STORAGE === 'github' && repo
     ? ({ kind: 'github', repo } as const)
@@ -58,11 +58,11 @@ export default config({
         category: fields.text({ label: 'Category' }),
         cta_label: fields.text({
           label: 'CTA Label',
-          validation: { isOptional: true },
+          validation: { isRequired: false }, // <- corregido
         }),
         cta_url: fields.url({
           label: 'CTA URL',
-          validation: { isOptional: true },
+          validation: { isRequired: false }, // <- corregido
         }),
         content: fields.markdoc({ label: 'Content', extension: 'md' }),
       },
@@ -70,4 +70,5 @@ export default config({
     }),
   },
 });
+
 
