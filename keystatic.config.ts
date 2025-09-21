@@ -1,18 +1,18 @@
-// keystatic.config.ts – debe estar en la raíz del repo
+// keystatic.config.ts – must be at the root of the repo
 import { config, collection, fields, singleton } from '@keystatic/core';
 
 const storage =
   process.env.KEYSTATIC_STORAGE === 'github'
     ? {
-        kind: 'github',
-        // En modo GitHub, repo debe ser un objeto { owner, name, branch }
+        kind: 'github' as const,
+        // In GitHub mode, repo must be an object { owner, name, branch }
         repo: {
           owner: process.env.KEYSTATIC_GITHUB_OWNER || '',
           name: process.env.KEYSTATIC_GITHUB_NAME || '',
           branch: process.env.KEYSTATIC_GITHUB_BRANCH || 'main',
         },
       }
-    : { kind: 'local' };
+    : { kind: 'local' as const };
 
 export default config({
   storage,
@@ -27,7 +27,7 @@ export default config({
       schema: {
         heroTitle: fields.text({ label: 'Hero H1' }),
         heroSubtitle: fields.text({ label: 'Hero H2', validation: { length: { max: 120 } } }),
-        heroText: fields.text({ label: 'Hero texto', multiline: true }),
+        heroText: fields.text({ label: 'Hero text', multiline: true }),
       },
     }),
   },
@@ -48,7 +48,7 @@ export default config({
         category: fields.text({ label: 'Category' }),
         cta_label: fields.text({ label: 'CTA Label', validation: { isOptional: true } }),
         cta_url: fields.url({ label: 'CTA URL', validation: { isOptional: true } }),
-        content: fields.markdoc({ label: 'Content' }), // o fields.md para Markdoc/Markdown, según tu setup
+        content: fields.markdoc({ label: 'Content' }), // or fields.md if you prefer Markdown
       },
     }),
   },
