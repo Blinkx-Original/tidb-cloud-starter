@@ -1,7 +1,7 @@
 // keystatic.config.ts
 import { config, collection, fields, singleton } from '@keystatic/core';
 
-/** Lee owner/name de env si usas GitHub; si no, usa storage local. */
+/** Lee owner/name del repo desde env (KEYSTATIC_GITHUB_REPO o OWNER/NAME). */
 function getRepoFromEnv(): { owner: string; name: string } | undefined {
   const combo = process.env.KEYSTATIC_GITHUB_REPO;
   if (combo) {
@@ -13,18 +13,24 @@ function getRepoFromEnv(): { owner: string; name: string } | undefined {
   if (owner && name) return { owner, name };
   return undefined;
 }
-const repo = getRepoFromEnv();
 
+const repo = getRepoFromEnv();
+const branch = process.env.KEYSTATIC_GITHUB_BRANCH || 'main';
+
+// Si faltan las envs de GitHub, caemos a modo local (solo lectura en prod).
 const storage =
   process.env.KEYSTATIC_STORAGE === 'github' && repo
-    ? ({ kind: 'github', repo } as const)
+    ? ({ kind: 'github', repo, branch } as const)
     : ({ kind: 'local' } as const);
 
 export default config({
   storage,
-  ui: { brand: { name: 'BlinkX' } },
+  ui: {
+    brand: { name: 'BlinkX' },
+    // fijamos ruta del panel para evitar conflictos de paths/cache
+    basePath: '/keystatic',
+  },
 
-  // Ajustes globales opcionales
   singletons: {
     site: singleton({
       label: 'Site settings',
@@ -54,7 +60,11 @@ export default config({
           validation: { isRequired: true },
           description: 'Usa guiones, ej: "mi-articulo-nuevo"',
         }),
-        date: fields.date({ label: 'Date', validation: { isRequired: true } }),
+        date: fields.date({
+          label: 'Date',
+          validation: { isRequired: true },
+          description: 'Usa el selector o formato ISO: YYYY-MM-DD',
+        }),
         excerpt: fields.text({
           label: 'Excerpt',
           multiline: true,
@@ -66,7 +76,12 @@ export default config({
         }),
         category: fields.text({ label: 'Category', validation: { isRequired: true } }),
         cta_label: fields.text({ label: 'CTA Label', validation: { isRequired: false } }),
-        cta_url: fields.url({ label: 'CTA URL', validation: { isRequired: false } }),
+        // texto opcional (evita validador estricto de URL)
+        cta_url: fields.text({
+          label: 'CTA URL',
+          validation: { isRequired: false },
+          description: 'Opcional. Si usas, pon una URL completa (https://...)',
+        }),
         content: fields.document({
           label: 'Content',
           formatting: true,
@@ -78,4 +93,3 @@ export default config({
     }),
   },
 });
-
