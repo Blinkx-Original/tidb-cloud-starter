@@ -44,43 +44,10 @@ export default function SearchPill({
   };
 
   return (
-    <div
-      role="search"
-      aria-label="Buscar productos"
-      className={`relative w-full max-w-2xl ${className}`}
-    >
-      <div
-        className={`flex items-center gap-3 rounded-full border border-neutral-200 bg-white shadow-sm hover:shadow transition ${heights} ${pad}`}
-      >
+    <div role="search" aria-label="Buscar productos" className={`relative w-full max-w-2xl ${className}`}>
+      <div className={`flex items-center gap-3 rounded-full border border-neutral-200 bg-white shadow-sm hover:shadow transition ${heights} ${pad}`}>
         <svg aria-hidden width="20" height="20" viewBox="0 0 24 24" className="text-neutral-500">
           <path
             fill="currentColor"
-            d="M15.5 14h-.79l-.28-.27a6.471 6.471 0 0 0 1.57-4.23A6.5 6.5 0 1 0 9.5 16a6.471 6.471 0 0 0 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5Zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14Z"
-          />
-        </svg>
+            d="M15.5 14h-.79l-.28-.27a6.471 6.471 0 0 0 1.57-4.23A6.5 6.5 0 1 0 9.5 16a6.471 6.471 0 0 0 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5Zm-6 0C7.01
 
-        <input
-          ref={inputRef}
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && submit()}
-          placeholder={placeholder}
-          className={`flex-1 bg-transparent outline-none placeholder-neutral-400 ${text}`}
-          autoFocus={autoFocus}
-        />
-
-        <kbd className="hidden sm:flex items-center gap-1 text-[11px] text-neutral-500 border border-neutral-200 px-2 py-1 rounded-md">
-          ⌘/Ctrl K
-        </kbd>
-
-        <button
-          onClick={submit}
-          className={`rounded-full bg-black text-white px-4 py-2 hover:opacity-90 ${text === 'text-sm' ? 'text-sm' : 'text-sm'}`}
-          aria-label="Buscar"
-        >
-          Buscar
-        </button>
-      </div>
-    </div>
-  );
-}
