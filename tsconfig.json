@@ -1,8 +1,8 @@
 // tsconfig.json  ← REEMPLAZAR (archivo completo)
 {
   "compilerOptions": {
-    "target": "ES2020",
-    "lib": ["dom", "dom.iterable", "es2020"],
+    "target": "ES2022",
+    "lib": ["dom", "dom.iterable", "es2022"],
     "module": "ESNext",
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
@@ -14,6 +14,7 @@
     "isolatedModules": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
+    "allowJs": true,
     "baseUrl": ".",
     "paths": {
       "@/*": ["*"],
@@ -24,3 +25,4 @@
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
   "exclude": ["node_modules"]
 }
+
