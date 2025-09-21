@@ -14,20 +14,21 @@ function getRepoFromEnv(): { owner: string; name: string } | undefined {
   return undefined;
 }
 const repo = getRepoFromEnv();
+
 const storage =
   process.env.KEYSTATIC_STORAGE === 'github' && repo
     ? ({ kind: 'github', repo } as const)
     : ({ kind: 'local' } as const);
 
 /** util: undefined/"" -> null */
-const n = <T,>(v: T | undefined | null | ''): T | null =>
+const toNull = <T,>(v: T | undefined | null | ''): T | null =>
   v === undefined || v === '' ? null : (v as T);
 
 export default config({
   storage,
   ui: { brand: { name: 'BlinkX' } },
 
-  // Opcional: ajustes del "site" (lo que ya tenías)
+  // Opcional: ajustes del "site"
   singletons: {
     site: singleton({
       label: 'Site settings',
@@ -48,12 +49,12 @@ export default config({
     posts: collection({
       label: 'Blog posts',
       path: 'posts/*',
-      slugField: 'slug', // <- el archivo se nombra por este campo
+      slugField: 'slug', // el archivo se nombra por este campo
       format: { contentField: 'content' }, // frontmatter + body compatible con gray-matter
       schema: {
         title: fields.text({ label: 'Title', validation: { isRequired: true } }),
+        // Deriva el slug del title. (No usar 'label' aquí; la API no lo acepta en esta variante)
         slug: fields.slug({
-          label: 'Slug',
           slugField: 'title',
           validation: { isRequired: true },
         }),
@@ -65,11 +66,11 @@ export default config({
         }),
         tags: fields.array(fields.text({ label: 'Tag' }), {
           label: 'Tags',
-          itemLabel: props => props.value || 'tag',
+          itemLabel: (props) => props.value || 'tag',
         }),
         category: fields.text({ label: 'Category', validation: { isRequired: true } }),
         cta_label: fields.text({ label: 'CTA Label', validation: { isRequired: false } }),
-        // Deja este campo vacío o pon una URL http(s) válida; si escribes texto suelto dará error.
+        // Deja vacío o pon una URL http(s) válida; si escribes texto no-URL, fallará.
         cta_url: fields.url({ label: 'CTA URL', validation: { isRequired: false } }),
         content: fields.document({
           label: 'Content',
@@ -80,12 +81,12 @@ export default config({
       },
       entryLayout: 'content',
       hooks: {
+        // Antes de escribir el archivo, normalizamos campos opcionales para evitar `undefined`
         beforeWrite: async ({ item }) => {
-          // Normaliza para evitar undefined en Next.js
           return {
             ...item,
-            cta_label: n<string>(item.cta_label as any),
-            cta_url: n<string>(item.cta_url as any),
+            cta_label: toNull<string>(item.cta_label as any),
+            cta_url: toNull<string>(item.cta_url as any),
             tags: Array.isArray(item.tags) ? item.tags : [],
           };
         },
@@ -93,6 +94,4 @@ export default config({
     }),
   },
 });
-
-
 
