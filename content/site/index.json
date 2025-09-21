@@ -1,6 +1,0 @@
-// content/site/index.json  ← CREAR (carpeta y archivo)
-{
-  "heroTitle": "BlinkX",
-  "heroSubtitle": "Catálogo minimalista con TiDB + Next.js",
-  "heroText": "Gestiona el home y el blog con Keystatic. Los Productos siguen en TiDB."
-}
