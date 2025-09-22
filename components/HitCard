@@ -1,0 +1,51 @@
+'use client';
+
+import Link from 'next/link';
+import { Highlight } from 'react-instantsearch-hooks-web';
+import type { Hit as AlgoliaHit } from 'instantsearch.js';
+import type { HitModel } from '@/lib/searchTypes';
+
+export default function HitCard({ hit }: { hit: AlgoliaHit<HitModel> }) {
+  return (
+    <article className="hit">
+      <Link href={hit.url} className="hitLink">
+        <div className="hitThumb">
+          {hit.image ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={hit.image} alt={hit.title} />
+          ) : (
+            <div className="placeholder" />
+          )}
+        </div>
+        <div className="hitBody">
+          <h3 className="hitTitle">
+            <Highlight attribute="title" hit={hit} />
+          </h3>
+          {hit.description && (
+            <p className="hitDesc line-clamp-2">
+              <Highlight attribute="description" hit={hit} />
+            </p>
+          )}
+          <div className="hitMeta">
+            {hit.category && <span className="chip">{hit.category}</span>}
+            {typeof hit.price === 'number' && <span className="chip">${hit.price}</span>}
+            {typeof hit.rating === 'number' && <span className="chip">★ {hit.rating.toFixed(1)}</span>}
+          </div>
+        </div>
+      </Link>
+      <style jsx>{`
+        .hit { border: 1px solid #eee; border-radius: 10px; overflow: hidden; background: #fff; }
+        .hitLink { display: grid; grid-template-columns: 120px 1fr; gap: 12px; padding: 12px; text-decoration: none; }
+        .hitThumb img, .placeholder { width: 120px; height: 120px; object-fit: cover; border-radius: 8px; background: #f4f4f4; }
+        .hitTitle { margin: 0 0 6px; font-size: 16px; }
+        .hitDesc { color: #555; margin: 0 0 8px; }
+        .hitMeta { display: flex; gap: 8px; flex-wrap: wrap; }
+        .chip { font-size: 12px; padding: 2px 8px; background: #f2f2f2; border-radius: 999px; }
+        @media (max-width: 640px) {
+          .hitLink { grid-template-columns: 88px 1fr; }
+          .hitThumb img, .placeholder { width: 88px; height: 88px; }
+        }
+      `}</style>
+    </article>
+  );
+}
