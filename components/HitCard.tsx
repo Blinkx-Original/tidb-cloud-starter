@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unknown-property */
 'use client';
 
 import Link from 'next/link';
@@ -47,3 +48,4 @@ export default function HitCard({ hit }: { hit: any }) {
     </article>
   );
 }
+
