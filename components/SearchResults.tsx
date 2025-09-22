@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unknown-property */
 'use client';
 
 import {
@@ -98,3 +99,4 @@ export default function SearchResults({ initialQuery = '' }: { initialQuery?: st
     </InstantSearch>
   );
 }
+
