@@ -36,9 +36,7 @@ export default function CategoryPage({ slug, name, count, products }: Props) {
         {/* Header de categoría */}
         <header className="mt-6 mb-4">
           <h1 className="text-2xl sm:text-3xl font-bold text-white">{name}</h1>
-          <p className="mt-2 text-white">
-            {count} producto{count === 1 ? '' : 's'}
-          </p>
+          <p className="mt-2 text-white">{count} producto{count === 1 ? '' : 's'}</p>
         </header>
 
         {/* Listado */}
@@ -49,12 +47,9 @@ export default function CategoryPage({ slug, name, count, products }: Props) {
             {products.map((p) => {
               const price = formatPriceEUR(p.price_eur ?? p.price);
               return (
-                <li
-                  key={p.id}
-                  className="border border-gray-800 rounded-2xl p-4 hover:shadow-sm transition"
-                >
+                <li key={p.id} className="border border-white rounded-2xl p-4 hover:shadow-sm transition">
                   <Link href={`/product/${p.slug}`} className="block">
-                    <div className="aspect-[4/3] w-full bg-neutral-900 rounded-xl mb-3 overflow-hidden">
+                    <div className="aspect-[4/3] w-full bg-black rounded-xl mb-3 overflow-hidden">
                       {p.image_url ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
@@ -66,12 +61,8 @@ export default function CategoryPage({ slug, name, count, products }: Props) {
                       ) : null}
                     </div>
                     <h3 className="font-medium text-white">{p.name}</h3>
-                    <p className="mt-1 line-clamp-2 text-sm text-white">
-                      {p.description}
-                    </p>
-                    <div className="mt-2 text-sm text-white">
-                      {p.category_name ?? 'Sin categoría'}
-                    </div>
+                    <p className="mt-1 line-clamp-2 text-sm text-white">{p.description}</p>
+                    <div className="mt-2 text-sm text-white">{p.category_name ?? 'Sin categoría'}</div>
                     {price && <div className="mt-2 font-semibold text-white">{price}</div>}
                   </Link>
                 </li>
@@ -115,4 +106,3 @@ export const getServerSideProps: GetServerSideProps<Props> = async ({ params }) 
 
   return { props: { slug, name, count, products } };
 };
-
