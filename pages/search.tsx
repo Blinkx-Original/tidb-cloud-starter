@@ -8,9 +8,9 @@ import { searchProducts } from '../lib/catalog';
 import { formatPriceEUR } from '../lib/price';
 import type { Product } from '../lib/db';
 
-type Props = { q: string | null; results: Product[] };
+type Props = { q: string | null; results: Product[]; error?: boolean };
 
-export default function SearchPage({ q, results }: Props) {
+export default function SearchPage({ q, results, error }: Props) {
   const hasQuery = (q || '').trim().length > 0;
 
   return (
@@ -27,7 +27,11 @@ export default function SearchPage({ q, results }: Props) {
           </p>
         </section>
 
-        {hasQuery && (
+        {error && (
+          <div className="py-6 text-red-600">Hubo un problema con la búsqueda. Intenta de nuevo.</div>
+        )}
+
+        {hasQuery && !error && (
           <section className="py-6">
             {results.length === 0 ? (
               <div className="text-neutral-600">No encontramos resultados. Prueba con otro término.</div>
@@ -64,6 +68,12 @@ export default function SearchPage({ q, results }: Props) {
 export const getServerSideProps: GetServerSideProps<Props> = async (ctx) => {
   const q = (ctx.query.q as string | undefined)?.trim() ?? null;
   if (!q) return { props: { q: null, results: [] } };
-  const results = await searchProducts(q, 30);
-  return { props: { q, results } };
+
+  try {
+    const results = await searchProducts(q, 30);
+    return { props: { q, results } };
+  } catch (e) {
+    console.error('SSR /search error:', e);
+    return { props: { q, results: [], error: true } };
+  }
 };
