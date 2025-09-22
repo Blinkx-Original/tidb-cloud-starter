@@ -1,3 +1,4 @@
+// tailwind.config.ts
 import type { Config } from 'tailwindcss';
 
 const config: Config = {
@@ -8,10 +9,21 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      // (lo tuyo)
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
         'gradient-conic':
           'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
+      },
+      // (nuevo) animación sticky footer
+      keyframes: {
+        'slide-up-fade-in': {
+          '0%': { transform: 'translateY(16px)', opacity: '0' },
+          '100%': { transform: 'translateY(0)', opacity: '1' },
+        },
+      },
+      animation: {
+        'slide-up-fade-in': 'slide-up-fade-in 2s ease-out forwards',
       },
     },
   },
@@ -26,9 +38,10 @@ const config: Config = {
     base: true, // applies background color and foreground color for root element by default
     styled: true, // include daisyUI colors and design decisions for all components
     utils: true, // adds responsive and modifier utility classes
-    rtl: false, // rotate style direction from left-to-right to right-to-left. You also need to add dir="rtl" to your html tag and install `tailwindcss-flip` plugin for Tailwind CSS.
-    prefix: '', // prefix for daisyUI classnames (components, modifiers and responsive class names. Not colors)
-    logs: true, // Shows info about daisyUI version and used config in the console when building your CSS
+    rtl: false, // rotate style direction from left-to-right to right-to-left...
+    prefix: '', // prefix for daisyUI classnames
+    logs: true, // show info about daisyUI in build
   },
 };
+
 export default config;
