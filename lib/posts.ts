@@ -5,80 +5,36 @@ import matter from 'gray-matter';
 import { remark } from 'remark';
 import html from 'remark-html';
 
-export type PostMeta = {
-  slug: string;
-  title: string;
-  date?: string;
-  excerpt?: string;
-  tags?: string[];
-  category?: string;
-  // Campos de CTA en snake_case para coincidir con el frontmatter y con tu uso en [slug].tsx
-  cta_label?: string;
-  cta_url?: string;
-};
+const postsDirectory = path.join(process.cwd(), 'posts');
 
-const POSTS_DIR = path.join(process.cwd(), 'posts');
-
-function ensurePostsDir() {
-  if (!fs.existsSync(POSTS_DIR)) fs.mkdirSync(POSTS_DIR, { recursive: true });
+export function getAllPostSlugs() {
+  return fs.readdirSync(postsDirectory).map((fileName) => {
+    return {
+      params: {
+        slug: fileName.replace(/\.md$/, ''),
+      },
+    };
+  });
 }
 
-export function getAllPostSlugs(): string[] {
-  ensurePostsDir();
-  return fs
-    .readdirSync(POSTS_DIR)
-    .filter((f) => f.endsWith('.md'))
-    .map((f) => f.replace(/\.md$/, ''));
-}
+export async function getPostData(slug: string) {
+  const fullPath = path.join(postsDirectory, `${slug}.md`);
+  const fileContents = fs.readFileSync(fullPath, 'utf8');
 
-export function getAllPostsMeta(): PostMeta[] {
-  ensurePostsDir();
-  const metas: PostMeta[] = fs
-    .readdirSync(POSTS_DIR)
-    .filter((f) => f.endsWith('.md'))
-    .map((filename) => {
-      const slug = filename.replace(/\.md$/, '');
-      const full = path.join(POSTS_DIR, filename);
-      const file = fs.readFileSync(full, 'utf8');
-      const { data } = matter(file);
+  const matterResult = matter(fileContents);
 
-      const meta: PostMeta = {
-        slug,
-        title: String(data.title ?? slug),
-        date: data.date ? String(data.date) : undefined,
-        excerpt: data.excerpt ? String(data.excerpt) : undefined,
-        tags: Array.isArray(data.tags) ? data.tags.map(String) : undefined,
-        category: data.category ? String(data.category) : undefined,
-        cta_label: data.cta_label ? String(data.cta_label) : undefined,
-        cta_url: data.cta_url ? String(data.cta_url) : undefined,
-      };
-      return meta;
-    });
+  const processedContent = await remark().use(html).process(matterResult.content);
+  const contentHtml = processedContent.toString();
 
-  metas.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
-  return metas;
-}
-
-export async function getPostBySlug(
-  slug: string
-): Promise<{ meta: PostMeta; html: string }> {
-  ensurePostsDir();
-  const full = path.join(POSTS_DIR, `${slug}.md`);
-  const file = fs.readFileSync(full, 'utf8');
-  const { data, content } = matter(file);
-  const processed = await remark().use(html).process(content);
-  const htmlString = processed.toString();
-
-  const meta: PostMeta = {
+  return {
     slug,
-    title: String(data.title ?? slug),
-    date: data.date ? String(data.date) : undefined,
-    excerpt: data.excerpt ? String(data.excerpt) : undefined,
-    tags: Array.isArray(data.tags) ? data.tags.map(String) : undefined,
-    category: data.category ? String(data.category) : undefined,
-    cta_label: data.cta_label ? String(data.cta_label) : undefined,
-    cta_url: data.cta_url ? String(data.cta_url) : undefined,
+    contentHtml,
+    title: matterResult.data.title || 'Untitled',
+    date: matterResult.data.date || '',
+    excerpt: matterResult.data.excerpt ?? null,
+    tags: matterResult.data.tags ?? null,
+    category: matterResult.data.category ?? null,
+    cta_label: matterResult.data.cta_label ?? null,
+    cta_url: matterResult.data.cta_url ?? null,
   };
-
-  return { meta, html: htmlString };
 }
