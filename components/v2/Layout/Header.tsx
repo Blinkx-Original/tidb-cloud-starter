@@ -4,7 +4,7 @@ import Link from "next/link";
 
 export default function Header() {
   return (
-    <header className="w-full bg-black text-white border-b border-white">
+    <header className="w-full bg-white text-black border-b border-black dark:bg-black dark:text-white dark:border-white">
       <div className="mx-auto max-w-7xl px-4">
         <div className="navbar min-h-[64px] px-0">
           {/* Izquierda: Hamburguesa */}
@@ -12,10 +12,10 @@ export default function Header() {
             <div className="dropdown">
               <label
                 tabIndex={0}
-                className="btn btn-ghost btn-circle text-white"
+                className="btn btn-ghost btn-circle"
                 aria-label="Abrir menú"
               >
-                {/* Ícono hamburguesa blanco */}
+                {/* Ícono hamburguesa usa currentColor → negro en día / blanco en noche */}
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="h-6 w-6"
@@ -26,10 +26,13 @@ export default function Header() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
               </label>
-              {/* Menú: fondo negro, texto blanco, borde blanco */}
+
+              {/* Menú: fondo y bordes según tema */}
               <ul
                 tabIndex={0}
-                className="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow rounded-2xl bg-black text-white border border-white w-56"
+                className="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow rounded-2xl w-56
+                           bg-white text-black border border-black
+                           dark:bg-black dark:text-white dark:border-white"
               >
                 <li><Link href="/">Inicio</Link></li>
                 <li><Link href="/categories">Categorías</Link></li>
@@ -47,12 +50,12 @@ export default function Header() {
             </Link>
           </div>
 
-          {/* Derecha: Acciones (opcional) */}
+          {/* Derecha: Atajo a categorías */}
           <div className="navbar-end gap-3">
-            {/* Pastilla “Categories” de ejemplo, mantiene estilo minimal */}
             <Link
               href="/categories"
-              className="px-3 py-1 rounded-full border border-white hover:opacity-90"
+              className="px-3 py-1 rounded-full border border-black hover:opacity-90
+                         dark:border-white"
             >
               Categorías
             </Link>
