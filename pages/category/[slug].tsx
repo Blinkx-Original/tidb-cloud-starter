@@ -36,7 +36,9 @@ export default function CategoryPage({ slug, name, count, products }: Props) {
         {/* Header de categoría */}
         <header className="mt-6 mb-4">
           <h1 className="text-2xl sm:text-3xl font-bold text-white">{name}</h1>
-          <p className="mt-2 text-white">{count} producto{count === 1 ? '' : 's'}</p>
+          <p className="mt-2 text-white">
+            {count} producto{count === 1 ? '' : 's'}
+          </p>
         </header>
 
         {/* Listado */}
@@ -64,7 +66,9 @@ export default function CategoryPage({ slug, name, count, products }: Props) {
                       ) : null}
                     </div>
                     <h3 className="font-medium text-white">{p.name}</h3>
-                    <p className="mt-1 line-clamp-2 text-sm text-white">{p.description}</p>
+                    <p className="mt-1 line-clamp-2 text-sm text-white">
+                      {p.description}
+                    </p>
                     <div className="mt-2 text-sm text-white">
                       {p.category_name ?? 'Sin categoría'}
                     </div>
@@ -90,5 +94,25 @@ export const getServerSideProps: GetServerSideProps<Props> = async ({ params }) 
     SELECT
       COALESCE(MAX(category_name), 'Uncategorized') AS name,
       COUNT(*) AS count
-    FROM produc
+    FROM products
+    WHERE COALESCE(category_slug, 'uncategorized') = ?
+  `,
+    [slug]
+  );
+
+  const name = info[0]?.name ?? 'Uncategorized';
+  const count = Number(info[0]?.count ?? 0);
+
+  const products = await query<Product>(
+    `
+    SELECT id, name, slug, image_url, price_eur, price, description, category_name, category_slug
+    FROM products
+    WHERE COALESCE(category_slug, 'uncategorized') = ?
+    ORDER BY id DESC
+  `,
+    [slug]
+  );
+
+  return { props: { slug, name, count, products } };
+};
 
