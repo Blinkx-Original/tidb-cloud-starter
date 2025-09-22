@@ -21,7 +21,6 @@ export default function Home({ categories, products }: Props) {
         <title>BlinkX — Catálogo</title>
       </Head>
 
-      {/* Fondo negro + texto blanco en todo el main */}
       <main className="mx-auto max-w-6xl px-4 bg-black text-white min-h-screen">
         {/* HERO */}
         <section className="py-12 sm:py-16">
@@ -35,35 +34,26 @@ export default function Home({ categories, products }: Props) {
           </div>
 
           <div className="mt-6 flex justify-center">
-            {/* Mantener estilos actuales de la píldora */}
             <SearchPill size="lg" placeholder="Buscar por nombre, categoría o descripción..." autoFocus />
           </div>
 
           <div className="mt-4 text-center text-sm text-white">
-            Sugerencias:{' '}
-            <Link href="/categories" className="underline">
-              ver categorías
-            </Link>
+            Sugerencias: <Link href="/categories" className="underline">ver categorías</Link>
           </div>
         </section>
 
         {/* CATEGORÍAS POPULARES */}
-        <section className="py-6 border-t border-gray-800">
+        <section className="py-6 border-t border-white">
           <div className="mb-4 flex items-end justify-between">
             <h2 className="text-xl font-semibold text-white">Categorías populares</h2>
-            <Link href="/categories" className="text-sm underline">
-              Ver todas
-            </Link>
+            <Link href="/categories" className="text-sm underline">Ver todas</Link>
           </div>
           {categories.length === 0 ? (
             <div className="text-white">Aún no hay categorías.</div>
           ) : (
             <ul className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
               {categories.map((c) => (
-                <li
-                  key={c.slug}
-                  className="border border-gray-800 rounded-2xl p-4 hover:shadow-sm transition"
-                >
+                <li key={c.slug} className="border border-white rounded-2xl p-4 hover:shadow-sm transition">
                   <Link href={`/category/${c.slug}`} className="block">
                     <div className="flex items-center justify-between">
                       <span className="font-medium text-white">{c.name}</span>
@@ -77,7 +67,7 @@ export default function Home({ categories, products }: Props) {
         </section>
 
         {/* NOVEDADES */}
-        <section className="py-6 border-t border-gray-800">
+        <section className="py-6 border-t border-white">
           <h2 className="mb-4 text-xl font-semibold text-white">Novedades</h2>
           {products.length === 0 ? (
             <div className="text-white">Aún no hay productos.</div>
@@ -86,27 +76,17 @@ export default function Home({ categories, products }: Props) {
               {products.map((p) => {
                 const price = formatPriceEUR(p.price_eur ?? p.price);
                 return (
-                  <li
-                    key={p.id}
-                    className="border border-gray-800 rounded-2xl p-4 hover:shadow-sm transition"
-                  >
+                  <li key={p.id} className="border border-white rounded-2xl p-4 hover:shadow-sm transition">
                     <Link href={`/product/${p.slug}`} className="block">
-                      <div className="aspect-[4/3] w-full bg-neutral-900 rounded-xl mb-3 overflow-hidden">
+                      <div className="aspect-[4/3] w-full bg-black rounded-xl mb-3 overflow-hidden">
                         {p.image_url ? (
                           // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={p.image_url}
-                            alt={p.name}
-                            className="w-full h-full object-cover"
-                            loading="lazy"
-                          />
+                          <img src={p.image_url} alt={p.name} className="w-full h-full object-cover" loading="lazy" />
                         ) : null}
                       </div>
                       <h3 className="font-medium text-white">{p.name}</h3>
                       <p className="mt-1 line-clamp-2 text-sm text-white">{p.description}</p>
-                      <div className="mt-2 text-sm text-white">
-                        {p.category_name ?? 'Sin categoría'}
-                      </div>
+                      <div className="mt-2 text-sm text-white">{p.category_name ?? 'Sin categoría'}</div>
                       {price && <div className="mt-2 font-semibold text-white">{price}</div>}
                     </Link>
                   </li>
@@ -143,5 +123,6 @@ export const getServerSideProps: GetServerSideProps<Props> = async () => {
 
   return { props: { categories, products } };
 };
+
 
 
