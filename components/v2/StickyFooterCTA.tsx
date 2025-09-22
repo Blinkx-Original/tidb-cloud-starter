@@ -1,60 +1,31 @@
 // components/v2/StickyFooterCTA.tsx
-import * as React from 'react';
 import Link from 'next/link';
 
 export type StickyFooterCTAProps = {
   title: string;
   buttonLabel: string;
-  /** Nuevo nombre canónico */
-  buttonHref?: string;
-  /** Alias legado usado en blog/[slug].tsx */
-  href?: string;
-  className?: string;
+  buttonHref: string;
+  backgroundClass?: string; // <-- add this
 };
 
 export default function StickyFooterCTA({
   title,
   buttonLabel,
   buttonHref,
-  href,
-  className = '',
+  backgroundClass = 'bg-gray-100', // <-- default if not provided
 }: StickyFooterCTAProps) {
-  const [show, setShow] = React.useState(false);
-  const finalHref = buttonHref ?? href ?? '#';
-
-  React.useEffect(() => {
-    const id = requestAnimationFrame(() => setShow(true));
-    return () => cancelAnimationFrame(id);
-  }, []);
-
   return (
     <div
-      role="region"
-      aria-label="Acción rápida"
-      className={[
-        'fixed inset-x-0 bottom-0 z-50',
-        'bg-gray-100/95 backdrop-blur border-t border-neutral-200',
-        'shadow-[0_-4px_12px_rgba(0,0,0,0.06)]',
-        'transition-all duration-300 will-change-transform',
-        show ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0',
-        'safe-area-inset-b',
-        className,
-      ].join(' ')}
+      className={`fixed bottom-0 left-0 right-0 border-t ${backgroundClass} animate-slide-up-fade-in`}
     >
-      <div className="mx-auto max-w-6xl px-4 py-3 sm:py-4">
-        <div className="flex items-center gap-3">
-          <div className="flex-1 min-w-0 sm:min-w-[60%]">
-            <p className="text-base sm:text-lg font-medium truncate">{title}</p>
-          </div>
-          <div className="w-1/2 sm:w-auto flex justify-end">
-            <Link
-              href={finalHref}
-              className="inline-flex items-center justify-center rounded-2xl border border-black bg-black text-white px-4 py-2 sm:px-5 sm:py-2.5 text-sm sm:text-base hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-black"
-            >
-              {buttonLabel}
-            </Link>
-          </div>
-        </div>
+      <div className="max-w-5xl mx-auto flex items-center justify-between p-3 sm:p-4">
+        <div className="truncate text-base sm:text-lg font-medium">{title}</div>
+        <Link
+          href={buttonHref}
+          className="btn w-1/2 sm:w-auto rounded-2xl bg-black text-white border-black hover:opacity-90"
+        >
+          {buttonLabel}
+        </Link>
       </div>
     </div>
   );
