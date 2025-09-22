@@ -8,56 +8,46 @@ import { query, Product } from '@/lib/db';
 import { formatPriceEUR } from '@/lib/price';
 
 type CategoryRow = { slug: string; name: string; count: number };
-
-type Props = {
-  categories: CategoryRow[];
-  products: Product[];
-};
+type Props = { categories: CategoryRow[]; products: Product[] };
 
 export default function Home({ categories, products }: Props) {
   return (
     <CommonLayout>
-      <Head>
-        <title>BlinkX — Catálogo</title>
-      </Head>
+      <Head><title>BlinkX — Catálogo</title></Head>
 
-      <main className="mx-auto max-w-6xl px-4 bg-black text-white min-h-screen">
+      <main className="mx-auto max-w-6xl px-4">
         {/* HERO */}
         <section className="py-12 sm:py-16">
           <div className="mx-auto max-w-3xl text-center">
-            <h1 className="text-3xl sm:text-4xl font-bold text-white">
-              Encuentra tu próximo producto
-            </h1>
-            <p className="mt-3 text-white">
-              Búsqueda simple y rápida en todo el catálogo.
-            </p>
+            <h1 className="text-3xl sm:text-4xl font-bold">Encuentra tu próximo producto</h1>
+            <p className="mt-3">Búsqueda simple y rápida en todo el catálogo.</p>
           </div>
 
           <div className="mt-6 flex justify-center">
             <SearchPill size="lg" placeholder="Buscar por nombre, categoría o descripción..." autoFocus />
           </div>
 
-          <div className="mt-4 text-center text-sm text-white">
+          <div className="mt-4 text-center text-sm">
             Sugerencias: <Link href="/categories" className="underline">ver categorías</Link>
           </div>
         </section>
 
         {/* CATEGORÍAS POPULARES */}
-        <section className="py-6 border-t border-white">
+        <section className="py-6 border-t border-black dark:border-white">
           <div className="mb-4 flex items-end justify-between">
-            <h2 className="text-xl font-semibold text-white">Categorías populares</h2>
+            <h2 className="text-xl font-semibold">Categorías populares</h2>
             <Link href="/categories" className="text-sm underline">Ver todas</Link>
           </div>
           {categories.length === 0 ? (
-            <div className="text-white">Aún no hay categorías.</div>
+            <div>Aún no hay categorías.</div>
           ) : (
             <ul className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
               {categories.map((c) => (
-                <li key={c.slug} className="border border-white rounded-2xl p-4 hover:shadow-sm transition">
+                <li key={c.slug} className="border border-black dark:border-white rounded-2xl p-4 hover:shadow-sm transition">
                   <Link href={`/category/${c.slug}`} className="block">
                     <div className="flex items-center justify-between">
-                      <span className="font-medium text-white">{c.name}</span>
-                      <span className="text-xs text-white">{c.count}</span>
+                      <span className="font-medium">{c.name}</span>
+                      <span className="text-xs">{c.count}</span>
                     </div>
                   </Link>
                 </li>
@@ -67,27 +57,27 @@ export default function Home({ categories, products }: Props) {
         </section>
 
         {/* NOVEDADES */}
-        <section className="py-6 border-t border-white">
-          <h2 className="mb-4 text-xl font-semibold text-white">Novedades</h2>
+        <section className="py-6 border-t border-black dark:border-white">
+          <h2 className="mb-4 text-xl font-semibold">Novedades</h2>
           {products.length === 0 ? (
-            <div className="text-white">Aún no hay productos.</div>
+            <div>Aún no hay productos.</div>
           ) : (
             <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {products.map((p) => {
                 const price = formatPriceEUR(p.price_eur ?? p.price);
                 return (
-                  <li key={p.id} className="border border-white rounded-2xl p-4 hover:shadow-sm transition">
+                  <li key={p.id} className="border border-black dark:border-white rounded-2xl p-4 hover:shadow-sm transition">
                     <Link href={`/product/${p.slug}`} className="block">
-                      <div className="aspect-[4/3] w-full bg-black rounded-xl mb-3 overflow-hidden">
+                      <div className="aspect-[4/3] w-full rounded-xl mb-3 overflow-hidden bg-white dark:bg-black">
                         {p.image_url ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img src={p.image_url} alt={p.name} className="w-full h-full object-cover" loading="lazy" />
                         ) : null}
                       </div>
-                      <h3 className="font-medium text-white">{p.name}</h3>
-                      <p className="mt-1 line-clamp-2 text-sm text-white">{p.description}</p>
-                      <div className="mt-2 text-sm text-white">{p.category_name ?? 'Sin categoría'}</div>
-                      {price && <div className="mt-2 font-semibold text-white">{price}</div>}
+                      <h3 className="font-medium">{p.name}</h3>
+                      <p className="mt-1 line-clamp-2 text-sm">{p.description}</p>
+                      <div className="mt-2 text-sm">{p.category_name ?? 'Sin categoría'}</div>
+                      {price && <div className="mt-2 font-semibold">{price}</div>}
                     </Link>
                   </li>
                 );
