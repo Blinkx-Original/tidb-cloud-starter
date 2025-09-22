@@ -22,7 +22,7 @@ export const CatalogRepo = {
     return await query<Product>(
       `SELECT id, name, slug, image_url, price_eur, description, category_name, category_slug
        FROM products
-       WHERE category_slug = ? 
+       WHERE category_slug = ?
        ORDER BY id DESC`,
       [slug]
     );
@@ -39,12 +39,18 @@ export const CatalogRepo = {
     return rows[0] ?? null;
   },
 
+  // --------- CASE-INSENSITIVE SEARCH (LIKE con LOWER) ----------
   async searchProducts(q: string): Promise<Product[]> {
-    const term = `%${q}%`;
+    const trimmed = (q || '').trim();
+    if (!trimmed) return [];
+
+    const term = `%${trimmed.toLowerCase()}%`;
     return await query<Product>(
       `SELECT id, name, slug, image_url, price_eur, description, category_name, category_slug
        FROM products
-       WHERE name LIKE ? OR description LIKE ?
+       WHERE
+         (name IS NOT NULL AND LOWER(name) LIKE ?)
+         OR (description IS NOT NULL AND LOWER(description) LIKE ?)
        ORDER BY id DESC
        LIMIT 100`,
       [term, term]
