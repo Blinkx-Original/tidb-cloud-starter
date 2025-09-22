@@ -1,9 +1,8 @@
 // lib/analytics.ts
-import type { EventAttributes } from '@vercel/analytics/react';
+// Small safe wrapper for Vercel Analytics track
+// Works on client only, avoids SSR errors.
 
-let trackFn:
-  | ((name: string, props?: EventAttributes) => void)
-  | null = null;
+let trackFn: ((name: string, props?: Record<string, any>) => void) | null = null;
 
 async function ensureTrack() {
   if (!trackFn) {
@@ -14,7 +13,7 @@ async function ensureTrack() {
 
 export async function safeTrack(
   name: string,
-  props?: EventAttributes
+  props?: Record<string, any>
 ): Promise<void> {
   try {
     if (typeof window === 'undefined') return;
@@ -24,3 +23,4 @@ export async function safeTrack(
     // no-op
   }
 }
+
