@@ -7,7 +7,7 @@ import { useEffect, useRef, useState } from 'react';
 export default function SearchPill() {
   const router = useRouter();
   const params = useSearchParams();
-  const qParam = params?.get('q') ?? ''; // <- evita el error "Object is possibly 'null'"
+  const qParam = params?.get('q') ?? '';
   const [q, setQ] = useState(qParam);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -16,7 +16,8 @@ export default function SearchPill() {
   const submit = (e?: React.FormEvent) => {
     e?.preventDefault();
     const query = q.trim();
-    router.push(query ? `/search?q=${encodeURIComponent(query)}` : '/search`);
+    // ✅ comilla correcta al final: '/search'
+    router.push(query ? `/search?q=${encodeURIComponent(query)}` : '/search');
   };
 
   return (
