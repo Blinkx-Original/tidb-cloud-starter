@@ -34,10 +34,27 @@ export default function PostPage({
         {excerpt && <meta name="description" content={excerpt} />}
       </Head>
 
-      <article className="prose max-w-3xl mx-auto p-4">
-        <h1 className="text-3xl font-bold mb-2">{title}</h1>
-        <div className="text-sm opacity-70 mb-6">{date}</div>
-        <div dangerouslySetInnerHTML={{ __html: contentHtml }} />
+      <article className="max-w-3xl mx-auto p-4">
+        {/* Título grande + truncado a 2 líneas */}
+        <h1
+          className="text-3xl sm:text-4xl font-bold mb-2 leading-tight"
+          style={{
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical' as any,
+            overflow: 'hidden',
+          }}
+        >
+          {title}
+        </h1>
+
+        <div className="text-sm opacity-70 mb-6">
+          {date}
+          {category ? ` · ${category}` : null}
+        </div>
+
+        <div className="prose" dangerouslySetInnerHTML={{ __html: contentHtml }} />
+
         {tags && tags.length > 0 && (
           <div className="mt-6 flex flex-wrap gap-2">
             {tags.map((t) => (
@@ -49,7 +66,7 @@ export default function PostPage({
         )}
       </article>
 
-      {/* spacer to avoid overlap with sticky bar */}
+      {/* Espaciador para no tapar contenido con el sticky */}
       {UI.stickyFooter.enabledOnBlog && <div className="h-24 sm:h-20" />}
 
       {UI.stickyFooter.enabledOnBlog && (
