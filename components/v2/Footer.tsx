@@ -5,7 +5,7 @@ export default function Footer() {
   const year = new Date().getFullYear();
   return (
     <footer className="mt-16 max-w-7xl mx-auto px-4">
-      <div className="bg-black border border-gray-700 rounded-2xl p-8 text-white">
+      <div className="bg-black border border-white rounded-2xl p-8 text-white">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 text-sm">
           <div>
             <div className="text-base font-semibold">BlinkX</div>
@@ -73,18 +73,12 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-8 pt-6 border-t border-gray-700 flex flex-col sm:flex-row items-center justify-between text-xs text-white gap-3">
+        <div className="mt-8 pt-6 border-t border-white flex flex-col sm:flex-row items-center justify-between text-xs text-white gap-3">
           <div>© {year} BlinkX. All rights reserved.</div>
           <div className="flex items-center gap-4">
-            <a href="#" className="hover:underline">
-              Twitter
-            </a>
-            <a href="#" className="hover:underline">
-              LinkedIn
-            </a>
-            <a href="#" className="hover:underline">
-              GitHub
-            </a>
+            <a href="#" className="hover:underline">Twitter</a>
+            <a href="#" className="hover:underline">LinkedIn</a>
+            <a href="#" className="hover:underline">GitHub</a>
           </div>
         </div>
       </div>
