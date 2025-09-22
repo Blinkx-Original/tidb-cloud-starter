@@ -1,94 +1,60 @@
 // components/v2/StickyFooterCTA.tsx
 import * as React from 'react';
-import NextLink from 'next/link';
+import Link from 'next/link';
 
-type Props = {
-  title: string;           // Product name or blog post title
-  buttonLabel: string;     // e.g., "Go to Offer", "Request a Quote"
-  href: string;            // Internal or external link
+export type StickyFooterCTAProps = {
+  title: string;
+  buttonLabel: string;
+  buttonHref: string;
+  className?: string;
 };
 
-function LinkButton({
-  href,
-  className,
-  ariaLabel,
-  children,
-}: {
-  href: string;
-  className?: string;
-  ariaLabel?: string;
-  children: React.ReactNode;
-}) {
-  const isExternal = /^https?:\/\//i.test(href);
-  if (isExternal) {
-    return (
-      <a
-        href={href}
-        className={className}
-        aria-label={ariaLabel}
-        target="_blank"
-        rel="noopener noreferrer nofollow"
-      >
-        {children}
-      </a>
-    );
-  }
-  return (
-    <NextLink href={href} className={className} aria-label={ariaLabel}>
-      {children}
-    </NextLink>
-  );
-}
-
-export default function StickyFooterCTA({ title, buttonLabel, href }: Props) {
-  const [mounted, setMounted] = React.useState(false);
+export default function StickyFooterCTA({
+  title,
+  buttonLabel,
+  buttonHref,
+  className = '',
+}: StickyFooterCTAProps) {
+  const [show, setShow] = React.useState(false);
 
   React.useEffect(() => {
-    // Espera al siguiente frame para que Tailwind pueda animar del estado inicial al final
-    const id = requestAnimationFrame(() => setMounted(true));
+    // Dispara animación en cliente
+    const id = requestAnimationFrame(() => setShow(true));
     return () => cancelAnimationFrame(id);
   }, []);
-
-  if (!title || !buttonLabel || !href) return null;
 
   return (
     <div
       role="region"
-      aria-label="Sticky call to action"
-      className="fixed inset-x-0 bottom-0 z-50"
+      aria-label="Acción rápida"
+      className={[
+        'fixed inset-x-0 bottom-0 z-50',
+        'bg-gray-100/95 backdrop-blur border-t border-neutral-200',
+        'shadow-[0_-4px_12px_rgba(0,0,0,0.06)]',
+        'transition-all duration-300 will-change-transform',
+        show ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0',
+        'safe-area-inset-b', // iOS bottom
+        className,
+      ].join(' ')}
     >
-      {/* Contenedor con fondo gris suave y borde sutil */}
-      <div
-        className={[
-          "bg-gray-100 border-t border-gray-200 shadow-lg transition-all duration-500 ease-out",
-          mounted ? "translate-y-0 opacity-100" : "translate-y-6 opacity-0"
-        ].join(" ")}
-      >
-        {/* Safe area para iOS */}
-        <div
-          className="max-w-7xl mx-auto px-3 py-3"
-          style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 12px)' }}
-        >
-          <div className="flex items-center gap-3">
-            {/* Izquierda: título (más grande) */}
-            <div className="flex-1 min-w-0">
-              <div className="font-semibold text-base sm:text-lg text-black truncate">
-                {title}
-              </div>
-            </div>
+      <div className="mx-auto max-w-6xl px-4 py-3 sm:py-4">
+        <div className="flex items-center gap-3">
+          {/* Título ocupa 50% en móvil, truncado */}
+          <div className="flex-1 min-w-0 sm:min-w-[60%]">
+            <p className="text-base sm:text-lg font-medium truncate">{title}</p>
+          </div>
 
-            {/* Derecha: botón (50% en móvil, auto en ≥sm) negro con texto blanco */}
-            <LinkButton
-              href={href}
-              ariaLabel={buttonLabel}
-              className="btn w-1/2 sm:w-auto shrink-0 bg-black text-white border-black hover:opacity-90"
+          {/* Botón ocupa ~50% en móvil */}
+          <div className="w-1/2 sm:w-auto flex justify-end">
+            <Link
+              href={buttonHref}
+              className="inline-flex items-center justify-center rounded-2xl border border-black bg-black text-white px-4 py-2 sm:px-5 sm:py-2.5 text-sm sm:text-base hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-black"
             >
               {buttonLabel}
-            </LinkButton>
+            </Link>
           </div>
         </div>
       </div>
     </div>
   );
 }
-
