@@ -1,92 +1,74 @@
 // pages/product/[slug].tsx
-import Head from 'next/head';
-import Link from 'next/link';
 import type { GetServerSideProps } from 'next';
-import CommonLayout from '@/components/v2';
+import Head from 'next/head';
+import Image from 'next/image';
+import CommonLayout from '@/components/v2/Layout';
 import Breadcrumbs from '@/components/v2/breadcrumbs';
 import StickyFooterCTA from '@/components/v2/StickyFooterCTA';
-import { getProductBySlug } from '@/lib/catalog';
-import { formatPriceEUR } from '@/lib/price';
-import type { Product } from '@/lib/db';
+import { CatalogRepo } from '@/lib/repositories/catalog';
+import { UI } from '@/lib/uiConfig';
+import type { Product } from '@/lib/domain';
 
-type Props = { product: Product };
+type Props = { product: Product | null };
 
-export default function ProductPage({ product }: Props) {
-  const price = formatPriceEUR(product.price_eur ?? product.price);
-  const categoryUrl = product.category_slug ? `/category/${product.category_slug}` : '/categories';
+export const getServerSideProps: GetServerSideProps<Props> = async (ctx) => {
+  const slug = String(ctx.params?.slug || '');
+  const product = await CatalogRepo.getProductBySlug(slug);
+  return { props: { product } };
+};
+
+export default function ProductDetail({ product }: Props) {
+  const TitleTag = UI.headings.productTitleTag;
+
+  if (!product) {
+    return (
+      <CommonLayout>
+        <div className="max-w-3xl mx-auto p-6">
+          <p>Product not found.</p>
+        </div>
+      </CommonLayout>
+    );
+  }
 
   return (
     <CommonLayout>
       <Head><title>{product.name} — BlinkX</title></Head>
+      <div className="max-w-3xl mx-auto p-4">
+        <Breadcrumbs
+          items={[
+            { label: 'Categories', href: '/categories' },
+            product.category_slug
+              ? { label: product.category_name ?? 'Category', href: `/category/${product.category_slug}` }
+              : undefined,
+            { label: product.name },
+          ].filter(Boolean) as any}
+        />
 
-      <main className="mx-auto max-w-6xl px-4">
-        <div className="py-4">
-          <Breadcrumbs
-            items={[
-              { href: '/', label: 'Inicio' },
-              { href: '/categories', label: 'Categorías' },
-              product.category_slug
-                ? { href: `/category/${product.category_slug}`, label: product.category_name ?? 'Categoría' }
-                : { href: '/categories', label: 'Categorías' },
-              { href: `/product/${product.slug}`, label: product.name },
-            ]}
-          />
+        <div className="card border rounded-2xl p-4">
+          <TitleTag className="text-2xl font-semibold mb-3">{product.name}</TitleTag>
+          {product.image_url && (
+            <div className="relative w-full aspect-[4/3] mb-4 overflow-hidden rounded-xl border">
+              <Image src={product.image_url} alt={product.name} fill className="object-contain" />
+            </div>
+          )}
+          {product.price_eur != null && (
+            <div className="text-lg font-medium mb-2">€{product.price_eur}</div>
+          )}
+          {product.description && <p className="opacity-80">{product.description}</p>}
         </div>
 
-        <section className="grid grid-cols-1 md:grid-cols-2 gap-6 py-4">
-          <div className="border border-neutral-200 rounded-2xl overflow-hidden bg-neutral-100 aspect-[4/3]">
-            {product.image_url ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
-            ) : null}
-          </div>
+        {/* spacer to avoid overlap with sticky bar */}
+        {UI.stickyFooter.enabledOnProduct && <div className="h-24 sm:h-20" />}
+      </div>
 
-          <div className="border border-neutral-200 rounded-2xl p-5">
-            <h1 className="text-2xl font-bold">{product.name}</h1>
-
-            {product.category_slug && (
-              <div className="mt-2 text-sm">
-                <Link href={categoryUrl} className="underline">
-                  {product.category_name ?? 'Ver categoría'}
-                </Link>
-              </div>
-            )}
-
-            {price && <div className="mt-4 text-xl font-semibold">{price}</div>}
-
-            {product.description && (
-              <p className="mt-4 text-neutral-700 whitespace-pre-line">{product.description}</p>
-            )}
-
-            <div className="mt-6">
-              <Link
-                href={categoryUrl}
-                className="inline-flex items-center justify-center rounded-xl border border-black bg-black text-white px-4 py-2 hover:opacity-90"
-              >
-                Ver más en {product.category_name ?? 'categoría'}
-              </Link>
-            </div>
-          </div>
-        </section>
-
-        {/* Espaciador para no tapar contenido con el sticky */}
-        <div className="h-24 sm:h-20" />
-      </main>
-
-      {/* Sticky Footer siempre montado en la página de producto */}
-      <StickyFooterCTA
-        title={product.name}
-        buttonLabel={product.category_name ? `Más en ${product.category_name}` : 'Ver categorías'}
-        buttonHref={categoryUrl}
-      />
+      {UI.stickyFooter.enabledOnProduct && (
+        <StickyFooterCTA
+          title={product.name}
+          buttonLabel="Buy now"
+          buttonHref={`/product/${product.slug}`}
+          backgroundClass={UI.stickyFooter.background}
+        />
+      )}
     </CommonLayout>
   );
 }
-
-export const getServerSideProps: GetServerSideProps<Props> = async (ctx) => {
-  const raw = String(ctx.params?.slug ?? '');
-  const slug = decodeURIComponent(raw);
-  const product = await getProductBySlug(slug);
-  if (!product) return { notFound: true };
-  return { props: { product } };
-};
