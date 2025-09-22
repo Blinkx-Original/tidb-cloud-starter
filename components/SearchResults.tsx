@@ -58,7 +58,7 @@ export default function SearchResults({ initialQuery = '' }: { initialQuery?: st
       <div className="grid">
         <aside className="facets">
           <Stats />
-          <SearchBox placeholder="Search catalog…" submitIconComponent={null} resetIconComponent={null} />
+          <SearchBox placeholder="Search catalog…" />
           <div className="facet">
             <h4>Category</h4>
             <RefinementList attribute="category" searchable={true} searchablePlaceholder="Filter categories…" />
