@@ -45,7 +45,19 @@ export default function ProductDetail({ product }: Props) {
         />
 
         <div className="card border rounded-2xl p-4">
-          <TitleTag className="text-2xl font-semibold mb-3">{product.name}</TitleTag>
+          {/* Título más grande + truncado a 2 líneas */}
+          <TitleTag
+            className="text-3xl sm:text-4xl font-bold mb-3 leading-tight"
+            style={{
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical' as any,
+              overflow: 'hidden',
+            }}
+          >
+            {product.name}
+          </TitleTag>
+
           {product.image_url && (
             <div className="relative w-full aspect-[4/3] mb-4 overflow-hidden rounded-xl border">
               <Image src={product.image_url} alt={product.name} fill className="object-contain" />
