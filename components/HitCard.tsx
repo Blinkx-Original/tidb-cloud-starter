@@ -1,11 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { Highlight } from 'react-instantsearch-hooks-web';
-import type { Hit as AlgoliaHit } from 'instantsearch.js';
-import type { HitModel } from '@/lib/searchTypes';
+import { Highlight } from 'react-instantsearch';
 
-export default function HitCard({ hit }: { hit: AlgoliaHit<HitModel> }) {
+export default function HitCard({ hit }: { hit: any }) {
   return (
     <article className="hit">
       <Link href={hit.url} className="hitLink">
@@ -29,7 +27,7 @@ export default function HitCard({ hit }: { hit: AlgoliaHit<HitModel> }) {
           <div className="hitMeta">
             {hit.category && <span className="chip">{hit.category}</span>}
             {typeof hit.price === 'number' && <span className="chip">${hit.price}</span>}
-            {typeof hit.rating === 'number' && <span className="chip">★ {hit.rating.toFixed(1)}</span>}
+            {typeof hit.rating === 'number' && <span className="chip">★ {Number(hit.rating).toFixed(1)}</span>}
           </div>
         </div>
       </Link>
