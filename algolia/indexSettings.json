@@ -1,0 +1,16 @@
+{
+  "searchableAttributes": [
+    "unordered(title)",
+    "unordered(description)",
+    "unordered(category)",
+    "unordered(tags)"
+  ],
+  "attributesForFaceting": ["searchable(category)", "searchable(tags)", "brand", "country", "state", "city"],
+  "customRanking": ["desc(rating)", "asc(price)"],
+  "ranking": ["typo", "geo", "words", "filters", "proximity", "attribute", "exact", "custom"],
+  "typoTolerance": "min",
+  "removeStopWords": true,
+  "ignorePlurals": true,
+  "minWordSizefor1Typo": 4,
+  "minWordSizefor2Typos": 8
+}
