@@ -12,7 +12,6 @@ function norm(s: string) {
   return decodeURIComponent(String(s || '')).trim().toLowerCase();
 }
 
-/** POPULARES */
 export async function getPopularCategories(limit = 12): Promise<CategorySummary[]> {
   return query<CategorySummary>(
     `
@@ -29,7 +28,6 @@ export async function getPopularCategories(limit = 12): Promise<CategorySummary[
   );
 }
 
-/** TODAS */
 export async function getAllCategories(limit = 100): Promise<CategorySummary[]> {
   return query<CategorySummary>(
     `
@@ -46,7 +44,6 @@ export async function getAllCategories(limit = 100): Promise<CategorySummary[]> 
   );
 }
 
-/** LISTA POR CATEGORÍA (case/trim safe) */
 export async function getProductsByCategorySlug(categorySlug: string, limit = 120): Promise<Product[]> {
   const s = norm(categorySlug) || 'uncategorized';
   return query<Product>(
@@ -61,7 +58,6 @@ export async function getProductsByCategorySlug(categorySlug: string, limit = 12
   );
 }
 
-/** ÚLTIMOS */
 export async function getLatestProducts(limit = 12): Promise<Product[]> {
   return query<Product>(
     `
@@ -74,7 +70,6 @@ export async function getLatestProducts(limit = 12): Promise<Product[]> {
   );
 }
 
-/** DETALLE POR SLUG (case/trim safe) */
 export async function getProductBySlug(slug: string): Promise<Product | null> {
   const s = norm(slug);
   const rows = await query<Product>(
@@ -89,21 +84,22 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
   return rows[0] ?? null;
 }
 
-/** BÚSQUEDA ROBUSTA (case-insensitive, tokenizada, AND entre tokens) */
+/**
+ * BÚSQUEDA: case-insensitive, tokenizada (AND entre tokens, OR entre columnas).
+ * Corrige comillas vacías para MySQL/TiDB: usar '' (no "").
+ */
 export async function searchProducts(term: string, limit = 30): Promise<Product[]> {
   const base = norm(term);
   if (!base) return [];
 
-  // Divide en tokens por espacios, limita a 5 tokens para seguridad
   const tokens = base.split(/\s+/).filter(Boolean).slice(0, 5);
 
-  // Construye ( para cada token ) un OR sobre columnas, y AND entre tokens
   const columns = [
     'LOWER(name)',
     'LOWER(description)',
     'LOWER(slug)',
-    'LOWER(COALESCE(category_name, ""))',
-    'LOWER(COALESCE(category_slug, ""))',
+    "LOWER(COALESCE(category_name, ''))",
+    "LOWER(COALESCE(category_slug, ''))",
   ];
 
   const whereParts: string[] = [];
@@ -111,11 +107,8 @@ export async function searchProducts(term: string, limit = 30): Promise<Product[
 
   for (const t of tokens) {
     const like = `%${t}%`;
-    const ors = columns.map(() => `?`);
-    // (LOWER(name) LIKE ? OR LOWER(description) LIKE ? OR ...)
-    const expr = `(${columns.map((c) => `${c} LIKE ?`).join(' OR ')})`;
-    whereParts.push(expr);
-    // push same like for each column
+    whereParts.push(`(${columns.map((c) => `${c} LIKE ?`).join(' OR ')})`);
+    // push same like for each column in this token
     for (let i = 0; i < columns.length; i++) params.push(like);
   }
 
@@ -130,4 +123,5 @@ export async function searchProducts(term: string, limit = 30): Promise<Product[
 
   return query<Product>(sql, params);
 }
+
 
