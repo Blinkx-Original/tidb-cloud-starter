@@ -68,7 +68,6 @@ export default function SearchPage({ q, results, error }: Props) {
 export const getServerSideProps: GetServerSideProps<Props> = async (ctx) => {
   const q = (ctx.query.q as string | undefined)?.trim() ?? null;
   if (!q) return { props: { q: null, results: [] } };
-
   try {
     const results = await searchProducts(q, 30);
     return { props: { q, results } };
