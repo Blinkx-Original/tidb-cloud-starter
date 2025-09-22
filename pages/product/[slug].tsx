@@ -4,9 +4,10 @@ import Link from 'next/link';
 import type { GetServerSideProps } from 'next';
 import CommonLayout from '@/components/v2';
 import Breadcrumbs from '@/components/v2/breadcrumbs';
-import { query, Product } from '@/lib/db';
+import StickyFooterCTA from '@/components/v2/StickyFooterCTA';
+import { getProductBySlug } from '@/lib/catalog';
 import { formatPriceEUR } from '@/lib/price';
-const StickyFooterCTA: any = require('@/components/v2/StickyFooterCTA').default;
+import type { Product } from '@/lib/db';
 
 type Props = { product: Product };
 
@@ -16,9 +17,7 @@ export default function ProductPage({ product }: Props) {
 
   return (
     <CommonLayout>
-      <Head>
-        <title>{product.name} — BlinkX</title>
-      </Head>
+      <Head><title>{product.name} — BlinkX</title></Head>
 
       <main className="mx-auto max-w-6xl px-4">
         <div className="py-4">
@@ -70,9 +69,11 @@ export default function ProductPage({ product }: Props) {
           </div>
         </section>
 
+        {/* Espaciador para no tapar contenido con el sticky */}
         <div className="h-24 sm:h-20" />
       </main>
 
+      {/* Sticky Footer siempre montado en la página de producto */}
       <StickyFooterCTA
         title={product.name}
         buttonLabel={product.category_name ? `Más en ${product.category_name}` : 'Ver categorías'}
@@ -85,20 +86,7 @@ export default function ProductPage({ product }: Props) {
 export const getServerSideProps: GetServerSideProps<Props> = async (ctx) => {
   const raw = String(ctx.params?.slug ?? '');
   const slug = decodeURIComponent(raw);
-
-  const rows = await query<Product>(
-    `
-    SELECT id, name, slug, image_url, price_eur, price, description, category_name, category_slug
-    FROM products
-    WHERE LOWER(TRIM(slug)) = LOWER(TRIM(?))
-    LIMIT 1
-    `,
-    [slug]
-  );
-
-  if (rows.length === 0) {
-    return { notFound: true };
-  }
-
-  return { props: { product: rows[0] } };
+  const product = await getProductBySlug(slug);
+  if (!product) return { notFound: true };
+  return { props: { product } };
 };
