@@ -1,99 +1,96 @@
-import * as React from 'react';
-import type { GetServerSideProps, NextPage } from 'next';
+// pages/category/[slug].tsx
 import Head from 'next/head';
-import Image from 'next/image';
-import NextLink from 'next/link';
-import CommonLayout from 'components/v2/Layout';
-import { pool } from '../../lib/db';
-import Breadcrumbs from 'components/v2/breadcrumbs';
+import Link from 'next/link';
+import type { GetServerSideProps } from 'next';
+import CommonLayout from '@/components/v2';
+import Breadcrumbs from '@/components/v2/breadcrumbs';
+import { query, Product } from '@/lib/db';
+import { formatPriceEUR } from '@/lib/price';
 
-type Item = {
-  id: number;
-  name: string;
+type Props = {
   slug: string;
-  image_url?: string | null;
-  price_eur?: number | null;
-  price?: number | null;
-  category_name?: string | null;
-  category_slug?: string | null;
+  name: string;
+  products: Product[];
 };
 
-type Props = { slug: string; name: string; items: Item[] };
+export default function CategoryPage({ slug, name, products }: Props) {
+  return (
+    <CommonLayout>
+      <Head>
+        <title>{name} — Categoría | BlinkX</title>
+      </Head>
+
+      <main className="mx-auto max-w-6xl px-4">
+        <div className="py-4">
+          <Breadcrumbs
+            items={[
+              { href: '/', label: 'Inicio' },
+              { href: '/categories', label: 'Categorías' },
+              { href: `/category/${slug}`, label: name },
+            ]}
+          />
+        </div>
+
+        <section className="py-6">
+          <h1 className="text-2xl font-bold mb-4">{name}</h1>
+
+          {products.length === 0 ? (
+            <div className="text-neutral-600">No hay productos en esta categoría.</div>
+          ) : (
+            <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {products.map((p) => {
+                const price = formatPriceEUR(p.price_eur ?? p.price);
+                return (
+                  <li key={p.id} className="border border-neutral-200 rounded-2xl p-4 hover:shadow-sm transition">
+                    <Link href={`/product/${p.slug}`} className="block">
+                      <div className="aspect-[4/3] w-full bg-neutral-100 rounded-xl mb-3 overflow-hidden">
+                        {p.image_url ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={p.image_url} alt={p.name} className="w-full h-full object-cover" loading="lazy" />
+                        ) : null}
+                      </div>
+                      <h3 className="font-medium">{p.name}</h3>
+                      <p className="mt-1 line-clamp-2 text-sm text-neutral-600">{p.description}</p>
+                      <div className="mt-2 text-sm text-neutral-500">{p.category_name ?? 'Sin categoría'}</div>
+                      {price && <div className="mt-2 font-semibold">{price}</div>}
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </section>
+      </main>
+    </CommonLayout>
+  );
+}
 
 export const getServerSideProps: GetServerSideProps<Props> = async (ctx) => {
-  const slug = String(ctx.params?.slug || '');
-  const [metaRows] = await pool.query(
-    `SELECT COALESCE(category_name,'Uncategorized') AS name
-     FROM products WHERE category_slug = ? LIMIT 1`, [slug]
-  );
-  const name = (metaRows as any[])[0]?.name || 'Uncategorized';
+  const raw = String(ctx.params?.slug ?? '');
+  const slug = decodeURIComponent(raw);
 
-  const [rows] = await pool.query(
-    `SELECT id, name, slug, image_url, price_eur, price, category_name, category_slug
-     FROM products
-     WHERE category_slug = ?
-     ORDER BY id ASC
-     LIMIT 120`, [slug]
+  // 1) Traemos productos igualando en minúsculas y sin espacios
+  const products = await query<Product>(
+    `
+    SELECT id, name, slug, image_url, price_eur, price, description, category_name, category_slug
+    FROM products
+    WHERE LOWER(TRIM(COALESCE(category_slug, 'uncategorized'))) = LOWER(TRIM(?))
+    ORDER BY id DESC
+    LIMIT 120
+    `,
+    [slug]
   );
 
-  return { props: { slug, name, items: rows as any[] } };
+  // 2) Intentamos sacar el nombre "bonito" de la categoría
+  let name = 'Categoría';
+  if (products.length > 0) {
+    name = products[0].category_name ?? 'Categoría';
+  } else {
+    // fallback legible si no hay nombre en DB
+    const pretty = slug.trim().replace(/[-_]+/g, ' ');
+    name = pretty ? pretty.charAt(0).toUpperCase() + pretty.slice(1) : 'Categoría';
+  }
+
+  return { props: { slug, name, products } };
 };
-
-const fmt = (n?: number | null) => (typeof n === 'number' ? `€${n.toFixed(2)}` : '—');
-
-const CategoryPage: NextPage<Props> = ({ slug, name, items }) => {
-  return (
-    <>
-      <Head>
-        <title>{name} — BlinkX</title>
-        <meta name="description" content={`${name} products in the BlinkX catalog`} />
-      </Head>
-      <CommonLayout>
-        <div className="max-w-5xl mx-auto px-4 md:px-8 pt-4">
-          <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: name }]} />
-        </div>
-
-        <div className="max-w-7xl mx-auto px-4 py-8">
-          <h1 className="text-2xl font-bold mb-2">{name}</h1>
-          <p className="text-gray-600 mb-6">Browse {items.length} products in this category.</p>
-
-          {items.length ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {items.map((it) => (
-                <NextLink
-                  key={it.id}
-                  href={`/product/${it.slug}`}
-                  className="block border rounded-2xl p-4 hover:shadow-md transition bg-white"
-                >
-                  <div className="aspect-[4/3] w-full overflow-hidden rounded-lg bg-gray-100 relative">
-                    {it.image_url ? (
-                      <Image
-                        src={it.image_url}
-                        alt={it.name}
-                        fill
-                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                        style={{ objectFit: 'cover' }}
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-gray-400">
-                        No image
-                      </div>
-                    )}
-                  </div>
-                  <h3 className="mt-3 font-semibold">{it.name}</h3>
-                  <div className="text-sm text-gray-500">{it.category_name || '—'}</div>
-                  <div className="mt-1 font-medium">{fmt(it.price_eur ?? it.price)}</div>
-                </NextLink>
-              ))}
-            </div>
-          ) : (
-            <div className="text-gray-500">No products found.</div>
-          )}
-        </div>
-      </CommonLayout>
-    </>
-  );
-};
-
-export default CategoryPage;
 
