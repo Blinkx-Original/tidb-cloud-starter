@@ -19,7 +19,6 @@ export default function SearchBar({
     e.preventDefault();
     const query = q.trim();
     if (!query) return;
-    // telemetry only; no DB logic here
     safeTrack('search_submit', { query, from: 'header' });
     router.push(`/search?q=${encodeURIComponent(query)}`);
   };
@@ -30,12 +29,13 @@ export default function SearchBar({
         value={q}
         onChange={(e) => setQ(e.target.value)}
         placeholder={placeholder}
-        className="input input-sm w-44 sm:w-64 rounded-2xl border bg-white text-sm"
         aria-label="Search"
+        className="input input-sm w-full rounded-full border bg-white text-sm"
       />
       <button
         type="submit"
-        className="btn btn-sm rounded-2xl bg-black text-white border-black hover:opacity-90"
+        className="btn btn-sm rounded-2xl bg-black text-white border-black hover:opacity-90 hidden sm:inline-flex"
+        aria-label="Submit search"
       >
         Search
       </button>
