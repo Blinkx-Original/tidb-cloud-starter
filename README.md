@@ -240,6 +240,330 @@ It defines naming, structure, and workflow to avoid confusion.
 Always refer here before making changes.
 
 
+# Catalog Architecture: Domain (Products/Categories) vs Presentation (UI/Analytics)
+
+Goal: any change to design/UX (search pill, header, sticky footer, fonts, H1/H2, analytics) must not affect the product & category logic—and database/search changes must not force UI rewrites.
+
+This README section documents the separation we implemented and how to work within it.
+
+TL;DR
+
+Domain/Data lives in /lib
+
+Types: lib/domain.ts
+
+DB access: lib/dbClient.ts
+
+Repository: lib/repositories/catalog.ts (the only place with SQL)
+
+Presentation/UI lives in /components + /pages
+
+No SQL, no mysql2 imports here.
+
+Uses UI config only: lib/uiConfig.ts (headings, sticky options, colors)
+
+Telemetry via lib/analytics.ts (client-only safeTrack)
+
+Search is case-insensitive and index-friendly (large catalog ready).
+
+DB adds generated lowercase columns + indexes.
+
+Repo queries use name_lower/description_lower (not LOWER(name)).
+
+Rule of thumb
+
+If you touch SQL or what data is returned, change only the repo.
+
+If you touch how things look/animate/track, change UI + uiConfig only.
+
+Folder Map (key files)
+lib/
+  domain.ts                 # Product & Category TypeScript types
+  dbClient.ts               # MySQL/TiDB pool + query helper
+  analytics.ts              # client-only safe wrapper for @vercel/analytics track()
+  uiConfig.ts               # presentation knobs (headings, sticky footer options)
+  repositories/
+    catalog.ts              # all SQL for products/categories/search
+
+components/
+  v2/
+    Layout/
+      Header.tsx            # navbar; uses SearchBar
+      index.tsx             # CommonLayout wrapper (Header + Footer)
+    StickyFooterCTA.tsx     # presentational sticky CTA bar (animated)
+    breadcrumbs.tsx         # UI-only breadcrumbs
+    SearchBar.tsx           # presentational; routes to /search; tracks submit
+    trackers/
+      SearchAnalytics.tsx   # fires 'search' event on results page
+
+pages/
+  index.tsx                 # home (uses repo only via dedicated loaders if needed)
+  categories.tsx            # lists categories via CatalogRepo
+  category/[slug].tsx       # lists products in a category via CatalogRepo
+  product/[slug].tsx        # product detail via CatalogRepo; mounts StickyFooterCTA
+  search.tsx                # server-rendered search using CatalogRepo.searchProducts
+  blog/index.tsx            # blog listing (markdown metadata)
+  blog/[slug].tsx           # blog detail; mounts StickyFooterCTA
+
+Ownership & Boundaries
+Domain/Data Layer (authoritative)
+
+lib/domain.ts
+
+export type Product = {
+  id: number; name: string; slug: string;
+  image_url: string | null;
+  price_eur: number | null; description: string | null;
+  category_name: string | null; category_slug: string | null;
+};
+
+export type Category = { name: string; slug: string; count?: number };
+
+
+lib/dbClient.ts
+Centralizes the MySQL/TiDB pool and exposes a typed query<T>().
+UI never imports mysql2 directly.
+
+lib/repositories/catalog.ts (the only place with SQL)
+
+getAllCategories()
+
+getProductsByCategorySlug(slug)
+
+getProductBySlug(slug)
+
+searchProducts(q) — case-insensitive, index-friendly
+
+getRecentProducts(limit)
+
+Do not import mysql2 or write SQL anywhere else.
+Do add new data access methods here (e.g., filters, sort).
+
+Presentation Layer (pure UI)
+
+lib/uiConfig.ts controls appearance/behavior knobs:
+
+export const UI = {
+  headings: {
+    homeTitleTag: 'h1' as const,
+    productTitleTag: 'h2' as const,
+    categoryTitleTag: 'h2' as const,
+  },
+  stickyFooter: {
+    enabledOnProduct: true,
+    enabledOnBlog: true,
+    background: 'bg-gray-100',
+  },
+};
+
+
+Pages/components read from UI but never embed SQL or domain rules.
+
+Components (SearchBar, StickyFooterCTA, Header, etc.)
+
+Are presentational: styling, layout, routing, analytics.
+
+SearchBar submits to /search and fires safeTrack('search_submit', {...})—it does not fetch data.
+
+StickyFooterCTA is configurable (title, button label/href, background) and includes a 2s slide-up + fade-in animation via Tailwind.
+
+Pages orchestrate:
+
+Data server-side (SSR/SSG) via CatalogRepo only.
+
+Render UI using components + UI config.
+
+Example (excerpt from pages/category/[slug].tsx):
+
+export const getServerSideProps = async (ctx) => {
+  const slug = String(ctx.params?.slug || '');
+  const products = await CatalogRepo.getProductsByCategorySlug(slug);
+  return { props: { slug, products } };
+};
+
+Telemetry Layer
+
+lib/analytics.ts exposes safeTrack(name, props) (client-only).
+Avoids SSR import issues; UI can call analytics without touching domain.
+
+Events we emit
+
+search_submit — when the header form is submitted.
+Props: { query, from: 'header' }
+
+search — when /search renders results.
+Props: { query, results, source: 'page' }
+
+search_result_click — when a result card is clicked.
+Props: { query, productId, slug, position }
+
+Repositories never import analytics. Analytics lives strictly in UI.
+
+Case-Insensitive & Scalable Search
+Database (TiDB) migration (done)
+
+We added generated lowercase columns and indexes:
+
+ALTER TABLE products
+  ADD COLUMN IF NOT EXISTS name_lower VARCHAR(255)
+  GENERATED ALWAYS AS (LOWER(name)) VIRTUAL;
+
+CREATE INDEX IF NOT EXISTS idx_products_name_lower
+  ON products (name_lower);
+
+ALTER TABLE products
+  ADD COLUMN IF NOT EXISTS description_lower TEXT
+  GENERATED ALWAYS AS (LOWER(description)) VIRTUAL;
+
+CREATE INDEX IF NOT EXISTS idx_products_description_lower_prefix
+  ON products (description_lower(191));
+
+
+Why:
+
+Using LOWER(column) directly in WHERE prevents index usage.
+
+Generated columns + indexes keep comparisons case-insensitive and fast.
+
+Repository query (index-friendly)
+
+lib/repositories/catalog.ts uses UNION to allow the name index to be used:
+
+async searchProducts(q: string): Promise<Product[]> {
+  const trimmed = (q || '').trim().toLowerCase();
+  if (!trimmed) return [];
+  const term = `%${trimmed}%`;
+
+  const sql = `
+    SELECT id, name, slug, image_url, price_eur, description, category_name, category_slug
+    FROM products
+    WHERE name_lower LIKE ?
+    UNION
+    SELECT id, name, slug, image_url, price_eur, description, category_name, category_slug
+    FROM products
+    WHERE description_lower LIKE ?
+    ORDER BY id DESC
+    LIMIT 100
+  `;
+
+  return await query<Product>(sql, [term, term]);
+}
+
+
+Behavior
+
+Matches irrespective of case (Hydraulic, hydraulic, HYD).
+
+UNION de-duplicates rows that match both name and description.
+
+First SELECT can use idx_products_name_lower; second may use the prefix index.
+
+Example Flows
+A) Header search → /search
+
+User types in SearchBar (UI only).
+
+safeTrack('search_submit', { query, from: 'header' }).
+
+Router navigates to /search?q=....
+
+pages/search.tsx runs on server: calls CatalogRepo.searchProducts(q).
+
+Renders cards; mounts SearchAnalytics which fires safeTrack('search', { query, results }).
+
+Clicking a card fires safeTrack('search_result_click', {...}).
+
+B) Category detail
+
+Page calls CatalogRepo.getProductsByCategorySlug(slug) in getServerSideProps.
+
+UI renders via cards; no analytics/domain logic inside repo.
+
+C) Product detail
+
+Page calls CatalogRepo.getProductBySlug(slug).
+
+UI renders image, price, description + StickyFooterCTA.
+
+Sticky footer animates with Tailwind keyframes, uses UI.stickyFooter.background.
+
+Change Without Risk — Playbook
+You can change these without touching the repo:
+
+Header layout, pills, colors, fonts, H1/H2 choices → components + lib/uiConfig.ts.
+
+Sticky footer styles/animation/button text → StickyFooterCTA.tsx + uiConfig.ts.
+
+Analytics events/props → lib/analytics.ts + UI components/pages.
+
+Tailwind animation timing → tailwind.config.ts (we ship slide-up-fade-in at 2s).
+
+You can evolve data/search without touching UI:
+
+Add fields to Product/Category → update lib/domain.ts + repo queries.
+
+Add filters/sort/pagination → add methods or params in CatalogRepo.
+
+Optimize SQL/indexes → change only the repo and/or DB; pages keep the same contract.
+
+Conventions & Rules
+
+No SQL outside the repository.
+
+No analytics inside the repository.
+
+Pages do SSR/SSG and pass plain data to components.
+
+Components are pure UI (accept props, render; may call safeTrack and router).
+
+UI decisions centralized in lib/uiConfig.ts (headings, sticky settings, classes).
+
+Types live in lib/domain.ts (single source of truth).
+
+All external links use target="_blank" + rel="noopener noreferrer".
+
+Environment (for completeness)
+
+Required (Vercel → Project Settings → Environment Variables):
+
+TIDB_HOST=gateway01.<region>.prod.aws.tidbcloud.com
+TIDB_PORT=4000
+TIDB_USER=<user>
+TIDB_PASSWORD=<maybe empty>
+TIDB_DB=bookshop
+
+
+Optional:
+
+NEXT_PUBLIC_SITE_URL=<for canonical URLs/OG tags/sitemaps>
+
+Testing Checklist
+
+ Can change UI.headings.* (e.g., h2 → h1) with no repo code touched.
+
+ Style changes to Header/Sticky don’t affect query results.
+
+ /search?q=hyd returns same results regardless of case.
+
+ EXPLAIN SELECT ... WHERE name_lower LIKE '%term%'; shows idx_products_name_lower.
+
+ Adding a new field to Product only requires changing lib/domain.ts + repo SELECTs.
+
+Future Extensions
+
+Algolia/OpenSearch adapter: add lib/search/adapter.ts implementing search(q): Product[], then switch CatalogRepo.searchProducts to use it—UI remains unchanged.
+
+Ranking: split UNION into weighted results (e.g., names first), still within the repo.
+
+Caching: add SWR on client or server-side caching in repo; UI unaffected.
+
+By following this structure, we keep a clean, scalable boundary: design moves fast without risking data logic, and data/search optimizes without breaking the UI.
+
+
+
+
+
+
 # OLDER VERSION UNTIL SEPTEMBER 19, 2025
 
 
@@ -366,3 +690,5 @@ Open the browser and visit `http://<ip>:3000`.
 ### Bookshop Schema
 
 [Bookshop Schema Design](https://docs.pingcap.com/tidbcloud/dev-guide-bookshop-schema-design)
+
+
