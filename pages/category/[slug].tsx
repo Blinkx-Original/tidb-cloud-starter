@@ -7,63 +7,46 @@ import { GetServerSideProps } from 'next';
 import { query, Product } from '@/lib/db';
 import { formatPriceEUR } from '@/lib/price';
 
-type Props = {
-  slug: string;
-  name: string;
-  count: number;
-  products: Product[];
-};
+type Props = { slug: string; name: string; count: number; products: Product[] };
 
 export default function CategoryPage({ slug, name, count, products }: Props) {
   return (
     <CommonLayout>
-      <Head>
-        <title>{name} — Categoría | BlinkX</title>
-      </Head>
+      <Head><title>{name} — Categoría | BlinkX</title></Head>
 
-      <main className="mx-auto max-w-6xl px-4 bg-black text-white min-h-screen">
-        {/* Breadcrumbs */}
+      <main className="mx-auto max-w-6xl px-4">
         <div className="pt-6">
-          <Breadcrumbs
-            items={[
-              { label: 'Inicio', href: '/' },
-              { label: 'Categorías', href: '/categories' },
-              { label: name },
-            ]}
-          />
+          <Breadcrumbs items={[
+            { label: 'Inicio', href: '/' },
+            { label: 'Categorías', href: '/categories' },
+            { label: name },
+          ]}/>
         </div>
 
-        {/* Header de categoría */}
         <header className="mt-6 mb-4">
-          <h1 className="text-2xl sm:text-3xl font-bold text-white">{name}</h1>
-          <p className="mt-2 text-white">{count} producto{count === 1 ? '' : 's'}</p>
+          <h1 className="text-2xl sm:text-3xl font-bold">{name}</h1>
+          <p className="mt-2">{count} producto{count === 1 ? '' : 's'}</p>
         </header>
 
-        {/* Listado */}
         {products.length === 0 ? (
-          <div className="py-10 text-white">No hay productos en esta categoría.</div>
+          <div className="py-10">No hay productos en esta categoría.</div>
         ) : (
           <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {products.map((p) => {
               const price = formatPriceEUR(p.price_eur ?? p.price);
               return (
-                <li key={p.id} className="border border-white rounded-2xl p-4 hover:shadow-sm transition">
+                <li key={p.id} className="border border-black dark:border-white rounded-2xl p-4 hover:shadow-sm transition">
                   <Link href={`/product/${p.slug}`} className="block">
-                    <div className="aspect-[4/3] w-full bg-black rounded-xl mb-3 overflow-hidden">
+                    <div className="aspect-[4/3] w-full rounded-xl mb-3 overflow-hidden bg-white dark:bg-black">
                       {p.image_url ? (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={p.image_url}
-                          alt={p.name}
-                          className="w-full h-full object-cover"
-                          loading="lazy"
-                        />
+                        <img src={p.image_url} alt={p.name} className="w-full h-full object-cover" loading="lazy" />
                       ) : null}
                     </div>
-                    <h3 className="font-medium text-white">{p.name}</h3>
-                    <p className="mt-1 line-clamp-2 text-sm text-white">{p.description}</p>
-                    <div className="mt-2 text-sm text-white">{p.category_name ?? 'Sin categoría'}</div>
-                    {price && <div className="mt-2 font-semibold text-white">{price}</div>}
+                    <h3 className="font-medium">{p.name}</h3>
+                    <p className="mt-1 line-clamp-2 text-sm">{p.description}</p>
+                    <div className="mt-2 text-sm">{p.category_name ?? 'Sin categoría'}</div>
+                    {price && <div className="mt-2 font-semibold">{price}</div>}
                   </Link>
                 </li>
               );
@@ -106,3 +89,4 @@ export const getServerSideProps: GetServerSideProps<Props> = async ({ params }) 
 
   return { props: { slug, name, count, products } };
 };
+
