@@ -54,7 +54,7 @@ export default function ProductPage({ product }: Props) {
         {/* Card de producto */}
         <section className="py-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="border border-gray-800 rounded-2xl overflow-hidden bg-neutral-900 aspect-[4/3]">
+            <div className="border border-white rounded-2xl overflow-hidden bg-black aspect-[4/3]">
               {product.image_url ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
@@ -66,7 +66,7 @@ export default function ProductPage({ product }: Props) {
               ) : null}
             </div>
 
-            <div className="border border-gray-800 rounded-2xl p-6">
+            <div className="border border-white rounded-2xl p-6">
               <h1 className="text-2xl sm:text-3xl font-bold text-white">{product.name}</h1>
               {price && <div className="mt-3 text-xl font-semibold text-white">{price}</div>}
               <div className="mt-2 text-sm text-white">
@@ -79,14 +79,14 @@ export default function ProductPage({ product }: Props) {
                 {product.category_slug && (
                   <Link
                     href={`/category/${product.category_slug}`}
-                    className="px-4 py-2 rounded-xl border border-gray-800 hover:opacity-90"
+                    className="px-4 py-2 rounded-xl border border-white hover:opacity-90"
                   >
                     Ver más en {product.category_name}
                   </Link>
                 )}
                 <Link
                   href="/categories"
-                  className="px-4 py-2 rounded-xl border border-gray-800 hover:opacity-90"
+                  className="px-4 py-2 rounded-xl border border-white hover:opacity-90"
                 >
                   Ver categorías
                 </Link>
@@ -99,7 +99,6 @@ export default function ProductPage({ product }: Props) {
         <div className="h-24 sm:h-20" />
       </main>
 
-      {/* Sticky CTA (mismo criterio visual; botón negro ya lo maneja el componente) */}
       <StickyFooterCTA
         title={product.name}
         buttonLabel="Explorar categorías"
