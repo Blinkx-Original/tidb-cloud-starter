@@ -21,7 +21,8 @@ export default function Home({ categories, products }: Props) {
         <title>BlinkX — Catálogo</title>
       </Head>
 
-      <main className="mx-auto max-w-6xl px-4 text-white">
+      {/* Fondo negro + texto blanco en todo el main */}
+      <main className="mx-auto max-w-6xl px-4 bg-black text-white min-h-screen">
         {/* HERO */}
         <section className="py-12 sm:py-16">
           <div className="mx-auto max-w-3xl text-center">
@@ -142,4 +143,5 @@ export const getServerSideProps: GetServerSideProps<Props> = async () => {
 
   return { props: { categories, products } };
 };
+
 
