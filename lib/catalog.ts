@@ -29,3 +29,4 @@ export async function searchProducts(term: string, limit = 30): Promise<Product[
   );
 }
 
+
