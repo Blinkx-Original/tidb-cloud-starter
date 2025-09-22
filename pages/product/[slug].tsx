@@ -1,119 +1,104 @@
 // pages/product/[slug].tsx
-import * as React from 'react';
-import type { GetServerSideProps, NextPage } from 'next';
 import Head from 'next/head';
-import Image from 'next/image';
-import NextLink from 'next/link';
-import CommonLayout from 'components/v2/Layout';
-import Breadcrumbs from 'components/v2/breadcrumbs';
-import { pool } from '../../lib/db';
-import StickyFooterCTA from 'components/v2/StickyFooterCTA';
-
-type Product = {
-  id: number;
-  name: string;
-  slug: string;
-  image_url?: string | null;
-  price_eur?: number | null;
-  price?: number | null;
-  description?: string | null;
-  category_name?: string | null;
-  category_slug?: string | null;
-};
+import Link from 'next/link';
+import type { GetServerSideProps } from 'next';
+import CommonLayout from '@/components/v2';
+import Breadcrumbs from '@/components/v2/breadcrumbs';
+import { query, Product } from '@/lib/db';
+import { formatPriceEUR } from '@/lib/price';
+const StickyFooterCTA: any = require('@/components/v2/StickyFooterCTA').default;
 
 type Props = { product: Product };
 
-export const getServerSideProps: GetServerSideProps<Props> = async (ctx) => {
-  const slug = String(ctx.params?.slug || '');
-  const [rows] = await pool.query(
-    `SELECT id, name, slug, image_url, price_eur, price, description, category_name, category_slug
-     FROM products WHERE slug = ? LIMIT 1`,
-    [slug]
-  );
-  const product = (rows as any[])[0] || null;
-  if (!product) return { notFound: true };
-  return { props: { product } };
-};
-
-const fmt = (n?: number | null) => (typeof n === 'number' ? `€${n.toFixed(2)}` : '—');
-
-const ProductPage: NextPage<Props> = ({ product }) => {
-  const primaryCtaLabel = 'Request a quote';   // change per project
-  const primaryCtaHref = '/contact';           // could be an Amazon URL, etc.
-  const isExternal = /^https?:\/\//i.test(primaryCtaHref);
+export default function ProductPage({ product }: Props) {
+  const price = formatPriceEUR(product.price_eur ?? product.price);
+  const categoryUrl = product.category_slug ? `/category/${product.category_slug}` : '/categories';
 
   return (
-    <>
+    <CommonLayout>
       <Head>
         <title>{product.name} — BlinkX</title>
-        <meta name="description" content={product.description || product.name} />
       </Head>
 
-      <CommonLayout>
-        <div className="max-w-5xl mx-auto px-4 md:px-8 pt-4">
+      <main className="mx-auto max-w-6xl px-4">
+        <div className="py-4">
           <Breadcrumbs
             items={[
-              { label: 'Home', href: '/' },
-              product.category_name
-                ? { label: product.category_name, href: `/category/${product.category_slug}` }
-                : { label: 'Catalog', href: '/categories' },
-              { label: product.name },
+              { href: '/', label: 'Inicio' },
+              { href: '/categories', label: 'Categorías' },
+              product.category_slug
+                ? { href: `/category/${product.category_slug}`, label: product.category_name ?? 'Categoría' }
+                : { href: '/categories', label: 'Categorías' },
+              { href: `/product/${product.slug}`, label: product.name },
             ]}
           />
         </div>
 
-        <div className="max-w-5xl mx-auto px-4 mt-6">
-          <div className="bg-white border rounded-2xl shadow-sm p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="relative w-full aspect-[4/3] bg-gray-100 rounded-lg overflow-hidden">
-              {product.image_url ? (
-                <Image
-                  src={product.image_url}
-                  alt={product.name}
-                  fill
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                  style={{ objectFit: 'cover' }}
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-gray-400">No image</div>
-              )}
-            </div>
+        <section className="grid grid-cols-1 md:grid-cols-2 gap-6 py-4">
+          <div className="border border-neutral-200 rounded-2xl overflow-hidden bg-neutral-100 aspect-[4/3]">
+            {product.image_url ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
+            ) : null}
+          </div>
 
-            <div>
-              <h1 className="text-2xl font-bold">{product.name}</h1>
-              <div className="text-gray-600 mt-1">{product.category_name || '—'}</div>
-              <div className="text-xl font-semibold mt-2">{fmt(product.price_eur ?? product.price)}</div>
+          <div className="border border-neutral-200 rounded-2xl p-5">
+            <h1 className="text-2xl font-bold">{product.name}</h1>
 
-              <div className="mt-5 prose prose-neutral">
-                {product.description ? <p>{product.description}</p> : <p>No description available.</p>}
+            {product.category_slug && (
+              <div className="mt-2 text-sm">
+                <Link href={categoryUrl} className="underline">
+                  {product.category_name ?? 'Ver categoría'}
+                </Link>
               </div>
+            )}
 
-              <div className="mt-6">
-                {isExternal ? (
-                  <a href={primaryCtaHref} className="btn" target="_blank" rel="noopener noreferrer nofollow">
-                    {primaryCtaLabel}
-                  </a>
-                ) : (
-                  <NextLink href={primaryCtaHref} className="btn">
-                    {primaryCtaLabel}
-                  </NextLink>
-                )}
-              </div>
+            {price && <div className="mt-4 text-xl font-semibold">{price}</div>}
+
+            {product.description && (
+              <p className="mt-4 text-neutral-700 whitespace-pre-line">{product.description}</p>
+            )}
+
+            <div className="mt-6">
+              <Link
+                href={categoryUrl}
+                className="inline-flex items-center justify-center rounded-xl border border-black bg-black text-white px-4 py-2 hover:opacity-90"
+              >
+                Ver más en {product.category_name ?? 'categoría'}
+              </Link>
             </div>
           </div>
-        </div>
+        </section>
 
-        {/* Spacer so content isn't hidden behind the sticky footer */}
-        <div className="h-24 sm:h-20" aria-hidden />
+        <div className="h-24 sm:h-20" />
+      </main>
 
-        {/* Sticky footer CTA */}
-        <StickyFooterCTA
-          title={product.name}
-          buttonLabel={primaryCtaLabel}
-          href={primaryCtaHref}
-        />
-      </CommonLayout>
-    </>
+      <StickyFooterCTA
+        title={product.name}
+        buttonLabel={product.category_name ? `Más en ${product.category_name}` : 'Ver categorías'}
+        buttonHref={categoryUrl}
+      />
+    </CommonLayout>
   );
-};
+}
 
-export default ProductPage;
+export const getServerSideProps: GetServerSideProps<Props> = async (ctx) => {
+  const raw = String(ctx.params?.slug ?? '');
+  const slug = decodeURIComponent(raw);
+
+  const rows = await query<Product>(
+    `
+    SELECT id, name, slug, image_url, price_eur, price, description, category_name, category_slug
+    FROM products
+    WHERE LOWER(TRIM(slug)) = LOWER(TRIM(?))
+    LIMIT 1
+    `,
+    [slug]
+  );
+
+  if (rows.length === 0) {
+    return { notFound: true };
+  }
+
+  return { props: { product: rows[0] } };
+};
