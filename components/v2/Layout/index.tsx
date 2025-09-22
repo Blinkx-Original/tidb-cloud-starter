@@ -1,16 +1,18 @@
 // components/v2/Layout/index.tsx
 import * as React from 'react';
 import Header from './Header';
+import type { HeaderProps } from './Header';
 import Footer from '../Footer';
 
 export interface LayoutProps {
   children: React.ReactNode;
+  headerProps?: HeaderProps;
 }
 
-export default function CommonLayout({ children }: LayoutProps) {
+export default function CommonLayout({ children, headerProps }: LayoutProps) {
   return (
     <div className="min-h-screen flex flex-col bg-base-100">
-      <Header />
+      <Header {...headerProps} />
       <main className="flex-1">{children}</main>
       <Footer />
     </div>
