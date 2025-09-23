@@ -1,4 +1,6 @@
 // components/v2/Header.tsx
+'use client';
+
 import Link from 'next/link';
 import React from 'react';
 import InlineSearch from './InlineSearch';
@@ -29,9 +31,7 @@ function ThemeToggle() {
   }) => (
     <button
       onClick={() => setTheme(val)}
-      className={`text-xs px-2 py-1 rounded-full border ${
-        theme === val ? 'bg-base-200' : ''
-      }`}
+      className={`text-xs px-2 py-1 rounded-full border ${theme === val ? 'bg-base-200' : ''}`}
       aria-pressed={theme === val}
     >
       {label}
@@ -58,7 +58,10 @@ export default function Header() {
 
         {/* Centro: inline search SIEMPRE visible */}
         <div className="flex-1 min-w-0">
-          <InlineSearch className="max-w-2xl mx-auto" placeholder="Buscar en catálogo…" />
+          <InlineSearch
+            className="w-full max-w-2xl mx-auto"
+            placeholder="Buscar en catálogo…"
+          />
         </div>
 
         {/* Derecha: toggles / menú */}
@@ -75,4 +78,3 @@ export default function Header() {
     </header>
   );
 }
-
