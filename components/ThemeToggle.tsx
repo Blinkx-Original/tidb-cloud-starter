@@ -1,50 +1,50 @@
+// components/ThemeToggle.tsx
 'use client';
+import * as React from 'react';
 
-import { useEffect, useState } from 'react';
+export type ThemePref = 'light' | 'dark' | 'auto';
 
-export type Theme = 'light' | 'dark' | 'auto';
+// DaisyUI: cambia estos nombres si tu tailwind.config usa otros temas
+const LIGHT_THEME = 'winter';
+const DARK_THEME  = 'night';
 
-function systemTheme(): 'light' | 'dark' {
-  if (typeof window === 'undefined') return 'light';
-  return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
-    ? 'dark'
-    : 'light';
-}
+export function applyTheme(pref: ThemePref) {
+  const root = document.documentElement;
 
-export function applyTheme(theme: Theme) {
-  const resolved = theme === 'auto' ? systemTheme() : theme;
-  if (typeof document !== 'undefined') {
-    document.documentElement.setAttribute('data-theme', resolved);
+  const setTheme = (isDark: boolean) => {
+    root.setAttribute('data-theme', isDark ? DARK_THEME : LIGHT_THEME);
+  };
+
+  if (pref === 'auto') {
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    setTheme(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setTheme(e.matches);
+    try { mq.addEventListener('change', handler); }
+    catch { mq.addListener(handler); }
+  } else {
+    setTheme(pref === 'dark');
   }
+
+  localStorage.setItem('themePref', pref);
 }
 
 export default function ThemeToggle() {
-  const [theme, setTheme] = useState<Theme>(() => {
-    if (typeof document === 'undefined') return 'light';
-    // si ya hay data-theme, úsalo como punto de partida
-    const current = document.documentElement.getAttribute('data-theme') as 'light' | 'dark' | null;
-    return current ?? 'auto';
-  });
+  const [pref, setPref] = React.useState<ThemePref>('auto');
 
-  useEffect(() => {
-    applyTheme(theme);
-    try {
-      localStorage.setItem('themePref', theme);
-    } catch {}
-  }, [theme]);
+  React.useEffect(() => {
+    const saved = (localStorage.getItem('themePref') as ThemePref) || 'auto';
+    setPref(saved);
+    applyTheme(saved);
+  }, []);
 
-  const cycle = () =>
-    setTheme((t) => (t === 'light' ? 'dark' : t === 'dark' ? 'auto' : 'light'));
+  const set = (p: ThemePref) => () => { setPref(p); applyTheme(p); };
 
   return (
-    <button
-      type="button"
-      onClick={cycle}
-      className="btn btn-sm"
-      aria-label="Toggle theme"
-      title={`Theme: ${theme}`}
-    >
-      {theme === 'light' ? '🌙' : theme === 'dark' ? '☀️' : '🖥️'}
-    </button>
+    <div className="join rounded-2xl border border-base-content/20">
+      <button className={`btn btn-xs join-item ${pref==='light'?'btn-active':''}`} onClick={set('light')} aria-label="Tema claro">☀️</button>
+      <button className={`btn btn-xs join-item ${pref==='auto' ?'btn-active':''}`} onClick={set('auto')}  aria-label="Tema automático">A</button>
+      <button className={`btn btn-xs join-item ${pref==='dark' ?'btn-active':''}`} onClick={set('dark')}  aria-label="Tema oscuro">🌙</button>
+    </div>
   );
 }
+
