@@ -4,6 +4,7 @@ import Link from 'next/link';
 import CommonLayout from '@/components/v2';
 import Breadcrumbs from '@/components/v2/breadcrumbs';
 import StickyFooterCTA from '@/components/v2/StickyFooterCTA';
+import SearchHero from '@/components/v2/SearchHero';
 import { GetServerSideProps } from 'next';
 import { query, Product } from '@/lib/db';
 import { formatPriceEUR } from '@/lib/price';
@@ -50,6 +51,14 @@ export default function ProductPage({ product }: Props) {
             ]}
           />
         </div>
+
+        {/* Search hero debajo del header/breadcrumbs */}
+        <SearchHero
+          title="¿Buscas otra alternativa?"
+          subtitle="Empieza a escribir y te sugerimos productos al instante"
+          className="mt-4 rounded-2xl overflow-hidden"
+          autoFocus={false}
+        />
 
         {/* Card de producto */}
         <section className="py-6">
