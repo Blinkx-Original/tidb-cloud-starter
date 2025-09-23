@@ -1,158 +1,162 @@
 // components/v2/InlineSearch.tsx
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { useRouter } from 'next/router';
+import React from 'react';
+import Link from 'next/link';
 import algoliasearch from 'algoliasearch/lite';
+import {
+  InstantSearch,
+  SearchBox,
+  Hits,
+  useInstantSearch,
+  useSearchBox,
+  Highlight,
+} from 'react-instantsearch-hooks-web';
+
+type InlineSearchProps = {
+  placeholder?: string;
+  className?: string;
+  maxHits?: number;
+};
+
+/** Pequeño helper para evitar SSR-mismatch: sólo renderiza en cliente */
+function ClientOnly({ children }: { children: React.ReactNode }) {
+  const [mounted, setMounted] = React.useState(false);
+  React.useEffect(() => setMounted(true), []);
+  if (!mounted) return null;
+  return <>{children}</>;
+}
+
+function EmptyIndicator() {
+  const { results } = useInstantSearch();
+  const { query } = useSearchBox();
+
+  if (!results || !query) return null;
+  if (results.nbHits > 0) return null;
+  return (
+    <div className="px-3 py-2 text-sm opacity-70">Sin resultados para “{query}”.</div>
+  );
+}
 
 type Hit = {
   objectID: string;
   title?: string;
-  brand?: string;
+  name?: string;
+  price?: number | string;
+  price_eur?: number;
   category?: string;
-  price?: number;
+  brand?: string;
   url?: string;
+  slug?: string;
 };
 
-const APP_ID = process.env.NEXT_PUBLIC_ALGOLIA_APP_ID!;
-const SEARCH_KEY = process.env.NEXT_PUBLIC_ALGOLIA_SEARCH_KEY!;
-const INDEX_PREFIX =
-  process.env.NEXT_PUBLIC_ALGOLIA_INDEX_PREFIX || 'catalog';
-const INDEX_NAME = `${INDEX_PREFIX}__items`;
+function HitRow({ hit }: { hit: Hit }) {
+  const title = hit.title || hit.name || 'Sin título';
+  const price =
+    typeof hit.price_eur === 'number'
+      ? `€${hit.price_eur.toFixed(2)}`
+      : typeof hit.price === 'number'
+      ? `$${hit.price.toFixed(2)}`
+      : typeof hit.price === 'string'
+      ? hit.price
+      : undefined;
 
-export default function InlineSearch({
-  className = '',
-  inputClassName = '',
-  placeholder = 'Buscar productos…',
-  maxHits = 5,
-}: {
-  className?: string;
-  inputClassName?: string;
-  placeholder?: string;
-  maxHits?: number;
-}) {
-  const router = useRouter();
-  const [q, setQ] = useState('');
-  const [open, setOpen] = useState(false);
-  const [hits, setHits] = useState<Hit[]>([]);
-  const wrapRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  const client = useMemo(() => algoliasearch(APP_ID, SEARCH_KEY), []);
-  const index = useMemo(() => client.initIndex(INDEX_NAME), [client]);
-
-  // Buscar a medida que escribe (debounce simple)
-  useEffect(() => {
-    let active = true;
-    const t = setTimeout(async () => {
-      if (!q.trim()) {
-        if (active) setHits([]);
-        return;
-      }
-      try {
-        const res = await index.search<Hit>(q, { hitsPerPage: maxHits });
-        if (active) setHits(res.hits || []);
-      } catch {
-        if (active) setHits([]);
-      }
-    }, 140);
-    return () => {
-      active = false;
-      clearTimeout(t);
-    };
-  }, [q, index, maxHits]);
-
-  // Cerrar si se hace click fuera
-  useEffect(() => {
-    const onDoc = (e: MouseEvent) => {
-      if (!wrapRef.current) return;
-      if (!wrapRef.current.contains(e.target as Node)) setOpen(false);
-    };
-    document.addEventListener('mousedown', onDoc);
-    return () => document.removeEventListener('mousedown', onDoc);
-  }, []);
-
-  const submitToSearchPage = (value?: string) => {
-    const term = (value ?? q).trim();
-    if (!term) return;
-    setOpen(false);
-    router.push(`/search?q=${encodeURIComponent(term)}`);
-  };
+  const href = hit.url || (hit.slug ? `/product/${hit.slug}` : '#');
 
   return (
-    <div ref={wrapRef} className={`relative ${className}`}>
-      <div className="flex items-center rounded-full bg-base-200 px-4 h-10 w-full">
-        <span className="mr-2 opacity-60">🔎</span>
-        <input
-          ref={inputRef}
-          type="search"
-          value={q}
-          onChange={(e) => {
-            setQ(e.target.value);
-            setOpen(true);
-          }}
-          onFocus={() => q && setOpen(true)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') submitToSearchPage();
-            if (e.key === 'Escape') setOpen(false);
-          }}
-          placeholder={placeholder}
-          className={`flex-1 bg-transparent outline-none ${inputClassName}`}
-          aria-label="Search"
-        />
-        <button
-          className="ml-3 text-sm btn btn-sm btn-neutral rounded-full"
-          onClick={() => submitToSearchPage()}
-        >
-          Buscar
-        </button>
-      </div>
-
-      {/* Dropdown */}
-      {open && (q || hits.length > 0) && (
-        <div className="absolute left-0 right-0 mt-2 z-50 rounded-2xl border border-base-300 bg-base-100 shadow-lg">
-          {hits.length === 0 ? (
-            <div className="px-4 py-3 text-sm opacity-70">
-              Sin resultados
-            </div>
-          ) : (
-            <ul className="py-1">
-              {hits.map((h) => {
-                const url =
-                  h.url ||
-                  (h.title ? `/search?q=${encodeURIComponent(h.title)}` : '#');
-                return (
-                  <li key={h.objectID}>
-                    <a
-                      href={url}
-                      className="flex items-center justify-between px-4 py-2 hover:bg-base-200"
-                      onClick={() => setOpen(false)}
-                    >
-                      <div className="min-w-0">
-                        <div className="truncate font-medium">
-                          {h.title || 'Sin título'}
-                        </div>
-                        <div className="text-xs opacity-70 truncate">
-                          {h.brand ? `${h.brand} • ` : ''}
-                          {h.category || ''}
-                        </div>
-                      </div>
-                      {typeof h.price === 'number' && (
-                        <div className="ml-4 whitespace-nowrap text-sm">
-                          ${h.price}
-                        </div>
-                      )}
-                    </a>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-
-          <div className="px-4 py-2 border-t border-base-200 text-xs flex items-center justify-between">
-            <span>Presiona Enter para buscar</span>
-            <span className="opacity-70">{hits.length} resultado(s)</span>
-          </div>
+    <Link
+      href={href}
+      className="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-base-200 transition"
+    >
+      <div className="min-w-0">
+        <div className="font-medium truncate">
+          <Highlight attribute="title" hit={hit as any} />
         </div>
-      )}
-    </div>
+        <div className="text-xs opacity-70 truncate">
+          {hit.brand ? `${hit.brand} • ` : ''}
+          {hit.category || '–'}
+        </div>
+      </div>
+      {price ? <div className="ml-3 text-sm font-semibold shrink-0">{price}</div> : null}
+    </Link>
+  );
+}
+
+export default function InlineSearch({
+  placeholder = 'Buscar…',
+  className = '',
+  maxHits = 5,
+}: InlineSearchProps) {
+  const appId = process.env.NEXT_PUBLIC_ALGOLIA_APP_ID!;
+  const searchKey = process.env.NEXT_PUBLIC_ALGOLIA_SEARCH_KEY!;
+  const prefix =
+    process.env.NEXT_PUBLIC_ALGOLIA_INDEX_PREFIX || 'catalog';
+  const indexName = `${prefix}__items`;
+
+  // Cliente de búsqueda (sólo en cliente; el ClientOnly evita SSR)
+  const searchClient = React.useMemo(
+    () => algoliasearch(appId, searchKey),
+    [appId, searchKey]
+  );
+
+  // controlamos abrir/cerrar el panel
+  const [open, setOpen] = React.useState(false);
+  const panelRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    function onDocClick(e: MouseEvent) {
+      if (!panelRef.current) return;
+      if (!(e.target instanceof Node)) return;
+      if (!panelRef.current.contains(e.target)) setOpen(false);
+    }
+    document.addEventListener('click', onDocClick);
+    return () => document.removeEventListener('click', onDocClick);
+  }, []);
+
+  return (
+    <ClientOnly>
+      <InstantSearch searchClient={searchClient} indexName={indexName}>
+        <div className={`relative w-full ${className}`} ref={panelRef}>
+          <SearchBox
+            placeholder={placeholder}
+            classNames={{
+              root: 'w-full',
+              input:
+                'w-full h-10 pl-9 pr-3 rounded-full border border-base-300 bg-base-100 focus:outline-none',
+              submitIcon: 'hidden',
+              resetIcon: 'hidden',
+              loadingIcon: 'hidden',
+            }}
+            onFocus={() => setOpen(true)}
+            queryHook={(q, setQuery) => {
+              setOpen(true);
+              setQuery(q);
+            }}
+          />
+
+          {/* Panel de resultados */}
+          {open && (
+            <div
+              className="absolute left-0 right-0 mt-2 rounded-2xl border border-base-300 bg-base-100 shadow-xl z-50"
+              role="listbox"
+            >
+              <div className="max-h-80 overflow-auto py-2">
+                <Hits
+                  hitComponent={HitRow as any}
+                  classNames={{
+                    list: 'flex flex-col gap-1',
+                    item: 'px-2',
+                  }}
+                  transformItems={(items) => items.slice(0, maxHits)}
+                />
+                <EmptyIndicator />
+              </div>
+              <div className="px-3 py-2 text-xs opacity-70 border-t border-base-200">
+                Pulsa <kbd className="px-1 rounded border">Enter</kbd> para abrir el primer
+                resultado
+              </div>
+            </div>
+          )}
+        </div>
+      </InstantSearch>
+    </ClientOnly>
   );
 }
