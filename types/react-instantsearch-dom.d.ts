@@ -9,5 +9,11 @@ declare module 'react-instantsearch-dom' {
   export const Configure: any;
   export const Stats: any;
   export const Index: any;
+
+  // 👉 añadidos para tu código:
+  export const SortBy: any;
+  export const InfiniteHits: any;
+
+  // Conector que a veces usan los ejemplos
   export function connectStateResults<TProps = any>(...args: any[]): any;
 }
