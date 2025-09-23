@@ -3,6 +3,7 @@ import Head from 'next/head';
 import Link from 'next/link';
 import CommonLayout from '@/components/v2';
 import Breadcrumbs from '@/components/v2/breadcrumbs';
+import SearchHero from '@/components/v2/SearchHero';
 import { GetServerSideProps } from 'next';
 import { query, Product } from '@/lib/db';
 import { formatPriceEUR } from '@/lib/price';
@@ -15,19 +16,34 @@ export default function CategoryPage({ slug, name, count, products }: Props) {
       <Head><title>{name} — Categoría | BlinkX</title></Head>
 
       <main className="mx-auto max-w-6xl px-4">
+        {/* Breadcrumbs */}
         <div className="pt-6">
-          <Breadcrumbs items={[
-            { label: 'Inicio', href: '/' },
-            { label: 'Categorías', href: '/categories' },
-            { label: name },
-          ]}/>
+          <Breadcrumbs
+            items={[
+              { label: 'Inicio', href: '/' },
+              { label: 'Categorías', href: '/categories' },
+              { label: name },
+            ]}
+          />
         </div>
 
+        {/* Search hero debajo del header/breadcrumbs */}
+        <SearchHero
+          title="Busca en todo el catálogo"
+          subtitle={`Estás en “${name}”. Empieza a escribir y te sugerimos productos al instante.`}
+          className="mt-4 rounded-2xl overflow-hidden"
+          autoFocus={false}
+        />
+
+        {/* Título y conteo */}
         <header className="mt-6 mb-4">
           <h1 className="text-2xl sm:text-3xl font-bold">{name}</h1>
-          <p className="mt-2">{count} producto{count === 1 ? '' : 's'}</p>
+          <p className="mt-2">
+            {count} producto{count === 1 ? '' : 's'}
+          </p>
         </header>
 
+        {/* Grid de productos */}
         {products.length === 0 ? (
           <div className="py-10">No hay productos en esta categoría.</div>
         ) : (
@@ -35,12 +51,20 @@ export default function CategoryPage({ slug, name, count, products }: Props) {
             {products.map((p) => {
               const price = formatPriceEUR(p.price_eur ?? p.price);
               return (
-                <li key={p.id} className="border border-black dark:border-white rounded-2xl p-4 hover:shadow-sm transition">
+                <li
+                  key={p.id}
+                  className="border border-black dark:border-white rounded-2xl p-4 hover:shadow-sm transition"
+                >
                   <Link href={`/product/${p.slug}`} className="block">
                     <div className="aspect-[4/3] w-full rounded-xl mb-3 overflow-hidden bg-white dark:bg-black">
                       {p.image_url ? (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img src={p.image_url} alt={p.name} className="w-full h-full object-cover" loading="lazy" />
+                        <img
+                          src={p.image_url}
+                          alt={p.name}
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                        />
                       ) : null}
                     </div>
                     <h3 className="font-medium">{p.name}</h3>
@@ -89,4 +113,3 @@ export const getServerSideProps: GetServerSideProps<Props> = async ({ params }) 
 
   return { props: { slug, name, count, products } };
 };
-
