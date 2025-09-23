@@ -1,6 +1,12 @@
 // Reindexa tu BD (o payload POST) en Algolia. Protegido por ?secret=...
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { adminClient, getAdminIndexName } from '@/lib/algoliaAdmin';
+import {
+  adminClient,        // instancia del cliente (ya creada)
+  itemsIndexName,     // string: catalog__items
+  itemsIndex,         // instancia del índice principal
+  itemsIndexAsc,      // instancia replica asc
+  itemsIndexDesc,     // instancia replica desc
+} from '@/lib/algoliaAdmin';
 
 // ----------------- Helpers -----------------
 function fallbackId() {
@@ -56,7 +62,6 @@ async function loadFromPrisma(): Promise<any[]> {
 
 // ----------------- Handler -----------------
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  // seguridad por query ?secret=...
   if (req.query.secret !== process.env.ALGOLIA_WEBHOOK_SECRET) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
@@ -82,12 +87,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
-    const client = adminClient();
-    const indexName = getAdminIndexName('items');
-    const index = client.initIndex(indexName);
-
     // Settings idempotentes
-    await index.setSettings({
+    await itemsIndex.setSettings({
       searchableAttributes: ['title', 'unordered(description)', 'brand', 'category', 'tags'],
       attributesForFaceting: ['searchable(category)', 'searchable(brand)', 'searchable(tags)'],
       queryType: 'prefixAll',
@@ -95,18 +96,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       removeStopWords: true,
       typoTolerance: 'min',
       customRanking: ['desc(rating)', 'asc(price)'],
-      replicas: [`${indexName}_price_asc`, `${indexName}_price_desc`],
+      replicas: [`${itemsIndexName}_price_asc`, `${itemsIndexName}_price_desc`],
     });
 
-    await client.initIndex(`${indexName}_price_asc`).setSettings({
+    await itemsIndexAsc.setSettings({
       ranking: ['asc(price)', 'typo', 'geo', 'words', 'filters', 'proximity', 'attribute', 'exact', 'custom'],
     });
-    await client.initIndex(`${indexName}_price_desc`).setSettings({
+    await itemsIndexDesc.setSettings({
       ranking: ['desc(price)', 'typo', 'geo', 'words', 'filters', 'proximity', 'attribute', 'exact', 'custom'],
     });
 
     const objects = records.map(mapToAlgolia);
-    const r = await index.saveObjects(objects, { autoGenerateObjectIDIfNotExist: true });
+
+    // Guarda en el índice principal
+    const r = await itemsIndex.saveObjects(objects, { autoGenerateObjectIDIfNotExist: true });
 
     return res.status(200).json({ ok: true, indexed: objects.length, taskIDs: r.taskIDs });
   } catch (err: any) {
