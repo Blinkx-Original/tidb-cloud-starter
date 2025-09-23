@@ -10,7 +10,7 @@ import {
   InfiniteHits,
   Configure,
   Stats
-} from 'react-instantsearch';
+} from 'react-instantsearch-dom';
 import { history } from 'instantsearch.js/es/lib/routers';
 import HitCard from '@/components/HitCard';
 import { searchClient, getIndexName } from '@/lib/algoliaSearchClient';
