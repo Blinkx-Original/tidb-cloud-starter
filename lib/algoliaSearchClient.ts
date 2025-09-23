@@ -10,3 +10,4 @@ const prefix = process.env.NEXT_PUBLIC_ALGOLIA_INDEX_PREFIX || 'catalog';
 export const getIndexName = (name = 'items') => explicitIndex || `${prefix}__${name}`;
 
 export const searchClient: SearchClient = algoliasearch(appId, searchKey);
+
