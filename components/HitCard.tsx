@@ -2,7 +2,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Highlight } from 'react-instantsearch';
+import { Highlight } from 'react-instantsearch-dom';
 
 export default function HitCard({ hit }: { hit: any }) {
   return (
