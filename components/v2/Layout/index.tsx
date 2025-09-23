@@ -1,7 +1,7 @@
 // components/v2/Layout/index.tsx
 import * as React from 'react';
 import Header from './Header';
-type HeaderProps = React.ComponentProps<typeof Header>;
+type HeaderProps = Record<string, unknown>;
 import Footer from '../Footer';
 
 export interface LayoutProps {
