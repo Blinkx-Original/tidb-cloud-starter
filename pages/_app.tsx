@@ -1,18 +1,19 @@
 // pages/_app.tsx
+/* eslint-disable @next/next/no-before-interactive-script-outside-document */
 import type { AppProps } from 'next/app';
 import Head from 'next/head';
 import Script from 'next/script';
+import { RecoilRoot } from 'recoil';
 import '@/styles/globals.css';
 
-// Ajusta estos nombres si tus temas DaisyUI tienen otros ids
-// (por ejemplo "light" / "dark" o "lofi" / "black")
+// Ajusta estos nombres a tus temas DaisyUI
 const LIGHT_THEME = 'winter';
-const DARK_THEME  = 'night';
+const DARK_THEME = 'night';
 
 export default function MyApp({ Component, pageProps }: AppProps) {
   return (
     <>
-      {/* Inicializa el tema ANTES de hidratar para evitar el flash claro/oscuro */}
+      {/* Forzamos el tema antes de hidratar para evitar el flash claro/oscuro */}
       <Script id="theme-init" strategy="beforeInteractive">{`
         (function () {
           try {
@@ -29,8 +30,12 @@ export default function MyApp({ Component, pageProps }: AppProps) {
         <title>BlinkX</title>
       </Head>
 
-      <Component {...pageProps} />
+      {/* FIX: Proveer contexto de Recoil a toda la app */}
+      <RecoilRoot>
+        <Component {...pageProps} />
+      </RecoilRoot>
     </>
   );
 }
+
 
