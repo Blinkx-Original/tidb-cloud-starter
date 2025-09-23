@@ -12,7 +12,7 @@ The Catalog is the **core of SEO Armageddon**.
 - Every **Product** represents an opportunity to monetize:  
   - Affiliate item (Amazon, Capterra, SaaS tools, etc.)  
   - Lead Management offer (ice machines, forklifts for rent, etc.)  
-  - Dropshipping item (real supplier inventory).  
+  - Dropshipping item (this is real supplier inventory).  
 - Products are always grouped into **Categories**.  
 - Each Product automatically generates:  
   1. A **Card** (square on the homepage or category page).  
