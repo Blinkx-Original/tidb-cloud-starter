@@ -2,6 +2,7 @@
 import { GetStaticPaths, GetStaticProps } from 'next';
 import Head from 'next/head';
 import CommonLayout from '@/components/v2/Layout';
+import SearchHero from '@/components/v2/SearchHero';
 import { getAllPostSlugs, getPostData } from '@/lib/posts';
 import StickyFooterCTA from '@/components/v2/StickyFooterCTA';
 import { UI } from '@/lib/uiConfig';
@@ -33,6 +34,14 @@ export default function PostPage({
         <title>{title} — BlinkX Blog</title>
         {excerpt && <meta name="description" content={excerpt} />}
       </Head>
+
+      {/* Hero de búsqueda (igual comportamiento que en Home/Category/Product) */}
+      <SearchHero
+        title="Busca en todo el catálogo"
+        subtitle="Empieza a escribir y verás sugerencias instantáneas."
+        className="mx-auto max-w-6xl px-4 mt-4"
+        autoFocus={false}
+      />
 
       <article className="max-w-3xl mx-auto p-4">
         {/* Título grande + truncado a 2 líneas */}
@@ -103,4 +112,3 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
     },
   };
 };
-
