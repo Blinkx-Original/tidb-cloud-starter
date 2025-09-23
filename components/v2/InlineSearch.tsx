@@ -1,144 +1,206 @@
-'use client';
-
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { useRouter } from 'next/router';
+// components/v2/InlineSearch.tsx
+import * as React from 'react';
 import algoliasearch from 'algoliasearch/lite';
-import {
-  InstantSearch,
-  useSearchBox,
-  useHits,
-  Highlight,
-  Configure,
-} from 'react-instantsearch-dom';
+import Link from 'next/link';
+import { useRouter } from 'next/router';
 
-type InlineSearchProps = {
+type Props = {
   placeholder?: string;
-  minChars?: number;
-  maxSuggestions?: number;
   className?: string;
+  hitsPerPage?: number;
+};
+
+type Hit = {
+  objectID: string;
+  title?: string;
+  description?: string;
+  url?: string;
+  category?: string;
+  brand?: string;
+  price?: number;
+  // añade aquí los campos que uses en Algolia
 };
 
 const appId = process.env.NEXT_PUBLIC_ALGOLIA_APP_ID!;
-const apiKey = process.env.NEXT_PUBLIC_ALGOLIA_SEARCH_KEY!;
-const indexName =
-  process.env.NEXT_PUBLIC_ALGOLIA_INDEX_NAME ||
-  `${process.env.NEXT_PUBLIC_ALGOLIA_INDEX_PREFIX || 'catalog'}__items`;
+const searchKey = process.env.NEXT_PUBLIC_ALGOLIA_SEARCH_KEY!;
+const prefix =
+  process.env.NEXT_PUBLIC_ALGOLIA_INDEX_PREFIX || 'catalog';
+const indexName = `${prefix}__items`;
 
-const searchClient = algoliasearch(appId, apiKey);
+const searchClient = algoliasearch(appId, searchKey);
+const index = searchClient.initIndex(indexName);
 
 export default function InlineSearch({
-  placeholder = 'Search…',
-  minChars = 2,
-  maxSuggestions = 6,
+  placeholder = 'Buscar…',
   className = '',
-}: InlineSearchProps) {
-  // Envolver toda la UI en InstantSearch
-  return (
-    <InstantSearch searchClient={searchClient} indexName={indexName}>
-      <Configure hitsPerPage={maxSuggestions} />
-      <InlineSearchInner
-        placeholder={placeholder}
-        minChars={minChars}
-        maxSuggestions={maxSuggestions}
-        className={className}
-      />
-    </InstantSearch>
-  );
-}
-
-function InlineSearchInner({
-  placeholder,
-  minChars,
-  maxSuggestions,
-  className,
-}: InlineSearchProps) {
+  hitsPerPage = 5,
+}: Props) {
   const router = useRouter();
-  const { query, refine } = useSearchBox();
-  const { hits } = useHits<any>();
-  const [open, setOpen] = useState(false);
-  const wrapRef = useRef<HTMLDivElement>(null);
 
-  // abrir/cerrar panel segun query
-  useEffect(() => {
-    setOpen((query || '').trim().length >= minChars);
-  }, [query, minChars]);
+  const [q, setQ] = React.useState('');
+  const [open, setOpen] = React.useState(false);
+  const [loading, setLoading] = React.useState(false);
+  const [hits, setHits] = React.useState<Hit[]>([]);
+  const [active, setActive] = React.useState(0);
 
-  // cerrar al click fuera
-  useEffect(() => {
-    function onDocClick(e: MouseEvent) {
-      if (!wrapRef.current) return;
-      if (!wrapRef.current.contains(e.target as Node)) setOpen(false);
+  const containerRef = React.useRef<HTMLDivElement>(null);
+  const inputRef = React.useRef<HTMLInputElement>(null);
+
+  // Cierra al hacer click fuera
+  React.useEffect(() => {
+    function onClick(e: MouseEvent) {
+      if (!containerRef.current) return;
+      if (!containerRef.current.contains(e.target as Node)) {
+        setOpen(false);
+        setActive(0);
+      }
     }
-    document.addEventListener('mousedown', onDocClick);
-    return () => document.removeEventListener('mousedown', onDocClick);
+    document.addEventListener('mousedown', onClick);
+    return () => document.removeEventListener('mousedown', onClick);
   }, []);
 
-  const visibleHits = useMemo(() => hits.slice(0, maxSuggestions), [hits, maxSuggestions]);
+  // Búsqueda con debounce (250ms)
+  React.useEffect(() => {
+    if (!q) {
+      setHits([]);
+      setOpen(false);
+      return;
+    }
+    let cancelled = false;
+    const t = setTimeout(async () => {
+      try {
+        setLoading(true);
+        const res = await index.search<Hit>(q, {
+          hitsPerPage,
+        });
+        if (!cancelled) {
+          setHits(res.hits || []);
+          setOpen(true);
+          setActive(0);
+        }
+      } catch {
+        if (!cancelled) setHits([]);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }, 250);
+    return () => {
+      cancelled = true;
+      clearTimeout(t);
+    };
+  }, [q, hitsPerPage]);
 
-  const onSubmit: React.FormEventHandler<HTMLFormElement> = (e) => {
-    e.preventDefault();
-    const q = (query || '').trim();
-    if (!q) return;
+  // Teclado: ↑ ↓ Enter Esc
+  function onKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (!open) return;
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setActive((a) => Math.min(a + 1, hits.length - 1));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setActive((a) => Math.max(a - 1, 0));
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (hits[active]) {
+        goTo(hits[active]);
+      } else {
+        router.push(`/search?q=${encodeURIComponent(q)}`);
+      }
+    } else if (e.key === 'Escape') {
+      setOpen(false);
+    }
+  }
+
+  function goTo(hit: Hit) {
+    const href = hit.url || `/search?q=${encodeURIComponent(q)}`;
+    router.push(href);
     setOpen(false);
-    router.push(`/search?q=${encodeURIComponent(q)}`);
-  };
+  }
 
   return (
-    <div ref={wrapRef} className={`relative ${className}`}>
-      <form onSubmit={onSubmit} className="flex items-center gap-2">
+    <div ref={containerRef} className={`relative ${className}`}>
+      <div className="flex items-center gap-2 rounded-full border border-base-300 px-3 h-10 bg-base-100">
+        <span className="i bi-search opacity-60" aria-hidden />
         <input
-          type="search"
-          value={query}
-          onChange={(e) => refine(e.target.value)}
+          ref={inputRef}
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          onFocus={() => q && setOpen(true)}
+          onKeyDown={onKeyDown}
           placeholder={placeholder}
-          className="input input-bordered w-72 md:w-[28rem]"
-          autoComplete="off"
+          className="w-full bg-transparent outline-none"
+          aria-label="Buscar productos"
         />
-        <button type="submit" className="btn btn-primary btn-sm">Search</button>
-      </form>
+        {q && (
+          <button
+            onClick={() => {
+              setQ('');
+              setHits([]);
+              setOpen(false);
+              inputRef.current?.focus();
+            }}
+            className="text-xs opacity-60 hover:opacity-100"
+            aria-label="Limpiar búsqueda"
+          >
+            ✕
+          </button>
+        )}
+      </div>
 
-      {open && visibleHits.length > 0 && (
-        <div className="absolute z-50 mt-2 w-full rounded-xl border border-base-300 bg-base-100 shadow-xl">
-          <ul className="menu p-2">
-            {visibleHits.map((hit: any) => (
-              <li key={hit.objectID}>
-                <button
-                  className="justify-start text-left"
-                  onClick={() => {
-                    setOpen(false);
-                    // Cambia esta navegación si tu ruta de producto es distinta
-                    const slug = hit.slug || hit.objectID;
-                    if (slug) router.push(`/product/${slug}`);
-                    else router.push(`/search?q=${encodeURIComponent(hit.name || query)}`);
-                  }}
-                >
-                  <div className="flex flex-col">
-                    <span className="font-medium">
-                      <Highlight attribute="name" hit={hit} />
-                    </span>
-                    {hit.category_name && (
-                      <span className="text-xs opacity-70">{hit.category_name}</span>
-                    )}
-                    {hit.description && (
-                      <span className="text-xs line-clamp-1 opacity-70">
-                        <Highlight attribute="description" hit={hit} />
-                      </span>
-                    )}
+      {/* Dropdown */}
+      {open && (
+        <div className="absolute z-50 mt-2 w-full rounded-2xl border border-base-300 bg-base-100 shadow-xl overflow-hidden">
+          {loading && (
+            <div className="px-4 py-3 text-sm opacity-70">Buscando…</div>
+          )}
+
+          {!loading && hits.length === 0 && (
+            <div className="px-4 py-3 text-sm opacity-70">
+              Sin resultados. Pulsa Enter para abrir búsqueda completa.
+            </div>
+          )}
+
+          <ul role="listbox" aria-label="Sugerencias">
+            {hits.map((hit, i) => (
+              <li
+                key={hit.objectID}
+                role="option"
+                aria-selected={i === active}
+                onMouseEnter={() => setActive(i)}
+                onMouseDown={(e) => e.preventDefault()} // evita blur
+                onClick={() => goTo(hit)}
+                className={`cursor-pointer px-4 py-3 border-b last:border-none border-base-200 ${
+                  i === active ? 'bg-base-200/60' : ''
+                }`}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="font-medium truncate">
+                      {hit.title || 'Sin título'}
+                    </div>
+                    <div className="text-xs opacity-70 truncate">
+                      {hit.brand} {hit.brand && '•'} {hit.category}
+                    </div>
                   </div>
-                </button>
+                  {typeof hit.price === 'number' && (
+                    <div className="text-sm font-semibold whitespace-nowrap">
+                      €{hit.price.toFixed(2)}
+                    </div>
+                  )}
+                </div>
               </li>
             ))}
           </ul>
-          <div className="border-t border-base-200 p-2 text-right">
-            <button
-              className="link link-primary text-sm"
-              onClick={() => {
-                setOpen(false);
-                router.push(`/search?q=${encodeURIComponent(query || '')}`);
-              }}
+
+          <div className="px-4 py-2 text-xs opacity-70 flex items-center justify-between">
+            <span>Pulsa Enter para abrir el primer resultado</span>
+            <Link
+              href={`/search?q=${encodeURIComponent(q)}`}
+              className="underline"
+              onClick={() => setOpen(false)}
             >
-              Ver más resultados →
-            </button>
+              Ver todos
+            </Link>
           </div>
         </div>
       )}
