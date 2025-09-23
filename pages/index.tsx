@@ -2,7 +2,8 @@
 import Head from 'next/head';
 import Link from 'next/link';
 import CommonLayout from '@/components/v2';
-import SearchPill from '@/components/v2/SearchPill';
+// import SearchPill from '@/components/v2/SearchPill'; // ⬅️ ya no lo usamos aquí
+import SearchInline from '@/components/SearchInline'; // ⬅️ autocomplete Algolia
 import { GetServerSideProps } from 'next';
 import { query, Product } from '@/lib/db';
 import { formatPriceEUR } from '@/lib/price';
@@ -24,7 +25,13 @@ export default function Home({ categories, products }: Props) {
           </div>
 
           <div className="mt-6 flex justify-center">
-            <SearchPill size="lg" placeholder="Buscar por nombre, categoría o descripción..." autoFocus />
+            {/* Autocomplete inline (Algolia) */}
+            <div className="w-full max-w-2xl">
+              <SearchInline
+                className="w-full"
+                placeholder="Buscar por nombre, categoría o descripción…"
+              />
+            </div>
           </div>
 
           <div className="mt-4 text-center text-sm">
@@ -113,6 +120,4 @@ export const getServerSideProps: GetServerSideProps<Props> = async () => {
 
   return { props: { categories, products } };
 };
-
-
 
