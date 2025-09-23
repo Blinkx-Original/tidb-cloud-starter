@@ -16,7 +16,7 @@ import HitCard from '@/components/HitCard';
 import { searchClient, getIndexName } from '@/lib/algoliaSearchClient';
 
 export default function SearchResults({ initialQuery = '' }: { initialQuery?: string }) {
-  const indexName = getIndexName('items');
+  const indexName = getIndexName('items'); // busca en "<PREFIX>__items" (p.ej. catalog__items)
 
   return (
     <InstantSearch
@@ -26,11 +26,11 @@ export default function SearchResults({ initialQuery = '' }: { initialQuery?: st
         router: history(),
         stateMapping: {
           stateToRoute(uiState: any) {
-            const indexUi = uiState[indexName] || {};
+            const s = uiState[indexName] || {};
             return {
-              q: indexUi.query,
-              page: indexUi.page,
-              categories: indexUi.refinementList?.category
+              q: s.query,
+              page: s.page,
+              categories: s.refinementList?.category
             };
           },
           routeToState(routeState: any) {
@@ -44,14 +44,17 @@ export default function SearchResults({ initialQuery = '' }: { initialQuery?: st
           }
         }
       }}
-      insights={true}
+      insights
     >
+      {/* === CAMBIO #2: comportamiento de búsqueda tipo “fuzzy” y prefijos === */}
       <Configure
         hitsPerPage={24}
-        removeStopWords={true}
+        queryType="prefixAll"
+        removeStopWords
+        ignorePlurals
         typoTolerance="min"
-        analytics={true}
-        clickAnalytics={true}
+        analytics
+        clickAnalytics
         query={initialQuery}
       />
 
@@ -61,15 +64,15 @@ export default function SearchResults({ initialQuery = '' }: { initialQuery?: st
           <SearchBox placeholder="Search catalog…" />
           <div className="facet">
             <h4>Category</h4>
-            <RefinementList attribute="category" searchable={true} searchablePlaceholder="Filter categories…" />
+            <RefinementList attribute="category" searchable searchablePlaceholder="Filter categories…" />
           </div>
           <div className="facet">
             <h4>Tags</h4>
-            <RefinementList attribute="tags" searchable={true} />
+            <RefinementList attribute="tags" searchable />
           </div>
           <div className="facet">
             <h4>Brand</h4>
-            <RefinementList attribute="brand" searchable={true} />
+            <RefinementList attribute="brand" searchable />
           </div>
         </aside>
 
@@ -94,9 +97,17 @@ export default function SearchResults({ initialQuery = '' }: { initialQuery?: st
         .facets { position: sticky; top: 76px; align-self: start; display: flex; flex-direction: column; gap: 16px; }
         .facet h4 { margin: 8px 0; }
         .results .toolbar { display: flex; justify-content: flex-end; margin-bottom: 12px; }
-        @media (max-width: 1024px) { .grid { grid-template-columns: 1fr; } .facets { position: static; } }
+
+        /* === CAMBIO #3: quitar bullets feos de la paginación === */
+        :global(.ais-Pagination-list){ list-style: none; display: flex; gap: 8px; padding: 0; margin: 8px 0; }
+        :global(.ais-Pagination-item){ list-style: none; }
+        :global(.ais-Pagination-link){ text-decoration: none; }
+
+        @media (max-width: 1024px) {
+          .grid { grid-template-columns: 1fr; }
+          .facets { position: static; }
+        }
       `}</style>
     </InstantSearch>
   );
 }
-
