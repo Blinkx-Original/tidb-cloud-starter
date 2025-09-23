@@ -1,26 +1,27 @@
-// Reindexa tu BD en Algolia (protección por ?secret=...)
-// No rompe el build aunque cambie tu esquema Prisma.
-// Si no usas Prisma, podés enviar los objetos por POST.
-
+// Reindexa tu BD (o payload POST) en Algolia. Protegido por ?secret=...
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { adminClient, getAdminIndexName } from '@/lib/algoliaAdmin';
 
-// --- Helpers ---------------------------------------------------------------
+// ----------------- Helpers -----------------
+function fallbackId() {
+  return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+}
 
 function mapToAlgolia(o: any) {
-  const id = o.id ?? o.objectID ?? o.slug ?? crypto.randomUUID?.() ?? String(Date.now());
-  const title = o.title ?? o.name ?? o.productName ?? '';
-  const description = o.description ?? o.summary ?? '';
-  const brand = o.brand ?? '';
-  const category = o.category?.name ?? o.category ?? '';
-  const tags = Array.isArray(o.tags)
-    ? o.tags
-    : o.tags
-    ? String(o.tags).split(',').map((s: string) => s.trim())
-    : [];
-  const price = Number(o.price ?? o.amount ?? 0);
-  const rating = Number(o.rating ?? o.stars ?? 0);
-  const slug = o.slug ?? id;
+  const id = o?.id ?? o?.objectID ?? o?.slug ?? fallbackId();
+  const title = o?.title ?? o?.name ?? o?.productName ?? '';
+  const description = o?.description ?? o?.summary ?? '';
+  const brand = o?.brand ?? '';
+  const category = o?.category?.name ?? o?.category ?? '';
+  const tags =
+    Array.isArray(o?.tags)
+      ? o.tags
+      : o?.tags
+      ? String(o.tags).split(',').map((s: string) => s.trim())
+      : [];
+  const price = Number(o?.price ?? o?.amount ?? 0);
+  const rating = Number(o?.rating ?? o?.stars ?? 0);
+  const slug = o?.slug ?? id;
 
   return {
     objectID: String(id),
@@ -31,20 +32,17 @@ function mapToAlgolia(o: any) {
     tags,
     price,
     rating,
-    url: o.url ?? `/product/${slug}`,
+    url: o?.url ?? `/product/${slug}`,
   };
 }
 
 async function loadFromPrisma(): Promise<any[]> {
   try {
-    // Import dinámico para no fallar en build si no hay Prisma
     const { PrismaClient } = await import('@prisma/client');
     const prisma: any = new (PrismaClient as any)();
 
-    // Modelo configurable por ENV (por defecto 'product')
     const accessor = (process.env.ALGOLIA_PRISMA_MODEL || 'product').toString();
 
-    // include básico; si no existe 'category', Prisma ignorará la clave
     const rows: any[] = await prisma[accessor]?.findMany?.({
       include: { category: true },
     });
@@ -56,10 +54,9 @@ async function loadFromPrisma(): Promise<any[]> {
   }
 }
 
-// --- Handler ---------------------------------------------------------------
-
+// ----------------- Handler -----------------
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  // seguridad
+  // seguridad por query ?secret=...
   if (req.query.secret !== process.env.ALGOLIA_WEBHOOK_SECRET) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
@@ -68,13 +65,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     let records: any[] = [];
 
     if (req.method === 'POST') {
-      // Permite subir datos directamente si no querés/tenés Prisma
       if (!Array.isArray(req.body)) {
         return res.status(400).json({ error: 'POST body must be an array of objects' });
       }
       records = req.body;
     } else {
-      // GET → intenta cargar desde Prisma
+      // GET → intenta leer desde Prisma
       records = await loadFromPrisma();
     }
 
@@ -82,7 +78,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(200).json({
         ok: false,
         message:
-          'No se obtuvieron registros. Enviá un POST con un array de objetos o configurá ALGOLIA_PRISMA_MODEL para leer desde Prisma.',
+          'Sin registros. Enviá un POST con array de objetos o define ALGOLIA_PRISMA_MODEL para leer desde Prisma.',
       });
     }
 
@@ -90,7 +86,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const indexName = getAdminIndexName('items');
     const index = client.initIndex(indexName);
 
-    // Settings idempotentes (prefixAll, facetas, etc.)
+    // Settings idempotentes
     await index.setSettings({
       searchableAttributes: ['title', 'unordered(description)', 'brand', 'category', 'tags'],
       attributesForFaceting: ['searchable(category)', 'searchable(brand)', 'searchable(tags)'],
@@ -115,4 +111,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(200).json({ ok: true, indexed: objects.length, taskIDs: r.taskIDs });
   } catch (err: any) {
     console.error(err);
-    return res.status(500).json({ error: err?.message || 'Index
+    return res.status(500).json({ error: err?.message || 'Index error' });
+  }
+}
