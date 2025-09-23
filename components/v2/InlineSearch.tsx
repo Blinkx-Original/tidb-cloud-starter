@@ -9,7 +9,7 @@ import {
   useHits,
   Highlight,
   Configure,
-} from 'react-instantsearch';
+} from 'react-instantsearch-dom';
 
 type InlineSearchProps = {
   placeholder?: string;
