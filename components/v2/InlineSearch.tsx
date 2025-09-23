@@ -1,162 +1,147 @@
-// components/v2/InlineSearch.tsx
-import React from 'react';
-import Link from 'next/link';
+'use client';
+
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useRouter } from 'next/router';
 import algoliasearch from 'algoliasearch/lite';
 import {
   InstantSearch,
-  SearchBox,
-  Hits,
-  useInstantSearch,
   useSearchBox,
+  useHits,
   Highlight,
-} from 'react-instantsearch-hooks-web';
+  Configure,
+} from 'react-instantsearch';
 
 type InlineSearchProps = {
   placeholder?: string;
+  minChars?: number;
+  maxSuggestions?: number;
   className?: string;
-  maxHits?: number;
 };
 
-/** Pequeño helper para evitar SSR-mismatch: sólo renderiza en cliente */
-function ClientOnly({ children }: { children: React.ReactNode }) {
-  const [mounted, setMounted] = React.useState(false);
-  React.useEffect(() => setMounted(true), []);
-  if (!mounted) return null;
-  return <>{children}</>;
-}
+const appId = process.env.NEXT_PUBLIC_ALGOLIA_APP_ID!;
+const apiKey = process.env.NEXT_PUBLIC_ALGOLIA_SEARCH_KEY!;
+const indexName =
+  process.env.NEXT_PUBLIC_ALGOLIA_INDEX_NAME ||
+  `${process.env.NEXT_PUBLIC_ALGOLIA_INDEX_PREFIX || 'catalog'}__items`;
 
-function EmptyIndicator() {
-  const { results } = useInstantSearch();
-  const { query } = useSearchBox();
-
-  if (!results || !query) return null;
-  if (results.nbHits > 0) return null;
-  return (
-    <div className="px-3 py-2 text-sm opacity-70">Sin resultados para “{query}”.</div>
-  );
-}
-
-type Hit = {
-  objectID: string;
-  title?: string;
-  name?: string;
-  price?: number | string;
-  price_eur?: number;
-  category?: string;
-  brand?: string;
-  url?: string;
-  slug?: string;
-};
-
-function HitRow({ hit }: { hit: Hit }) {
-  const title = hit.title || hit.name || 'Sin título';
-  const price =
-    typeof hit.price_eur === 'number'
-      ? `€${hit.price_eur.toFixed(2)}`
-      : typeof hit.price === 'number'
-      ? `$${hit.price.toFixed(2)}`
-      : typeof hit.price === 'string'
-      ? hit.price
-      : undefined;
-
-  const href = hit.url || (hit.slug ? `/product/${hit.slug}` : '#');
-
-  return (
-    <Link
-      href={href}
-      className="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-base-200 transition"
-    >
-      <div className="min-w-0">
-        <div className="font-medium truncate">
-          <Highlight attribute="title" hit={hit as any} />
-        </div>
-        <div className="text-xs opacity-70 truncate">
-          {hit.brand ? `${hit.brand} • ` : ''}
-          {hit.category || '–'}
-        </div>
-      </div>
-      {price ? <div className="ml-3 text-sm font-semibold shrink-0">{price}</div> : null}
-    </Link>
-  );
-}
+const searchClient = algoliasearch(appId, apiKey);
 
 export default function InlineSearch({
-  placeholder = 'Buscar…',
+  placeholder = 'Search…',
+  minChars = 2,
+  maxSuggestions = 6,
   className = '',
-  maxHits = 5,
 }: InlineSearchProps) {
-  const appId = process.env.NEXT_PUBLIC_ALGOLIA_APP_ID!;
-  const searchKey = process.env.NEXT_PUBLIC_ALGOLIA_SEARCH_KEY!;
-  const prefix =
-    process.env.NEXT_PUBLIC_ALGOLIA_INDEX_PREFIX || 'catalog';
-  const indexName = `${prefix}__items`;
-
-  // Cliente de búsqueda (sólo en cliente; el ClientOnly evita SSR)
-  const searchClient = React.useMemo(
-    () => algoliasearch(appId, searchKey),
-    [appId, searchKey]
+  // Envolver toda la UI en InstantSearch
+  return (
+    <InstantSearch searchClient={searchClient} indexName={indexName}>
+      <Configure hitsPerPage={maxSuggestions} />
+      <InlineSearchInner
+        placeholder={placeholder}
+        minChars={minChars}
+        maxSuggestions={maxSuggestions}
+        className={className}
+      />
+    </InstantSearch>
   );
+}
 
-  // controlamos abrir/cerrar el panel
-  const [open, setOpen] = React.useState(false);
-  const panelRef = React.useRef<HTMLDivElement>(null);
+function InlineSearchInner({
+  placeholder,
+  minChars,
+  maxSuggestions,
+  className,
+}: InlineSearchProps) {
+  const router = useRouter();
+  const { query, refine } = useSearchBox();
+  const { hits } = useHits<any>();
+  const [open, setOpen] = useState(false);
+  const wrapRef = useRef<HTMLDivElement>(null);
 
-  React.useEffect(() => {
+  // abrir/cerrar panel segun query
+  useEffect(() => {
+    setOpen((query || '').trim().length >= minChars);
+  }, [query, minChars]);
+
+  // cerrar al click fuera
+  useEffect(() => {
     function onDocClick(e: MouseEvent) {
-      if (!panelRef.current) return;
-      if (!(e.target instanceof Node)) return;
-      if (!panelRef.current.contains(e.target)) setOpen(false);
+      if (!wrapRef.current) return;
+      if (!wrapRef.current.contains(e.target as Node)) setOpen(false);
     }
-    document.addEventListener('click', onDocClick);
-    return () => document.removeEventListener('click', onDocClick);
+    document.addEventListener('mousedown', onDocClick);
+    return () => document.removeEventListener('mousedown', onDocClick);
   }, []);
 
-  return (
-    <ClientOnly>
-      <InstantSearch searchClient={searchClient} indexName={indexName}>
-        <div className={`relative w-full ${className}`} ref={panelRef}>
-          <SearchBox
-            placeholder={placeholder}
-            classNames={{
-              root: 'w-full',
-              input:
-                'w-full h-10 pl-9 pr-3 rounded-full border border-base-300 bg-base-100 focus:outline-none',
-              submitIcon: 'hidden',
-              resetIcon: 'hidden',
-              loadingIcon: 'hidden',
-            }}
-            onFocus={() => setOpen(true)}
-            queryHook={(q, setQuery) => {
-              setOpen(true);
-              setQuery(q);
-            }}
-          />
+  const visibleHits = useMemo(() => hits.slice(0, maxSuggestions), [hits, maxSuggestions]);
 
-          {/* Panel de resultados */}
-          {open && (
-            <div
-              className="absolute left-0 right-0 mt-2 rounded-2xl border border-base-300 bg-base-100 shadow-xl z-50"
-              role="listbox"
-            >
-              <div className="max-h-80 overflow-auto py-2">
-                <Hits
-                  hitComponent={HitRow as any}
-                  classNames={{
-                    list: 'flex flex-col gap-1',
-                    item: 'px-2',
+  const onSubmit: React.FormEventHandler<HTMLFormElement> = (e) => {
+    e.preventDefault();
+    const q = (query || '').trim();
+    if (!q) return;
+    setOpen(false);
+    router.push(`/search?q=${encodeURIComponent(q)}`);
+  };
+
+  return (
+    <div ref={wrapRef} className={`relative ${className}`}>
+      <form onSubmit={onSubmit} className="flex items-center gap-2">
+        <input
+          type="search"
+          value={query}
+          onChange={(e) => refine(e.target.value)}
+          placeholder={placeholder}
+          className="input input-bordered w-72 md:w-[28rem]"
+          autoComplete="off"
+        />
+        <button type="submit" className="btn btn-primary btn-sm">Search</button>
+      </form>
+
+      {open && visibleHits.length > 0 && (
+        <div className="absolute z-50 mt-2 w-full rounded-xl border border-base-300 bg-base-100 shadow-xl">
+          <ul className="menu p-2">
+            {visibleHits.map((hit: any) => (
+              <li key={hit.objectID}>
+                <button
+                  className="justify-start text-left"
+                  onClick={() => {
+                    setOpen(false);
+                    // Cambia esta navegación si tu ruta de producto es distinta
+                    const slug = hit.slug || hit.objectID;
+                    if (slug) router.push(`/product/${slug}`);
+                    else router.push(`/search?q=${encodeURIComponent(hit.name || query)}`);
                   }}
-                  transformItems={(items) => items.slice(0, maxHits)}
-                />
-                <EmptyIndicator />
-              </div>
-              <div className="px-3 py-2 text-xs opacity-70 border-t border-base-200">
-                Pulsa <kbd className="px-1 rounded border">Enter</kbd> para abrir el primer
-                resultado
-              </div>
-            </div>
-          )}
+                >
+                  <div className="flex flex-col">
+                    <span className="font-medium">
+                      <Highlight attribute="name" hit={hit} />
+                    </span>
+                    {hit.category_name && (
+                      <span className="text-xs opacity-70">{hit.category_name}</span>
+                    )}
+                    {hit.description && (
+                      <span className="text-xs line-clamp-1 opacity-70">
+                        <Highlight attribute="description" hit={hit} />
+                      </span>
+                    )}
+                  </div>
+                </button>
+              </li>
+            ))}
+          </ul>
+          <div className="border-t border-base-200 p-2 text-right">
+            <button
+              className="link link-primary text-sm"
+              onClick={() => {
+                setOpen(false);
+                router.push(`/search?q=${encodeURIComponent(query || '')}`);
+              }}
+            >
+              Ver más resultados →
+            </button>
+          </div>
         </div>
-      </InstantSearch>
-    </ClientOnly>
+      )}
+    </div>
   );
 }
