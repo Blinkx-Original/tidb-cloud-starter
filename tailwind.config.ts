@@ -1,46 +1,43 @@
+// tailwind.config.ts
 import type { Config } from 'tailwindcss';
 
-const config: Config = {
-  darkMode: 'class', // 👈 habilita dark mode por clase
-  content: [
-    './pages/**/*.{js,ts,jsx,tsx,mdx}',
-    './components/**/*.{js,ts,jsx,tsx,mdx}',
-    // './src/app/**/*.{js,ts,jsx,tsx,mdx}',
-  ],
+export default {
+  darkMode: 'class', // ya usas toggle; si usas data-theme, ajusta aquí
+  content: ['./pages/**/*.{ts,tsx}', './components/**/*.{ts,tsx}'],
   theme: {
     extend: {
-      backgroundImage: {
-        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
-        'gradient-conic':
-          'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
-      },
-      keyframes: {
-        'slide-up-fade-in': {
-          '0%': { transform: 'translateY(16px)', opacity: '0' },
-          '100%': { transform: 'translateY(0)', opacity: '1' },
+      colors: {
+        surface: {
+          // fondos base
+          light: '#ffffff',
+          dark:  '#000000',
+        },
+        // texto principal
+        ink: {
+          light: '#111111',
+          dark:  '#ffffff',
+        },
+        // grises mínimos para divisores / cards
+        line: {
+          light: '#e5e5e5',
+          dark:  '#1f1f1f',
+        },
+        // AZUL de acento (luminoso)
+        accent: {
+          DEFAULT: '#2f81f7',   // base
+          hover:   '#3b82f6',   // hover sutil
+          ring:    '#60a5fa',   // “halo” (ring)
         },
       },
-      animation: {
-        'slide-up-fade-in': 'slide-up-fade-in 2s ease-out forwards',
+      boxShadow: {
+        // leve “glow” sutil alrededor del CTA
+        'accent-glow': '0 0 0 2px rgba(96,165,250,0.35), 0 8px 24px rgba(47,129,247,0.25)',
+      },
+      borderRadius: {
+        xl2: '1rem',
       },
     },
   },
-  plugins: [
-    require('@tailwindcss/typography'),
-    require('@tailwindcss/aspect-ratio'),
-    require('daisyui'),
-  ],
-  daisyui: {
-    themes: false, // false = solo light + dark
-    darkTheme: 'dark',
-    base: true,
-    styled: true,
-    utils: true,
-    rtl: false,
-    prefix: '',
-    logs: true,
-  },
-};
-
-export default config;
+  plugins: [],
+} satisfies Config;
 
