@@ -11,9 +11,9 @@ export default function CommonLayout({ children }: Props) {
     <>
       <Header />
       <main className="min-h-[50vh]">{children}</main>
-      <footer className="border-top border-black/10 bg-white">
+      <footer className="border-t border-black/10 bg-white" role="contentinfo">
         <div className="mx-auto max-w-6xl px-4 py-6 text-sm opacity-70">
-          © {new Date().getFullYear()} Blinkx
+          © {new Date().getFullYear()} BlinkX
         </div>
       </footer>
     </>
