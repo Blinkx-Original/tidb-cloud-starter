@@ -7,11 +7,7 @@ type Props = {
   subtitle?: string;
   className?: string;
   variant?: 'compact' | 'full';
-  /**
-   * Compatibilidad hacia atrás: aceptamos autoFocus aunque
-   * SearchInline no lo use. Así no rompe llamadas existentes
-   * como <SearchHero autoFocus={false} />.
-   */
+  // compat hacia atrás: aceptamos autoFocus aunque no se use aquí
   autoFocus?: boolean;
 };
 
@@ -20,8 +16,8 @@ export default function SearchHero({
   subtitle = 'Empieza a escribir y te sugerimos productos al instante.',
   className = '',
   variant = 'compact',
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  autoFocus = false,
+  // NOTA: no se usa; sólo para compatibilidad con llamadas existentes
+  autoFocus: _autoFocus = false,
 }: Props) {
   const showHeader = variant === 'full' && (title || subtitle);
 
@@ -46,5 +42,3 @@ export default function SearchHero({
     </section>
   );
 }
-
-
