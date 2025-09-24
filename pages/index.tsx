@@ -15,22 +15,32 @@ export default function Home({ categories, products }: Props) {
     <CommonLayout>
       <Head>
         <title>BlinkX — Catálogo</title>
-        <meta name="description" content="Encuentra tu próximo producto. Búsqueda simple y rápida en todo el catálogo." />
+        <meta
+          name="description"
+          content="Encuentra tu próximo producto. Búsqueda simple y rápida en todo el catálogo."
+        />
       </Head>
 
       {/* Hero de homepage (sin líneas) */}
       <section className="bg-[#f6f6f6]">
         <div className="mx-auto max-w-6xl px-4 py-10 sm:py-12 text-center">
-          <h1 className="haas-bold text-4xl sm:text-5xl tracking-tight">
+          {/* H1: Bold estilo Haas-like */}
+          <h1 className="text-4xl sm:text-5xl font-black tracking-tight leading-[1.1]">
             Encuentra tu próximo producto
           </h1>
-          <h2 className="haas-bold mt-2 text-lg sm:text-xl opacity-90">
+
+          {/* H2: también centrado y con buen peso */}
+          <h2 className="mt-2 text-lg sm:text-xl font-bold opacity-90 tracking-tight">
             Búsqueda simple y rápida en todo el catálogo.
           </h2>
+
+          {/* Texto común editable */}
           <p className="mt-6 max-w-2xl mx-auto text-base opacity-80 leading-relaxed">
-            Este es un texto de ejemplo en la página principal. Aquí puedes escribir lo que quieras
-            sobre tu catálogo, tu empresa o cualquier mensaje de bienvenida. Para cambiarlo, edita
-            este archivo <code>pages/index.tsx</code> y reemplaza el contenido.
+            Este es un texto de ejemplo en la página principal. Aquí puedes
+            escribir lo que quieras sobre tu catálogo, tu empresa o cualquier
+            mensaje de bienvenida para los usuarios. Si más adelante quieres
+            cambiarlo, simplemente edita este archivo <code>pages/index.tsx</code>
+            y reemplaza el texto.
           </p>
         </div>
       </section>
