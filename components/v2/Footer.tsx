@@ -6,11 +6,14 @@ export default function Footer() {
   const year = new Date().getFullYear();
   return (
     <footer className="mt-16 max-w-7xl mx-auto px-4">
-      <div className="rounded-2xl p-8 bg-white text-black border border-black dark:bg-black dark:text-white dark:border-white">
+      {/* Caja blanca con borde fino y esquinas redondeadas */}
+      <div className="rounded-2xl p-8 bg-white text-black border border-black/10">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 text-sm">
           <div>
             <div className="text-base font-semibold">BlinkX</div>
-            <p className="mt-2">Industrial catalog for products, affiliates, and lead listings.</p>
+            <p className="mt-2">
+              Industrial catalog for products, affiliates, and lead listings.
+            </p>
           </div>
 
           <div>
@@ -40,7 +43,7 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-8 pt-6 border-t border-black dark:border-white flex flex-col sm:flex-row items-center justify-between text-xs gap-3">
+        <div className="mt-8 pt-6 border-t border-black/10 flex flex-col sm:flex-row items-center justify-between text-xs gap-3">
           <div>© {year} BlinkX. All rights reserved.</div>
           <div className="flex items-center gap-4">
             <a href="#" className="hover:underline">Twitter</a>
