@@ -1,46 +1,23 @@
 // components/v2/index.tsx
-import * as React from "react";
-import Header from "./Layout/Header";
-import Footer from "../v2/Footer";
-import ThemeToggle, { applyTheme } from "../ThemeToggle";
+'use client';
 
-type Props = { children: React.ReactNode };
+import * as React from 'react';
+import Header from './Layout/Header';
 
-function bootThemeOnce() {
-  try {
-    const saved = (localStorage.getItem("themePref") as "light" | "dark" | "auto") || "auto";
-    applyTheme(saved);
-  } catch {}
-}
+type Props = {
+  children: React.ReactNode;
+};
 
 export default function CommonLayout({ children }: Props) {
-  React.useEffect(() => {
-    bootThemeOnce();
-    // Responder a cambios (por ejemplo, desde otra pestaña)
-    const onStorage = (e: StorageEvent) => {
-      if (e.key === "themePref" && e.newValue) applyTheme(e.newValue as any);
-    };
-    const onCustom = () => {
-      try {
-        const saved = (localStorage.getItem("themePref") as any) || "auto";
-        applyTheme(saved);
-      } catch {}
-    };
-    window.addEventListener("storage", onStorage);
-    window.addEventListener("theme-change", onCustom as any);
-    return () => {
-      window.removeEventListener("storage", onStorage);
-      window.removeEventListener("theme-change", onCustom as any);
-    };
-  }, []);
-
   return (
-    <div className="min-h-screen bg-white text-black dark:bg-black dark:text-white">
+    <>
       <Header />
-      {/* Contenido */}
-      <div>{children}</div>
-      <Footer />
-    </div>
+      <main className="min-h-[50vh]">{children}</main>
+      <footer className="border-t border-black/10 bg-white">
+        <div className="mx-auto max-w-6xl px-4 py-6 text-sm opacity-70">
+          © {new Date().getFullYear()} BlinkX
+        </div>
+      </footer>
+    </>
   );
 }
-
