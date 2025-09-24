@@ -2,10 +2,19 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function Header() {
   const [open, setOpen] = useState(false);
+
+  // Cerrar con ESC
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
 
   return (
     <header className="sticky top-0 z-50 border-b border-black/10 bg-white/90 backdrop-blur">
@@ -15,27 +24,42 @@ export default function Header() {
           BlinkX
         </Link>
 
-        {/* Botón hamburguesa */}
+        {/* Botón hamburguesa (más grande) */}
         <button
-          onClick={() => setOpen(!open)}
+          onClick={() => setOpen((v) => !v)}
+          aria-haspopup="menu"
+          aria-expanded={open}
           aria-label="Abrir menú"
-          className="relative flex flex-col justify-between w-8 h-6 cursor-pointer"
+          className="relative flex flex-col justify-between w-9 h-8 cursor-pointer select-none"
         >
-          <span className="block h-1 w-full bg-black rounded"></span>
-          <span className="block h-1 w-full bg-black rounded"></span>
-          <span className="block h-1 w-full bg-black rounded"></span>
+          <span className="block h-1.5 w-full bg-black rounded"></span>
+          <span className="block h-1.5 w-full bg-black rounded"></span>
+          <span className="block h-1.5 w-full bg-black rounded"></span>
         </button>
       </div>
 
-      {/* Menú flotante */}
+      {/* Backdrop transparente para cerrar al click fuera (no oscurece, no tapa el footer visualmente) */}
       {open && (
-        <nav className="absolute right-4 mt-2 w-56 bg-white border border-black/10 shadow-lg rounded-xl z-50">
+        <div
+          className="fixed inset-0 z-[900]"
+          onClick={() => setOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* Menú flotante FIXED: no modifica la altura del header ni el layout */}
+      {open && (
+        <nav
+          className="fixed top-14 right-4 z-[1000] w-64 bg-white border border-black/10 shadow-xl rounded-2xl"
+          role="menu"
+        >
           <ul className="flex flex-col p-2">
             <li>
               <Link
                 href="/"
-                className="px-4 py-2 hover:bg-gray-100 rounded"
+                className="block px-4 py-2 hover:bg-gray-100 rounded"
                 onClick={() => setOpen(false)}
+                role="menuitem"
               >
                 Inicio
               </Link>
@@ -43,8 +67,9 @@ export default function Header() {
             <li>
               <Link
                 href="/categories"
-                className="px-4 py-2 hover:bg-gray-100 rounded"
+                className="block px-4 py-2 hover:bg-gray-100 rounded"
                 onClick={() => setOpen(false)}
+                role="menuitem"
               >
                 Categorías
               </Link>
@@ -52,8 +77,9 @@ export default function Header() {
             <li>
               <Link
                 href="/blog"
-                className="px-4 py-2 hover:bg-gray-100 rounded"
+                className="block px-4 py-2 hover:bg-gray-100 rounded"
                 onClick={() => setOpen(false)}
+                role="menuitem"
               >
                 Blog
               </Link>
@@ -61,8 +87,9 @@ export default function Header() {
             <li>
               <Link
                 href="/about"
-                className="px-4 py-2 hover:bg-gray-100 rounded"
+                className="block px-4 py-2 hover:bg-gray-100 rounded"
                 onClick={() => setOpen(false)}
+                role="menuitem"
               >
                 About
               </Link>
@@ -70,8 +97,9 @@ export default function Header() {
             <li>
               <Link
                 href="/contact"
-                className="px-4 py-2 hover:bg-gray-100 rounded"
+                className="block px-4 py-2 hover:bg-gray-100 rounded"
                 onClick={() => setOpen(false)}
+                role="menuitem"
               >
                 Contacto
               </Link>
@@ -82,5 +110,4 @@ export default function Header() {
     </header>
   );
 }
-
 
