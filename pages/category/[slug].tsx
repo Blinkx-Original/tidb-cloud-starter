@@ -13,78 +13,78 @@ type Props = { slug: string; name: string; count: number; products: Product[] };
 export default function CategoryPage({ slug, name, count, products }: Props) {
   return (
     <CommonLayout>
-      <Head><title>{name} — Categoría | BlinkX</title></Head>
+      <Head>
+        <title>{name} — Categoría | BlinkX</title>
+        <meta name="robots" content="index,follow" />
+      </Head>
 
-      <main className="mx-auto max-w-6xl px-4">
-        {/* Breadcrumbs */}
-        <div className="pt-6">
-          <Breadcrumbs
-            items={[
-              { label: 'Inicio', href: '/' },
-              { label: 'Categorías', href: '/categories' },
-              { label: name },
-            ]}
-          />
-        </div>
-
-        {/* Search hero debajo del header/breadcrumbs */}
-        <SearchHero
-          title="Busca en todo el catálogo"
-          subtitle={`Estás en “${name}”. Empieza a escribir y te sugerimos productos al instante.`}
-          className="mt-4 rounded-2xl overflow-hidden"
-          autoFocus={false}
+      {/* Breadcrumbs */}
+      <div className="mx-auto max-w-6xl px-4 pt-3 sm:pt-4">
+        <Breadcrumbs
+          items={[
+            { label: 'Inicio', href: '/' },
+            { label: 'Categorías', href: '/categories' },
+            { label: name, href: `/category/${slug}` },
+          ]}
         />
+      </div>
 
-        {/* Título y conteo */}
-        <header className="mt-6 mb-4">
-          <h1 className="text-2xl sm:text-3xl font-bold">{name}</h1>
-          <p className="mt-2">
+      {/* Search hero compacto (sin textos largos, centrado y angosto) */}
+      <SearchHero variant="compact" />
+
+      {/* Título y conteo */}
+      <section className="mx-auto max-w-6xl px-4 py-6 sm:py-8">
+        <div className="flex items-end justify-between gap-4">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">{name}</h1>
+          <div className="text-sm opacity-70">
             {count} producto{count === 1 ? '' : 's'}
-          </p>
-        </header>
+          </div>
+        </div>
 
         {/* Grid de productos */}
         {products.length === 0 ? (
-          <div className="py-10">No hay productos en esta categoría.</div>
+          <p className="mt-6 opacity-80">No hay productos en esta categoría.</p>
         ) : (
-          <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {products.map((p) => {
               const price = formatPriceEUR(p.price_eur ?? p.price);
               return (
-                <li
+                <Link
                   key={p.id}
-                  className="border border-black dark:border-white rounded-2xl p-4 hover:shadow-sm transition"
+                  href={`/product/${p.slug || p.id}`}
+                  className="group rounded-xl border border-base-300 hover:border-base-400 bg-base-100 overflow-hidden"
                 >
-                  <Link href={`/product/${p.slug}`} className="block">
-                    <div className="aspect-[4/3] w-full rounded-xl mb-3 overflow-hidden bg-white dark:bg-black">
-                      {p.image_url ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={p.image_url}
-                          alt={p.name}
-                          className="w-full h-full object-cover"
-                          loading="lazy"
-                        />
-                      ) : null}
+                  {p.image_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={p.image_url}
+                      alt={p.name}
+                      className="h-44 w-full object-cover bg-base-200"
+                      loading="lazy"
+                    />
+                  ) : null}
+
+                  <div className="p-4">
+                    <div className="font-semibold group-hover:underline">{p.name}</div>
+                    {p.description && (
+                      <p className="mt-1 text-sm line-clamp-2 opacity-80">{p.description}</p>
+                    )}
+                    <div className="mt-2 text-xs opacity-70">
+                      {p.category_name ?? 'Sin categoría'}
                     </div>
-                    <h3 className="font-medium">{p.name}</h3>
-                    <p className="mt-1 line-clamp-2 text-sm">{p.description}</p>
-                    <div className="mt-2 text-sm">{p.category_name ?? 'Sin categoría'}</div>
-                    {price && <div className="mt-2 font-semibold">{price}</div>}
-                  </Link>
-                </li>
+                    {price && <div className="mt-2 font-medium">{price}</div>}
+                  </div>
+                </Link>
               );
             })}
-          </ul>
+          </div>
         )}
-
-        <div className="h-10" />
-      </main>
+      </section>
     </CommonLayout>
   );
 }
 
-export const getServerSideProps: GetServerSideProps<Props> = async ({ params }) => {
+export const getServerSideProps: GetServerSideProps = async ({ params }) => {
   const slug = String(params?.slug ?? '');
 
   const info = await query<{ name: string; count: number }>(
@@ -101,7 +101,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async ({ params }) 
   const name = info[0]?.name ?? 'Uncategorized';
   const count = Number(info[0]?.count ?? 0);
 
-  const products = await query<Product>(
+  const products = await query<Product[]>(
     `
     SELECT id, name, slug, image_url, price_eur, price, description, category_name, category_slug
     FROM products
