@@ -1,3 +1,4 @@
+// components/v2/Footer.tsx
 import * as React from "react";
 import NextLink from "next/link";
 
@@ -5,9 +6,7 @@ export default function Footer() {
   const year = new Date().getFullYear();
   return (
     <footer className="mt-16 max-w-7xl mx-auto px-4">
-      <div className="rounded-2xl p-8
-                      bg-white text-black border border-black
-                      dark:bg-black dark:text-white dark:border-white">
+      <div className="rounded-2xl p-8 bg-white text-black border border-black dark:bg-black dark:text-white dark:border-white">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 text-sm">
           <div>
             <div className="text-base font-semibold">BlinkX</div>
@@ -53,4 +52,5 @@ export default function Footer() {
     </footer>
   );
 }
+
 
