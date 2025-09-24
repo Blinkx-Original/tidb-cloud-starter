@@ -21,7 +21,7 @@ const INDEX_PREFIX = process.env.NEXT_PUBLIC_ALGOLIA_INDEX_PREFIX || 'catalog';
 const INDEX_NAME = `${INDEX_PREFIX}__items`;
 
 export default function SearchInline({
-  placeholder = 'Buscar productos…',
+  placeholder = 'Buscar por nombre, categoría o descripción…',
   hitsPerPage = 5,
   className = '',
 }: {
@@ -41,21 +41,14 @@ export default function SearchInline({
   const portalRef = useRef<HTMLDivElement | null>(null);
 
   const [rect, setRect] = useState<{ left: number; top: number; width: number; bottom: number }>({
-    left: 0,
-    top: 0,
-    width: 0,
-    bottom: 0,
+    left: 0, top: 0, width: 0, bottom: 0,
   });
+
   const updateRect = () => {
     const el = inputRef.current;
     if (!el) return;
     const r = el.getBoundingClientRect();
-    setRect({
-      left: r.left,
-      top: r.top + window.scrollY,
-      width: r.width,
-      bottom: r.bottom + window.scrollY,
-    });
+    setRect({ left: r.left, top: r.top + window.scrollY, width: r.width, bottom: r.bottom + window.scrollY });
   };
 
   const index = useMemo(() => {
@@ -63,14 +56,11 @@ export default function SearchInline({
     return client.initIndex(INDEX_NAME);
   }, []);
 
-  // buscar con debounce
   useEffect(() => {
     let cancelled = false;
     const t = setTimeout(async () => {
       if (!q.trim()) {
-        setHits([]);
-        setOpen(false);
-        return;
+        setHits([]); setOpen(false); return;
       }
       setLoading(true);
       try {
@@ -85,13 +75,9 @@ export default function SearchInline({
         if (!cancelled) setLoading(false);
       }
     }, 160);
-    return () => {
-      cancelled = true;
-      clearTimeout(t);
-    };
+    return () => { cancelled = true; clearTimeout(t); };
   }, [q, hitsPerPage, index]);
 
-  // cerrar al click fuera
   useEffect(() => {
     function onDocClick(e: MouseEvent) {
       const t = e.target as Node;
@@ -103,7 +89,6 @@ export default function SearchInline({
     return () => document.removeEventListener('mousedown', onDocClick);
   }, []);
 
-  // reposicionar
   useEffect(() => {
     const on = () => updateRect();
     window.addEventListener('resize', on);
@@ -122,40 +107,25 @@ export default function SearchInline({
 
   function onKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     if (!open || !hits.length) return;
-    if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      setActive((i) => (i + 1) % hits.length);
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      setActive((i) => (i - 1 + hits.length) % hits.length);
-    } else if (e.key === 'Enter') {
-      e.preventDefault();
-      const target = hits[active] ?? hits[0];
-      if (target) goTo(target);
-    } else if (e.key === 'Escape') {
-      setOpen(false);
-    }
+    if (e.key === 'ArrowDown') { e.preventDefault(); setActive(i => (i + 1) % hits.length); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); setActive(i => (i - 1 + hits.length) % hits.length); }
+    else if (e.key === 'Enter') { e.preventDefault(); const t = hits[active] ?? hits[0]; if (t) goTo(t); }
+    else if (e.key === 'Escape') setOpen(false);
   }
 
   return (
     <div ref={boxRef} className={['w-full', className].join(' ')}>
-      {/* PASTILLA SIEMPRE VISIBLE (gris suave) */}
+      {/* Pastilla visible siempre */}
       <input
         ref={inputRef}
         value={q}
         onChange={(e) => setQ(e.target.value)}
-        onFocus={() => {
-          if (q && hits.length) {
-            setOpen(true);
-            updateRect();
-          }
-        }}
+        onFocus={() => { if (q && hits.length) { setOpen(true); updateRect(); } }}
         onKeyDown={onKeyDown}
         placeholder={placeholder}
         className="
           w-full h-12 px-5 text-base rounded-full
-          border border-base-300
-          bg-base-200 dark:bg-base-200/30
+          border border-black/15 bg-[#f6f6f6]
           focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/40
           transition
         "
@@ -165,66 +135,54 @@ export default function SearchInline({
         role="combobox"
       />
 
-      {/* DROPDOWN CON FONDO BLANCO OPAQUE (sin transparencia) */}
-      {open &&
-        typeof window !== 'undefined' &&
-        createPortal(
-          <div
-            ref={portalRef}
-            className="
-              fixed z-[9999] rounded-2xl border border-base-300
-              bg-white dark:bg-white  /* blanco también en dark */
-              shadow-xl
-            "
-            style={{ left: rect.left, top: rect.bottom + 6, width: rect.width }}
-            role="listbox"
-            id="algolia-autocomplete-listbox"
-            aria-label="Resultados"
-          >
-            {loading && <div className="px-4 py-3 text-sm opacity-70">Searching…</div>}
-
-            {!loading && hits.length === 0 && (
-              <div className="px-4 py-3 text-sm opacity-70">No results</div>
-            )}
-
-            {!loading &&
-              hits.map((hit, i) => (
-                <button
-                  key={hit.objectID + i}
-                  type="button"
-                  onMouseEnter={() => setActive(i)}
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => goTo(hit)}
-                  className={[
-                    'flex w-full items-start gap-3 px-4 py-3 text-left',
-                    i === active ? 'bg-base-100' : 'hover:bg-base-100',
-                  ].join(' ')}
-                  role="option"
-                  aria-selected={i === active}
-                >
-                  <div className="flex-1">
-                    <div className="font-medium">{hit.title || '(untitled)'}</div>
-                    <div className="text-xs opacity-70">
-                      {(hit.brand ? `${hit.brand} • ` : '') + (hit.category ?? '')}
-                    </div>
-                  </div>
-                  {typeof hit.price === 'number' && (
-                    <div className="text-sm tabular-nums">€{hit.price}</div>
-                  )}
-                </button>
-              ))}
-
-            {hits.length > 0 && (
-              <div className="flex items-center justify-between px-4 py-2 text-xs opacity-70 border-t border-base-300">
-                <span>
-                  Press <kbd className="kbd kbd-xs">Enter</kbd> to open first result
-                </span>
-                <span>{hits.length} result(s)</span>
+      {/* Dropdown blanco opaco */}
+      {open && typeof window !== 'undefined' && createPortal(
+        <div
+          ref={portalRef}
+          className="fixed z-[9999] rounded-2xl border border-black/10 bg-white shadow-xl"
+          style={{ left: rect.left, top: rect.bottom + 6, width: rect.width }}
+          role="listbox"
+          id="algolia-autocomplete-listbox"
+          aria-label="Resultados"
+        >
+          {loading && <div className="px-4 py-3 text-sm opacity-70">Searching…</div>}
+          {!loading && hits.length === 0 && (
+            <div className="px-4 py-3 text-sm opacity-70">No results</div>
+          )}
+          {!loading && hits.map((hit, i) => (
+            <button
+              key={hit.objectID + i}
+              type="button"
+              onMouseEnter={() => setActive(i)}
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => goTo(hit)}
+              className={[
+                'flex w-full items-start gap-3 px-4 py-3 text-left',
+                i === active ? 'bg-[#f6f6f6]' : 'hover:bg-[#f6f6f6]',
+              ].join(' ')}
+              role="option"
+              aria-selected={i === active}
+            >
+              <div className="flex-1">
+                <div className="font-medium">{hit.title || '(untitled)'}</div>
+                <div className="text-xs opacity-70">
+                  {(hit.brand ? `${hit.brand} • ` : '') + (hit.category ?? '')}
+                </div>
               </div>
-            )}
-          </div>,
-          document.body
-        )}
+              {typeof hit.price === 'number' && (
+                <div className="text-sm tabular-nums">€{hit.price}</div>
+              )}
+            </button>
+          ))}
+          {hits.length > 0 && (
+            <div className="flex items-center justify-between px-4 py-2 text-xs opacity-70 border-t border-black/10">
+              <span>Press <kbd className="kbd kbd-xs">Enter</kbd> to open first result</span>
+              <span>{hits.length} result(s)</span>
+            </div>
+          )}
+        </div>,
+        document.body
+      )}
     </div>
   );
 }
