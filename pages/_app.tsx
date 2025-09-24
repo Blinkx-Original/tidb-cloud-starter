@@ -33,14 +33,11 @@ export default function MyApp({ Component, pageProps }: AppProps) {
         <title>BlinkX</title>
       </Head>
 
-      {/* Contexto global */}
+      {/* Contexto global con fondo estilo Vercel */}
       <RecoilRoot>
-        {/* Si quieres forzar el fondo global blanco/negro además del data-theme, envuelve en un div:
-            <div className="min-h-screen bg-white text-black dark:bg-black dark:text-white">
-              <Component {...pageProps} />
-            </div>
-           Por ahora lo dejo simple para no alterar tu styling existente. */}
-        <Component {...pageProps} />
+        <div className="min-h-screen bg-white text-black dark:bg-black dark:text-white transition-colors">
+          <Component {...pageProps} />
+        </div>
       </RecoilRoot>
     </>
   );
