@@ -6,7 +6,13 @@ type Props = {
   title?: string;
   subtitle?: string;
   className?: string;
-  variant?: 'compact' | 'full'; // compact = sin encabezado y menos padding
+  variant?: 'compact' | 'full';
+  /**
+   * Compatibilidad hacia atrás: aceptamos autoFocus aunque
+   * SearchInline no lo use. Así no rompe llamadas existentes
+   * como <SearchHero autoFocus={false} />.
+   */
+  autoFocus?: boolean;
 };
 
 export default function SearchHero({
@@ -14,6 +20,8 @@ export default function SearchHero({
   subtitle = 'Empieza a escribir y te sugerimos productos al instante.',
   className = '',
   variant = 'compact',
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  autoFocus = false,
 }: Props) {
   const showHeader = variant === 'full' && (title || subtitle);
 
@@ -26,7 +34,8 @@ export default function SearchHero({
             {subtitle && <p className="text-sm opacity-80">{subtitle}</p>}
           </header>
         )}
-        {/* centrado y estrecho en desktop; full en mobile */}
+
+        {/* centrado y angosto en desktop; full en mobile */}
         <div className="mx-auto w-full sm:w-4/5 md:w-2/3 lg:w-1/2">
           <SearchInline
             placeholder="Buscar por nombre, categoría o descripción…"
@@ -37,4 +46,5 @@ export default function SearchHero({
     </section>
   );
 }
+
 
