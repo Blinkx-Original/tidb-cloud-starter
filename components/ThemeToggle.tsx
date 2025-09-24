@@ -4,28 +4,33 @@ import * as React from 'react';
 
 export type ThemePref = 'light' | 'dark' | 'auto';
 
-// DaisyUI: cambia estos nombres si tu tailwind.config usa otros temas
+// DaisyUI themes
 const LIGHT_THEME = 'winter';
 const DARK_THEME  = 'night';
 
 export function applyTheme(pref: ThemePref) {
   const root = document.documentElement;
 
-  const setTheme = (isDark: boolean) => {
+  const apply = (isDark: boolean) => {
+    // 1) DaisyUI
     root.setAttribute('data-theme', isDark ? DARK_THEME : LIGHT_THEME);
+    // 2) Tailwind "dark:"
+    root.classList.toggle('dark', isDark);
   };
 
   if (pref === 'auto') {
     const mq = window.matchMedia('(prefers-color-scheme: dark)');
-    setTheme(mq.matches);
-    const handler = (e: MediaQueryListEvent) => setTheme(e.matches);
+    apply(mq.matches);
+    const handler = (e: MediaQueryListEvent) => apply(e.matches);
     try { mq.addEventListener('change', handler); }
-    catch { mq.addListener(handler); }
+    catch { (mq as any).addListener(handler); }
   } else {
-    setTheme(pref === 'dark');
+    apply(pref === 'dark');
   }
 
   localStorage.setItem('themePref', pref);
+  // Útil si tienes listeners (opcional)
+  window.dispatchEvent(new CustomEvent('theme-change', { detail: pref }));
 }
 
 export default function ThemeToggle() {
@@ -40,11 +45,30 @@ export default function ThemeToggle() {
   const set = (p: ThemePref) => () => { setPref(p); applyTheme(p); };
 
   return (
-    <div className="join rounded-2xl border border-base-content/20">
-      <button className={`btn btn-xs join-item ${pref==='light'?'btn-active':''}`} onClick={set('light')} aria-label="Tema claro">☀️</button>
-      <button className={`btn btn-xs join-item ${pref==='auto' ?'btn-active':''}`} onClick={set('auto')}  aria-label="Tema automático">A</button>
-      <button className={`btn btn-xs join-item ${pref==='dark' ?'btn-active':''}`} onClick={set('dark')}  aria-label="Tema oscuro">🌙</button>
+    <div className="join rounded-xl">
+      <button
+        className={`btn btn-ghost btn-xs join-item ${pref==='light' ? 'bg-base-200' : ''}`}
+        onClick={set('light')}
+        aria-label="Light mode"
+      >
+        ☀️
+      </button>
+      <button
+        className={`btn btn-ghost btn-xs join-item ${pref==='auto' ? 'bg-base-200' : ''}`}
+        onClick={set('auto')}
+        aria-label="Auto mode"
+      >
+        A
+      </button>
+      <button
+        className={`btn btn-ghost btn-xs join-item ${pref==='dark' ? 'bg-base-200' : ''}`}
+        onClick={set('dark')}
+        aria-label="Dark mode"
+      >
+        🌙
+      </button>
     </div>
   );
 }
+
 
