@@ -15,14 +15,11 @@ export default function Home({ categories, products }: Props) {
     <CommonLayout>
       <Head>
         <title>BlinkX — Catálogo</title>
-        <meta
-          name="description"
-          content="Encuentra tu próximo producto. Búsqueda simple y rápida en todo el catálogo."
-        />
+        <meta name="description" content="Encuentra tu próximo producto. Búsqueda simple y rápida en todo el catálogo." />
       </Head>
 
-      {/* Hero de homepage */}
-      <section className="bg-base-200/50 dark:bg-base-200/30">
+      {/* Hero de homepage (sin líneas) */}
+      <section className="bg-[#f6f6f6]">
         <div className="mx-auto max-w-6xl px-4 py-10 sm:py-12 text-center">
           <h1 className="haas-bold text-4xl sm:text-5xl tracking-tight">
             Encuentra tu próximo producto
@@ -30,19 +27,15 @@ export default function Home({ categories, products }: Props) {
           <h2 className="haas-bold mt-2 text-lg sm:text-xl opacity-90">
             Búsqueda simple y rápida en todo el catálogo.
           </h2>
-
-          {/* Texto común de ejemplo */}
           <p className="mt-6 max-w-2xl mx-auto text-base opacity-80 leading-relaxed">
-            Este es un texto de ejemplo en la página principal. Aquí puedes
-            escribir lo que quieras sobre tu catálogo, tu empresa o cualquier
-            mensaje de bienvenida para los usuarios. Si más adelante quieres
-            cambiarlo, simplemente edita este archivo <code>pages/index.tsx</code>
-            y reemplaza el texto.
+            Este es un texto de ejemplo en la página principal. Aquí puedes escribir lo que quieras
+            sobre tu catálogo, tu empresa o cualquier mensaje de bienvenida. Para cambiarlo, edita
+            este archivo <code>pages/index.tsx</code> y reemplaza el contenido.
           </p>
         </div>
       </section>
 
-      {/* Pastilla centrada */}
+      {/* Pastilla centrada, sin líneas alrededor */}
       <div className="mx-auto max-w-6xl px-4 py-4">
         <SearchHero variant="compact" />
       </div>
@@ -64,7 +57,7 @@ export default function Home({ categories, products }: Props) {
               <Link
                 key={c.slug}
                 href={`/category/${c.slug}`}
-                className="rounded-xl border border-base-300 hover:border-base-400 bg-base-100 px-4 py-3"
+                className="rounded-xl border border-black/10 hover:border-black/20 bg-white px-4 py-3"
               >
                 <div className="font-medium">{c.name}</div>
                 <div className="text-xs opacity-70">{c.count} productos</div>
@@ -87,14 +80,14 @@ export default function Home({ categories, products }: Props) {
                 <Link
                   key={p.id}
                   href={`/product/${p.slug || p.id}`}
-                  className="group rounded-xl border border-base-300 hover:border-base-400 bg-base-100 overflow-hidden"
+                  className="group rounded-xl border border-black/10 hover:border-black/20 bg-white overflow-hidden"
                 >
                   {p.image_url ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={p.image_url}
                       alt={p.name}
-                      className="h-44 w-full object-cover bg-base-200"
+                      className="h-44 w-full object-cover bg-[#f6f6f6]"
                       loading="lazy"
                     />
                   ) : null}
