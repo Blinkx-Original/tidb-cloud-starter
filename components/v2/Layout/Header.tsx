@@ -2,42 +2,85 @@
 'use client';
 
 import Link from 'next/link';
+import { useState } from 'react';
 
 export default function Header() {
+  const [open, setOpen] = useState(false);
+
   return (
     <header className="sticky top-0 z-50 border-b border-black/10 bg-white/90 backdrop-blur">
-      <div className="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between gap-3">
-        {/* Izquierda: logo */}
+      <div className="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between">
+        {/* Logo */}
         <Link href="/" className="font-bold tracking-tight text-lg">
           BlinkX
         </Link>
 
-        {/* Derecha: menú simple */}
-        <NavMenu />
+        {/* Botón hamburguesa */}
+        <button
+          onClick={() => setOpen(!open)}
+          aria-label="Abrir menú"
+          className="relative flex flex-col justify-between w-8 h-6 cursor-pointer"
+        >
+          <span className="block h-1 w-full bg-black rounded"></span>
+          <span className="block h-1 w-full bg-black rounded"></span>
+          <span className="block h-1 w-full bg-black rounded"></span>
+        </button>
       </div>
+
+      {/* Menú flotante */}
+      {open && (
+        <nav className="absolute right-4 mt-2 w-56 bg-white border border-black/10 shadow-lg rounded-xl z-50">
+          <ul className="flex flex-col p-2">
+            <li>
+              <Link
+                href="/"
+                className="px-4 py-2 hover:bg-gray-100 rounded"
+                onClick={() => setOpen(false)}
+              >
+                Inicio
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="/categories"
+                className="px-4 py-2 hover:bg-gray-100 rounded"
+                onClick={() => setOpen(false)}
+              >
+                Categorías
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="/blog"
+                className="px-4 py-2 hover:bg-gray-100 rounded"
+                onClick={() => setOpen(false)}
+              >
+                Blog
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="/about"
+                className="px-4 py-2 hover:bg-gray-100 rounded"
+                onClick={() => setOpen(false)}
+              >
+                About
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="/contact"
+                className="px-4 py-2 hover:bg-gray-100 rounded"
+                onClick={() => setOpen(false)}
+              >
+                Contacto
+              </Link>
+            </li>
+          </ul>
+        </nav>
+      )}
     </header>
   );
 }
-
-function NavMenu() {
-  return (
-    <details className="dropdown dropdown-end">
-      <summary
-        className="btn btn-ghost btn-sm rounded-2xl px-3"
-        aria-label="Abrir menú"
-      >
-        ☰
-      </summary>
-      <ul className="menu dropdown-content mt-2 p-2 shadow bg-white rounded-box w-56 border border-black/10">
-        <li><Link href="/">Inicio</Link></li>
-        <li><Link href="/categories">Categorías</Link></li>
-        <li><Link href="/blog">Blog</Link></li>
-        <li><Link href="/about">About</Link></li>
-        <li><Link href="/contact">Contacto</Link></li>
-      </ul>
-    </details>
-  );
-}
-
 
 
