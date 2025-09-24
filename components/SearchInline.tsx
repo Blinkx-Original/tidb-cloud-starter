@@ -50,7 +50,12 @@ export default function SearchInline({
     const el = inputRef.current;
     if (!el) return;
     const r = el.getBoundingClientRect();
-    setRect({ left: r.left, top: r.top + window.scrollY, width: r.width, bottom: r.bottom + window.scrollY });
+    setRect({
+      left: r.left,
+      top: r.top + window.scrollY,
+      width: r.width,
+      bottom: r.bottom + window.scrollY,
+    });
   };
 
   const index = useMemo(() => {
@@ -58,6 +63,7 @@ export default function SearchInline({
     return client.initIndex(INDEX_NAME);
   }, []);
 
+  // buscar con debounce
   useEffect(() => {
     let cancelled = false;
     const t = setTimeout(async () => {
@@ -85,6 +91,7 @@ export default function SearchInline({
     };
   }, [q, hitsPerPage, index]);
 
+  // cerrar al click fuera
   useEffect(() => {
     function onDocClick(e: MouseEvent) {
       const t = e.target as Node;
@@ -96,6 +103,7 @@ export default function SearchInline({
     return () => document.removeEventListener('mousedown', onDocClick);
   }, []);
 
+  // reposicionar
   useEffect(() => {
     const on = () => updateRect();
     window.addEventListener('resize', on);
@@ -131,6 +139,7 @@ export default function SearchInline({
 
   return (
     <div ref={boxRef} className={['w-full', className].join(' ')}>
+      {/* PASTILLA SIEMPRE VISIBLE (gris suave) */}
       <input
         ref={inputRef}
         value={q}
@@ -143,20 +152,30 @@ export default function SearchInline({
         }}
         onKeyDown={onKeyDown}
         placeholder={placeholder}
-        // --- Estilo "pastilla" ---
-        className="input input-bordered w-full rounded-full h-12 px-5 text-base"
+        className="
+          w-full h-12 px-5 text-base rounded-full
+          border border-base-300
+          bg-base-200 dark:bg-base-200/30
+          focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/40
+          transition
+        "
         aria-autocomplete="list"
         aria-expanded={open}
         aria-controls="algolia-autocomplete-listbox"
         role="combobox"
       />
 
+      {/* DROPDOWN CON FONDO BLANCO OPAQUE (sin transparencia) */}
       {open &&
         typeof window !== 'undefined' &&
         createPortal(
           <div
             ref={portalRef}
-            className="fixed z-[9999] rounded-xl border border-base-300 bg-base-100 dark:bg-base-200 shadow-xl"
+            className="
+              fixed z-[9999] rounded-2xl border border-base-300
+              bg-white dark:bg-white  /* blanco también en dark */
+              shadow-xl
+            "
             style={{ left: rect.left, top: rect.bottom + 6, width: rect.width }}
             role="listbox"
             id="algolia-autocomplete-listbox"
@@ -177,8 +196,8 @@ export default function SearchInline({
                   onMouseDown={(e) => e.preventDefault()}
                   onClick={() => goTo(hit)}
                   className={[
-                    'flex w-full items-start gap-3 px-4 py-3 text-left hover:bg-base-200',
-                    i === active ? 'bg-base-200' : '',
+                    'flex w-full items-start gap-3 px-4 py-3 text-left',
+                    i === active ? 'bg-base-100' : 'hover:bg-base-100',
                   ].join(' ')}
                   role="option"
                   aria-selected={i === active}
@@ -209,4 +228,3 @@ export default function SearchInline({
     </div>
   );
 }
-
