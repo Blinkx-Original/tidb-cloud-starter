@@ -6,29 +6,33 @@ type Props = {
   title?: string;
   subtitle?: string;
   className?: string;
-  autoFocus?: boolean; // si luego quieres enfocar en la home, úsalo en SearchInline
+  variant?: 'compact' | 'full'; // compact = sin encabezado y menos padding
 };
 
 export default function SearchHero({
   title = 'Busca en todo el catálogo',
   subtitle = 'Empieza a escribir y te sugerimos productos al instante.',
   className = '',
+  variant = 'compact',
 }: Props) {
+  const showHeader = variant === 'full' && (title || subtitle);
+
   return (
     <section className={`border-b border-base-300 bg-base-200/50 dark:bg-base-200/30 ${className}`}>
-      <div className="mx-auto max-w-6xl px-4 py-4 sm:py-5">
-        {(title || subtitle) && (
+      <div className={`mx-auto max-w-6xl px-4 ${variant === 'compact' ? 'py-3 sm:py-4' : 'py-6 sm:py-8'}`}>
+        {showHeader && (
           <header className="mb-2">
             {title && <h2 className="text-xl sm:text-2xl font-semibold">{title}</h2>}
             {subtitle && <p className="text-sm opacity-80">{subtitle}</p>}
           </header>
         )}
-
-        {/* Buscador con autocompletado (Algolia) */}
-        <SearchInline
-          placeholder="Buscar por nombre, categoría o descripción…"
-          className="w-full"
-        />
+        {/* centrado y estrecho en desktop; full en mobile */}
+        <div className="mx-auto w-full sm:w-4/5 md:w-2/3 lg:w-1/2">
+          <SearchInline
+            placeholder="Buscar por nombre, categoría o descripción…"
+            className="w-full"
+          />
+        </div>
       </div>
     </section>
   );
