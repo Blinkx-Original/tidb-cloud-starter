@@ -15,28 +15,32 @@ export default function Home({ categories, products }: Props) {
     <CommonLayout>
       <Head>
         <title>BlinkX — Catálogo</title>
-        <meta name="description" content="Encuentra tu próximo producto. Búsqueda simple y rápida en todo el catálogo." />
+        <meta
+          name="description"
+          content="Encuentra tu próximo producto. Búsqueda simple y rápida en todo el catálogo."
+        />
       </Head>
 
-      {/* Hero de homepage: H1 gigante + pastilla centrada */}
+      {/* Hero de homepage: H1/H2 centrados */}
       <section className="border-b border-base-300 bg-base-200/50 dark:bg-base-200/30">
-        <div className="mx-auto max-w-6xl px-4 py-8 sm:py-10">
+        <div className="mx-auto max-w-6xl px-4 py-10 sm:py-12 text-center">
           <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight">
             Encuentra tu próximo producto
           </h1>
-          <p className="mt-2 text-base sm:text-lg opacity-80">
+          {/* H2 de muestra — cámbialo cuando quieras */}
+          <h2 className="mt-2 text-lg sm:text-xl font-medium opacity-90">
             Búsqueda simple y rápida en todo el catálogo.
-          </p>
+          </h2>
         </div>
       </section>
 
-      {/* Pastilla (compacta, centrada y angosta) */}
+      {/* Pastilla (compacta, centrada y angosta; ahora con forma pill) */}
       <SearchHero variant="compact" />
 
       {/* Categorías populares */}
       <section className="mx-auto max-w-6xl px-4 py-8">
         <div className="flex items-baseline justify-between">
-          <h2 className="text-xl sm:text-2xl font-semibold">Categorías populares</h2>
+          <h3 className="text-xl sm:text-2xl font-semibold">Categorías populares</h3>
           <Link href="/categories" className="text-sm underline hover:no-underline">
             Ver todas
           </Link>
@@ -62,7 +66,7 @@ export default function Home({ categories, products }: Props) {
 
       {/* Novedades */}
       <section className="mx-auto max-w-6xl px-4 pb-12">
-        <h2 className="text-xl sm:text-2xl font-semibold">Novedades</h2>
+        <h3 className="text-xl sm:text-2xl font-semibold">Novedades</h3>
         {products.length === 0 ? (
           <p className="mt-4 opacity-80">Aún no hay productos.</p>
         ) : (
