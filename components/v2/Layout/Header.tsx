@@ -2,25 +2,14 @@
 'use client';
 
 import Link from 'next/link';
-import SearchPill from '@/components/v2/SearchPill';
-import ThemeToggle from '@/components/ThemeToggle'; // si no es default, usa { ThemeToggle }
+import ThemeToggle from '@/components/ThemeToggle';
 
 export default function Header() {
   return (
     <header className="sticky top-0 z-50 border-b border-base-content/10 bg-base-100/80 backdrop-blur">
-      <div className="mx-auto max-w-6xl px-4 py-3 grid grid-cols-[auto,1fr,auto] items-center gap-3">
+      <div className="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between gap-3">
         {/* Izquierda: logo */}
         <Link href="/" className="font-bold tracking-tight text-lg">BlinkX</Link>
-
-        {/* Centro: buscador inline (mismo componente que la home) */}
-        <div className="relative min-w-0">
-          {/* IMPORTANT: la envoltura relative evita que el dropdown se recorte */}
-          <SearchPill
-            size="md"
-            placeholder="Buscar productos…"
-            className="w-full"
-          />
-        </div>
 
         {/* Derecha: toggle de tema + menú */}
         <div className="flex items-center gap-2">
