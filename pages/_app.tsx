@@ -20,7 +20,10 @@ export default function MyApp({ Component, pageProps }: AppProps) {
             var LIGHT='${LIGHT_THEME}', DARK='${DARK_THEME}';
             var pref = localStorage.getItem('themePref') || 'auto';
             var dark = pref === 'dark' || (pref === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-            document.documentElement.setAttribute('data-theme', dark ? DARK : LIGHT);
+            var root = document.documentElement;
+            root.setAttribute('data-theme', dark ? DARK : LIGHT);
+            // IMPORTANTE: habilitar utilidades Tailwind "dark:"
+            root.classList.toggle('dark', dark);
           } catch (e) {}
         })();
       `}</Script>
@@ -30,8 +33,13 @@ export default function MyApp({ Component, pageProps }: AppProps) {
         <title>BlinkX</title>
       </Head>
 
-      {/* FIX: Proveer contexto de Recoil a toda la app */}
+      {/* Contexto global */}
       <RecoilRoot>
+        {/* Si quieres forzar el fondo global blanco/negro además del data-theme, envuelve en un div:
+            <div className="min-h-screen bg-white text-black dark:bg-black dark:text-white">
+              <Component {...pageProps} />
+            </div>
+           Por ahora lo dejo simple para no alterar tu styling existente. */}
         <Component {...pageProps} />
       </RecoilRoot>
     </>
