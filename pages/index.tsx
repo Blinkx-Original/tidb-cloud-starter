@@ -21,21 +21,31 @@ export default function Home({ categories, products }: Props) {
         />
       </Head>
 
-      {/* Hero de homepage: H1/H2 centrados */}
-      <section className="border-b border-base-300 bg-base-200/50 dark:bg-base-200/30">
+      {/* Hero de homepage */}
+      <section className="bg-base-200/50 dark:bg-base-200/30">
         <div className="mx-auto max-w-6xl px-4 py-10 sm:py-12 text-center">
-          <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight">
+          <h1 className="haas-bold text-4xl sm:text-5xl tracking-tight">
             Encuentra tu próximo producto
           </h1>
-          {/* H2 de muestra — cámbialo cuando quieras */}
-          <h2 className="mt-2 text-lg sm:text-xl font-medium opacity-90">
+          <h2 className="haas-bold mt-2 text-lg sm:text-xl opacity-90">
             Búsqueda simple y rápida en todo el catálogo.
           </h2>
+
+          {/* Texto común de ejemplo */}
+          <p className="mt-6 max-w-2xl mx-auto text-base opacity-80 leading-relaxed">
+            Este es un texto de ejemplo en la página principal. Aquí puedes
+            escribir lo que quieras sobre tu catálogo, tu empresa o cualquier
+            mensaje de bienvenida para los usuarios. Si más adelante quieres
+            cambiarlo, simplemente edita este archivo <code>pages/index.tsx</code>
+            y reemplaza el texto.
+          </p>
         </div>
       </section>
 
-      {/* Pastilla (compacta, centrada y angosta; ahora con forma pill) */}
-      <SearchHero variant="compact" />
+      {/* Pastilla centrada */}
+      <div className="mx-auto max-w-6xl px-4 py-4">
+        <SearchHero variant="compact" />
+      </div>
 
       {/* Categorías populares */}
       <section className="mx-auto max-w-6xl px-4 py-8">
