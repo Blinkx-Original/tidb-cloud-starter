@@ -11,7 +11,7 @@ About Us And Who Is Responsible for This Website
 **Our Mission** Statement
 -------------------------
 
-At Blinkx ([LON:BLNX](https://www.proactiveinvestors.com/LON:BLNX/Blinkx-Plc)) (LSE AIM: BLNX), our mission is to empower corporations and startups by providing them business and financial services, along with transparent, comprehensive, and unbiased analysis of enterprise application software. In an era where software drives companies, we are dedicated to ensuring that businesses have the insights they need to choose the best tools for their unique needs and the provision of business and financial services during all their operations lifecycle.
+At Blinkx ([LON:BLNX](https://www.proactiveinvestors.com/LON:BLNX/Blinkx-Plc)) (LSE AIM: BLNX), our mission is to empower corporations and startups by providing them business and financial services, along with transparent, comprehensive, and unbiased analysis of enterprise application software. In an era where software drives companies, we are dedicated to ensuring that businesses have the insights they need to choose the best tools for their unique needs and the provision of business and financial services during all their operations lifecycle. 
 
 **Our Evolution** - **Adapting to the Times**
 ---------------------------------------------
