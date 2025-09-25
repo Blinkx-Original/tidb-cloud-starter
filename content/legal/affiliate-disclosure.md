@@ -1,4 +1,3 @@
-
 ---
 title: "Affiliate Disclosure"
 url: "/affiliate-disclosure"
