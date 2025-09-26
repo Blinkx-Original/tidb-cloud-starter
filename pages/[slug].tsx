@@ -27,58 +27,42 @@ function kebabFromFilename(name: string) {
     .toLowerCase();
 }
 
-export default function LegalPage({
-  title,
-  html,
-  description,
-  lastReviewed,
-}: Props) {
+export default function LegalPage({ title, html, description, lastReviewed }: Props) {
   return (
     <CommonLayout>
       <Head>
         <title>{title} — BlinkX</title>
         {description && <meta name="description" content={description} />}
       </Head>
-      <main className="max-w-3xl mx-auto px-4 py-10 prose prose-neutral">
+
+      {/* 👇 Usa article.prose para que TODOS los h2/h3/listas/tablas reciban estilos */}
+      <article className="prose prose-neutral max-w-3xl mx-auto px-4 py-10">
         <h1>{title}</h1>
-        {lastReviewed && (
-          <p>
-            <em>Last reviewed: {lastReviewed}</em>
-          </p>
-        )}
-        {/* Render Markdown content */}
+        {lastReviewed && <p><em>Last reviewed: {lastReviewed}</em></p>}
         <div dangerouslySetInnerHTML={{ __html: html }} />
-      </main>
+      </article>
     </CommonLayout>
   );
 }
 
 export async function getStaticPaths() {
-  const files = fs
-    .readdirSync(LEGAL_DIR)
-    .filter((f) => f.endsWith('.md') || f.endsWith('.mdx'));
-
+  const files = fs.readdirSync(LEGAL_DIR).filter(f => f.endsWith('.md') || f.endsWith('.mdx'));
   const paths = files.map((file) => {
     const raw = fs.readFileSync(path.join(LEGAL_DIR, file), 'utf8');
     const fm = matter(raw).data as Record<string, any>;
     const rawSlug = (fm.slug || fm.url || `/${kebabFromFilename(file)}`) as string;
-    const slug = rawSlug.replace(/^\/+/, '');
-    return { params: { slug } };
+    return { params: { slug: rawSlug.replace(/^\/+/, '') } };
   });
-
   return { paths, fallback: false };
 }
 
 export async function getStaticProps({ params }: { params: { slug: string } }) {
-  const files = fs
-    .readdirSync(LEGAL_DIR)
-    .filter((f) => f.endsWith('.md') || f.endsWith('.mdx'));
+  const files = fs.readdirSync(LEGAL_DIR).filter(f => f.endsWith('.md') || f.endsWith('.mdx'));
   const target = `/${params.slug}`.toLowerCase();
 
   let filePath: string | null = null;
-  let fmData: Record<string, any> = {};
+  let dataFromFM: Record<string, any> = {};
 
-  // Find by slug/url
   for (const f of files) {
     const full = path.join(LEGAL_DIR, f);
     const raw = fs.readFileSync(full, 'utf8');
@@ -86,35 +70,31 @@ export async function getStaticProps({ params }: { params: { slug: string } }) {
     const fmSlug = (fm.data.slug || fm.data.url || `/${kebabFromFilename(f)}`) as string;
     if (fmSlug.toLowerCase() === target) {
       filePath = full;
-      fmData = fm.data as Record<string, any>;
+      dataFromFM = fm.data as Record<string, any>;
       break;
     }
   }
-
-  // Fallback: match by filename
   if (!filePath) {
-    const fallback = files.find((f) => `/${kebabFromFilename(f)}` === target);
+    const fallback = files.find(f => `/${kebabFromFilename(f)}` === target);
     if (fallback) {
       filePath = path.join(LEGAL_DIR, fallback);
-      fmData = matter(fs.readFileSync(filePath, 'utf8')).data as Record<string, any>;
+      dataFromFM = matter(fs.readFileSync(filePath, 'utf8')).data as Record<string, any>;
     }
   }
-
   if (!filePath) return { notFound: true };
 
   const raw = fs.readFileSync(filePath, 'utf8');
   const { content, data } = matter(raw);
 
   const processed = await remark()
-    .use(remarkGfm)
+    .use(remarkGfm)                 // tablas, listas de tareas, autolinks…
     .use(remarkHtml, { sanitize: false })
     .process(content);
-  const html = String(processed);
 
   return {
     props: {
       title: (data.title as string) ?? params.slug.replace(/-/g, ' '),
-      html,
+      html: String(processed),
       description: (data.description as string) ?? null,
       lastReviewed: (data.lastReviewed as string) ?? null,
     },
