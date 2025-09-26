@@ -2,7 +2,7 @@
 import * as React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { footerLinks } from "../footerLinks"; // ← ruta desde /components/v2
+import links from "../../content/footer/links.json"; // lee el JSON (tsconfig permite JSON)
 
 type FooterLink = {
   title: string;
@@ -10,13 +10,8 @@ type FooterLink = {
   external?: boolean;
 };
 
-function isExternal(href: string, external?: boolean) {
-  if (external) return true;
-  return /^https?:\/\//i.test(href);
-}
-
-function isTelOrMail(href: string) {
-  return /^(tel:|mailto:)/i.test(href);
+function isExternalHref(href: string) {
+  return /^(https?:\/\/|tel:|mailto:)/i.test(href);
 }
 
 export default function Footer() {
@@ -25,7 +20,6 @@ export default function Footer() {
   return (
     <footer className="mt-16 max-w-7xl mx-auto px-4">
       <div className="rounded-2xl p-8 bg-white text-black border border-black/10">
-        {/* Marca + descripción (opcional) */}
         <div className="flex items-center gap-4">
           <Image
             src="/brand/blinkx.webp"
@@ -39,20 +33,18 @@ export default function Footer() {
           </p>
         </div>
 
-        {/* Lista PLANA de enlaces del footer (sin títulos) */}
         <nav aria-label="Footer" className="mt-6">
           <ul className="flex flex-wrap gap-x-6 gap-y-3 text-sm">
-            {footerLinks.map((link: FooterLink, idx: number) => {
-              const external = isExternal(link.href, link.external);
-              const telOrMail = isTelOrMail(link.href);
-
-              if (external || telOrMail) {
+            {(links as FooterLink[]).map((link, idx) => {
+              const external = link.external || isExternalHref(link.href);
+              if (external) {
+                const isHttp = /^https?:\/\//i.test(link.href);
                 return (
                   <li key={`${link.title}-${idx}`}>
                     <a
                       href={link.href}
-                      target={external && !telOrMail ? "_blank" : undefined}
-                      rel={external && !telOrMail ? "noopener noreferrer" : undefined}
+                      target={isHttp ? "_blank" : undefined}
+                      rel={isHttp ? "noopener noreferrer" : undefined}
                       className="hover:underline"
                     >
                       {link.title}
@@ -72,7 +64,6 @@ export default function Footer() {
           </ul>
         </nav>
 
-        {/* Línea inferior */}
         <div className="mt-8 pt-6 border-t border-black/10 flex flex-col sm:flex-row items-center justify-between text-xs gap-3">
           <div>© {year} BlinkX. All rights reserved.</div>
           <div className="flex items-center gap-4">
@@ -85,6 +76,5 @@ export default function Footer() {
     </footer>
   );
 }
-
 
 
