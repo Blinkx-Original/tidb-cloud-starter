@@ -4,6 +4,7 @@ url: "/rates-and-fees"
 slug: "/rates-and-fees"
 lastReviewed: "2025-09-26"
 ---
+
 Blinkx.com is not a lender and never makes credit decisions. For this reason, the service cannot provide the users of the website with any information regarding the rates and fees associated with particular online personal loan products and the offers, provided by the lenders matched with the users of the website. However, blinkx.com is striving hard to ensure that the lenders in our network strictly adhere to all applicable international, federal, state and local regulations and laws and able to provide fair credit practices within the industry.
 
 Usually, this credit is associated with relatively high financial charges, rates and fees. For this reason, the industry is heavily regulated on federal, state and local levels. Moreover, the number or organizations, either governmental or non-governmental, which provide control over the agents in this industry and establish the best practices and regulative procedures, steadily grow and develop.
