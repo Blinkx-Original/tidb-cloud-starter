@@ -1,14 +1,12 @@
 // pages/[slug].tsx
-import fs from "fs";
-import path from "path";
-import Head from "next/head";
-import matter from "gray-matter";
-import { remark } from "remark";
-import remarkHtml from "remark-html";
-import remarkGfm from "remark-gfm";
-
-// ✅ Layout global con Header + Footer (ruta relativa desde /pages)
-import CommonLayout from "../components/v2";
+import fs from 'fs';
+import path from 'path';
+import Head from 'next/head';
+import matter from 'gray-matter';
+import { remark } from 'remark';
+import remarkHtml from 'remark-html';
+import remarkGfm from 'remark-gfm';
+import CommonLayout from '@/components/v2';
 
 type Props = {
   title: string;
@@ -17,29 +15,38 @@ type Props = {
   lastReviewed?: string | null;
 };
 
-const LEGAL_DIR = path.join(process.cwd(), "content", "legal");
+const LEGAL_DIR = path.join(process.cwd(), 'content', 'legal');
 
 function kebabFromFilename(name: string) {
   return name
-    .replace(/\.[^/.]+$/, "")
-    .replace(/([a-z])([A-Z])/g, "$1-$2")
-    .replace(/[^a-zA-Z0-9]+/g, "-")
-    .replace(/-+/g, "-")
-    .replace(/^-|-$/g, "")
+    .replace(/\.[^/.]+$/, '')
+    .replace(/([a-z])([A-Z])/g, '$1-$2')
+    .replace(/[^a-zA-Z0-9]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
     .toLowerCase();
 }
 
-export default function LegalPage({ title, html, description, lastReviewed }: Props) {
+export default function LegalPage({
+  title,
+  html,
+  description,
+  lastReviewed,
+}: Props) {
   return (
     <CommonLayout>
       <Head>
         <title>{title} — BlinkX</title>
         {description && <meta name="description" content={description} />}
       </Head>
-
       <main className="max-w-3xl mx-auto px-4 py-10 prose prose-neutral">
         <h1>{title}</h1>
-        {lastReviewed && <p><em>Last reviewed: {lastReviewed}</em></p>}
+        {lastReviewed && (
+          <p>
+            <em>Last reviewed: {lastReviewed}</em>
+          </p>
+        )}
+        {/* Render Markdown content */}
         <div dangerouslySetInnerHTML={{ __html: html }} />
       </main>
     </CommonLayout>
@@ -49,13 +56,13 @@ export default function LegalPage({ title, html, description, lastReviewed }: Pr
 export async function getStaticPaths() {
   const files = fs
     .readdirSync(LEGAL_DIR)
-    .filter((f) => f.endsWith(".md") || f.endsWith(".mdx"));
+    .filter((f) => f.endsWith('.md') || f.endsWith('.mdx'));
 
   const paths = files.map((file) => {
-    const raw = fs.readFileSync(path.join(LEGAL_DIR, file), "utf8");
+    const raw = fs.readFileSync(path.join(LEGAL_DIR, file), 'utf8');
     const fm = matter(raw).data as Record<string, any>;
     const rawSlug = (fm.slug || fm.url || `/${kebabFromFilename(file)}`) as string;
-    const slug = rawSlug.replace(/^\/+/, ""); // sin barra inicial
+    const slug = rawSlug.replace(/^\/+/, '');
     return { params: { slug } };
   });
 
@@ -65,17 +72,16 @@ export async function getStaticPaths() {
 export async function getStaticProps({ params }: { params: { slug: string } }) {
   const files = fs
     .readdirSync(LEGAL_DIR)
-    .filter((f) => f.endsWith(".md") || f.endsWith(".mdx"));
-
+    .filter((f) => f.endsWith('.md') || f.endsWith('.mdx'));
   const target = `/${params.slug}`.toLowerCase();
 
   let filePath: string | null = null;
   let fmData: Record<string, any> = {};
 
-  // 1) Buscar por slug/url del front-matter
+  // Find by slug/url
   for (const f of files) {
     const full = path.join(LEGAL_DIR, f);
-    const raw = fs.readFileSync(full, "utf8");
+    const raw = fs.readFileSync(full, 'utf8');
     const fm = matter(raw);
     const fmSlug = (fm.data.slug || fm.data.url || `/${kebabFromFilename(f)}`) as string;
     if (fmSlug.toLowerCase() === target) {
@@ -85,21 +91,20 @@ export async function getStaticProps({ params }: { params: { slug: string } }) {
     }
   }
 
-  // 2) Fallback por nombre de archivo
+  // Fallback: match by filename
   if (!filePath) {
     const fallback = files.find((f) => `/${kebabFromFilename(f)}` === target);
     if (fallback) {
       filePath = path.join(LEGAL_DIR, fallback);
-      fmData = matter(fs.readFileSync(filePath, "utf8")).data as Record<string, any>;
+      fmData = matter(fs.readFileSync(filePath, 'utf8')).data as Record<string, any>;
     }
   }
 
   if (!filePath) return { notFound: true };
 
-  const raw = fs.readFileSync(filePath, "utf8");
+  const raw = fs.readFileSync(filePath, 'utf8');
   const { content, data } = matter(raw);
 
-  // Render Markdown → HTML (con GFM para tablas, listas, autolinks, etc.)
   const processed = await remark()
     .use(remarkGfm)
     .use(remarkHtml, { sanitize: false })
@@ -108,11 +113,10 @@ export async function getStaticProps({ params }: { params: { slug: string } }) {
 
   return {
     props: {
-      title: (data.title as string) ?? params.slug.replace(/-/g, " "),
+      title: (data.title as string) ?? params.slug.replace(/-/g, ' '),
       html,
       description: (data.description as string) ?? null,
       lastReviewed: (data.lastReviewed as string) ?? null,
     },
   };
 }
-
