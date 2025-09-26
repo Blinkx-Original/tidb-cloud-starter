@@ -10,8 +10,8 @@ import remarkGfm from "remark-gfm";
 type Props = {
   title: string;
   html: string;
-  description?: string;
-  lastReviewed?: string;
+  description?: string | null;
+  lastReviewed?: string | null;
 };
 
 const LEGAL_DIR = path.join(process.cwd(), "content", "legal");
@@ -89,7 +89,6 @@ export async function getStaticProps({ params }: { params: { slug: string } }) {
   const raw = fs.readFileSync(filePath, "utf8");
   const { content, data } = matter(raw);
 
-  // Render Markdown → HTML (con GFM: tablas, autolinks, etc.)
   const processed = await remark()
     .use(remarkGfm)
     .use(remarkHtml, { sanitize: false })
