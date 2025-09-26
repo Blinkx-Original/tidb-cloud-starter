@@ -1,15 +1,15 @@
-// components/v2/index.tsx
-import React, { useEffect } from "react";
-import Header from "./Header";
-import Footer from "./Footer";
+'use client';
+import { useEffect } from 'react';
+import Header from './Header';
+import Footer from './Footer';
 
 export default function CommonLayout({ children }: { children: React.ReactNode }) {
-  // Fuerza light: quita cualquier "dark" que alguna página/componente haya puesto
   useEffect(() => {
-    if (typeof document !== "undefined") {
-      document.documentElement.classList.remove("dark");
-      document.body.classList.remove("dark");
-      document.documentElement.setAttribute("data-theme", "light");
+    // Remove any dark class and force data-theme=light
+    if (typeof document !== 'undefined') {
+      document.documentElement.classList.remove('dark');
+      document.body.classList.remove('dark');
+      document.documentElement.setAttribute('data-theme', 'light');
     }
   }, []);
 
@@ -21,3 +21,4 @@ export default function CommonLayout({ children }: { children: React.ReactNode }
     </div>
   );
 }
+
