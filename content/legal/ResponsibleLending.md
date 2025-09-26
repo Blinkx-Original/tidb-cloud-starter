@@ -4,6 +4,7 @@ url: "/responsible-lending"
 slug: "/responsible-lending"
 lastReviewed: "2025-09-26"
 ---
+
 We are not a loan providing service, nor do we represent or endorse any lender. But we are working hard to provide you with access to reliable lenders and match you with the lenders who can offer you loan products according to the information you submit in our online form.
 
 We put maximum efforts to ensure that all the lenders in our network are legitimate loan providers adhering to federal, state and local laws, fair and responsible lending practices and the best practices in the industry.
