@@ -7,6 +7,9 @@ import { remark } from "remark";
 import remarkHtml from "remark-html";
 import remarkGfm from "remark-gfm";
 
+// ✅ Layout global con Header + Footer (ruta relativa desde /pages)
+import CommonLayout from "../components/v2";
+
 type Props = {
   title: string;
   html: string;
@@ -28,7 +31,7 @@ function kebabFromFilename(name: string) {
 
 export default function LegalPage({ title, html, description, lastReviewed }: Props) {
   return (
-    <>
+    <CommonLayout>
       <Head>
         <title>{title} — BlinkX</title>
         {description && <meta name="description" content={description} />}
@@ -39,18 +42,20 @@ export default function LegalPage({ title, html, description, lastReviewed }: Pr
         {lastReviewed && <p><em>Last reviewed: {lastReviewed}</em></p>}
         <div dangerouslySetInnerHTML={{ __html: html }} />
       </main>
-    </>
+    </CommonLayout>
   );
 }
 
 export async function getStaticPaths() {
-  const files = fs.readdirSync(LEGAL_DIR).filter(f => f.endsWith(".md") || f.endsWith(".mdx"));
+  const files = fs
+    .readdirSync(LEGAL_DIR)
+    .filter((f) => f.endsWith(".md") || f.endsWith(".mdx"));
 
   const paths = files.map((file) => {
     const raw = fs.readFileSync(path.join(LEGAL_DIR, file), "utf8");
     const fm = matter(raw).data as Record<string, any>;
     const rawSlug = (fm.slug || fm.url || `/${kebabFromFilename(file)}`) as string;
-    const slug = rawSlug.replace(/^\/+/, "");
+    const slug = rawSlug.replace(/^\/+/, ""); // sin barra inicial
     return { params: { slug } };
   });
 
@@ -58,12 +63,16 @@ export async function getStaticPaths() {
 }
 
 export async function getStaticProps({ params }: { params: { slug: string } }) {
-  const files = fs.readdirSync(LEGAL_DIR).filter(f => f.endsWith(".md") || f.endsWith(".mdx"));
+  const files = fs
+    .readdirSync(LEGAL_DIR)
+    .filter((f) => f.endsWith(".md") || f.endsWith(".mdx"));
+
   const target = `/${params.slug}`.toLowerCase();
 
   let filePath: string | null = null;
   let fmData: Record<string, any> = {};
 
+  // 1) Buscar por slug/url del front-matter
   for (const f of files) {
     const full = path.join(LEGAL_DIR, f);
     const raw = fs.readFileSync(full, "utf8");
@@ -76,8 +85,9 @@ export async function getStaticProps({ params }: { params: { slug: string } }) {
     }
   }
 
+  // 2) Fallback por nombre de archivo
   if (!filePath) {
-    const fallback = files.find(f => `/${kebabFromFilename(f)}` === target);
+    const fallback = files.find((f) => `/${kebabFromFilename(f)}` === target);
     if (fallback) {
       filePath = path.join(LEGAL_DIR, fallback);
       fmData = matter(fs.readFileSync(filePath, "utf8")).data as Record<string, any>;
@@ -89,6 +99,7 @@ export async function getStaticProps({ params }: { params: { slug: string } }) {
   const raw = fs.readFileSync(filePath, "utf8");
   const { content, data } = matter(raw);
 
+  // Render Markdown → HTML (con GFM para tablas, listas, autolinks, etc.)
   const processed = await remark()
     .use(remarkGfm)
     .use(remarkHtml, { sanitize: false })
