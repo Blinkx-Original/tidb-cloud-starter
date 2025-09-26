@@ -4,6 +4,7 @@ url: "/no-gift-policy"
 slug: "/no-gift-policy"
 lastReviewed: "2025-09-26"
 ---
+
 Our readers rely on Blinkx for accuracy and objectivity, whether in the form of data, analytics, comparisons, or reviews. We have [very firm values](https://blinkx.com/about/), we protect our prospective [investors](https://blinkx.com/investors/) and [readers](https://blinkx.com/faq/) with our [editorial guidelines](https://blinkx.com/editorial-guidelines/), [privacy](https://blinkx.com/privacy-policy/), [sitemap transparency](https://blinkx.com/sitemap/), [responsible lending](https://blinkx.com/responsible-lending-policy/), and honest [marketing practices](https://blinkx.com/marketing-practices/).
 
 We also foster the best in our local community with our [diversity policies](https://blinkx.com/diversity-policy/) and our position [against modern slavery](https://blinkx.com/statement-against-slavery/) in our procurement of services.
