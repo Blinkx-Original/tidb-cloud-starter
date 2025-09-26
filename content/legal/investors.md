@@ -4,6 +4,7 @@ url: "/investors"
 slug: "/investors"
 lastReviewed: "2025-09-26"
 ---
+
 We are Blinkx. The concept of a society where everyone is confidently able to make financial, business, and lifestyle choices transcends individuals and permeates the [organization's core principles](https://blinkx.com/about/).
 
 We are supported by readers, [advertisers](https://blinkx.com/advertiser-disclosure/), and [affiliate deals](https://blinkx.com/affiliate-disclosure/). We have strict [editorial guidelines](https://blinkx.com/editorial-guidelines/) that include [privacy for readers](https://blinkx.com/privacy-policy/) with [sitemap](https://blinkx.com/sitemap/) transparency, honest [marketing practices](https://blinkx.com/marketing-practices/), [responsible lending](https://blinkx.com/responsible-lending-policy/), our [no-gift policy](https://blinkx.com/no-gift-policy/), and clear information for our prospective investors and [users](https://blinkx.com/terms-and-conditions/).
