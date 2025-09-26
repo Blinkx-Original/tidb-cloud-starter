@@ -4,6 +4,7 @@ url: "/meet-our-team"
 slug: "/meet-our-team"
 lastReviewed: "2025-09-26"
 ---
+
 We have a team of contributing writers in software testing and personal finances. We will have a specialist in home improvement and real estate too.
 
 [Contact us](https://blinkx.com/contact/) to see when we have open positions. We protect freelance and staff collaborators according to our [diversity policy](https://blinkx.com/diversity-policy/) and the lack of [gender pay-gap](https://blinkx.com/gender-pay-gap/).
