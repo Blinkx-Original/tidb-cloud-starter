@@ -1,17 +1,17 @@
 // tailwind.config.ts
 import type { Config } from 'tailwindcss';
+import typography from '@tailwindcss/typography';
 
 const config: Config = {
   content: [
     './pages/**/*.{js,ts,jsx,tsx,mdx}',
     './components/**/*.{js,ts,jsx,tsx,mdx}',
-    './app/**/*.{js,ts,jsx,tsx,mdx}', // por si usas la carpeta app
-    './content/**/*.{md,mdx}',        // para que escanee tus .md
+    './app/**/*.{js,ts,jsx,tsx,mdx}',   // por si usas App Router en algo
+    './content/**/*.{md,mdx}',          // para detectar estilos en MD
   ],
   theme: {
     extend: {
       colors: {
-        // Azul de acento (CTA)
         accent: {
           DEFAULT: '#2f81f7',
           hover:   '#3b82f6',
@@ -19,18 +19,14 @@ const config: Config = {
         },
       },
       boxShadow: {
-        'accent-glow':
-          '0 0 0 2px rgba(96,165,250,0.35), 0 8px 24px rgba(47,129,247,0.25)',
+        'accent-glow': '0 0 0 2px rgba(96,165,250,0.35), 0 8px 24px rgba(47,129,247,0.25)',
       },
       borderRadius: {
         xl2: '1rem',
       },
     },
   },
-  plugins: [
-    require('@tailwindcss/typography'), // 👈 aquí activas el plugin
-  ],
+  plugins: [typography],
 };
 
 export default config;
-
