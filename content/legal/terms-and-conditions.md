@@ -4,6 +4,7 @@ url: "/terms-and-conditions"
 slug: "/terms-and-conditions"
 lastReviewed: "2025-09-26"
 ---
+
 Welcome to blinkx.com!
 
 These terms and conditions outline the rules and regulations for the use of blinkx.com’s Website, located at blinkx.com.
