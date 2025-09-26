@@ -5,6 +5,8 @@ const config: Config = {
   content: [
     './pages/**/*.{js,ts,jsx,tsx,mdx}',
     './components/**/*.{js,ts,jsx,tsx,mdx}',
+    './app/**/*.{js,ts,jsx,tsx,mdx}', // por si usas la carpeta app
+    './content/**/*.{md,mdx}',        // para que escanee tus .md
   ],
   theme: {
     extend: {
@@ -25,7 +27,9 @@ const config: Config = {
       },
     },
   },
-  plugins: [],
+  plugins: [
+    require('@tailwindcss/typography'), // 👈 aquí activas el plugin
+  ],
 };
 
 export default config;
