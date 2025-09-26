@@ -17,11 +17,13 @@ export default function ProductPage({ product }: Props) {
   if (!product) {
     return (
       <CommonLayout>
-        <main className="mx-auto max-w-6xl px-4 bg-black text-white min-h-screen">
+        <main className="mx-auto max-w-6xl px-4 bg-white text-black min-h-screen">
           <div className="py-16 text-center">
             <h1 className="text-2xl font-bold">Producto no encontrado</h1>
             <p className="mt-2">
-              <Link href="/" className="underline">Volver al inicio</Link>
+              <Link href="/" className="underline">
+                Volver al inicio
+              </Link>
             </p>
           </div>
         </main>
@@ -37,22 +39,23 @@ export default function ProductPage({ product }: Props) {
         <title>{product.name} — BlinkX</title>
       </Head>
 
-      <main className="mx-auto max-w-6xl px-4 bg-black text-white min-h-screen">
-        {/* Breadcrumbs */}
+      <main className="mx-auto max-w-6xl px-4 bg-white text-black min-h-screen">
         <div className="pt-6">
           <Breadcrumbs
             items={[
               { label: 'Inicio', href: '/' },
               { label: 'Categorías', href: '/categories' },
               product.category_slug
-                ? { label: product.category_name ?? 'Categoría', href: `/category/${product.category_slug}` }
+                ? {
+                    label: product.category_name ?? 'Categoría',
+                    href: `/category/${product.category_slug}`,
+                  }
                 : { label: product.category_name ?? 'Sin categoría' },
               { label: product.name },
             ]}
           />
         </div>
 
-        {/* Search hero debajo del header/breadcrumbs */}
         <SearchHero
           title="¿Buscas otra alternativa?"
           subtitle="Empieza a escribir y te sugerimos productos al instante"
@@ -60,11 +63,10 @@ export default function ProductPage({ product }: Props) {
           autoFocus={false}
         />
 
-        {/* Card de producto */}
         <section className="py-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="border border-white rounded-2xl overflow-hidden bg-black aspect-[4/3]">
-              {product.image_url ? (
+            <div className="border border-gray-200 rounded-2xl overflow-hidden bg-white aspect-[4/3]">
+              {product.image_url && (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={product.image_url}
@@ -72,30 +74,31 @@ export default function ProductPage({ product }: Props) {
                   className="w-full h-full object-cover"
                   loading="lazy"
                 />
-              ) : null}
+              )}
             </div>
 
-            <div className="border border-white rounded-2xl p-6">
-              <h1 className="text-2xl sm:text-3xl font-bold text-white">{product.name}</h1>
-              {price && <div className="mt-3 text-xl font-semibold text-white">{price}</div>}
-              <div className="mt-2 text-sm text-white">
+            <div className="border border-gray-200 rounded-2xl p-6">
+              <h1 className="text-2xl sm:text-3xl font-bold text-black">{product.name}</h1>
+              {price && (
+                <div className="mt-3 text-xl font-semibold text-black">{price}</div>
+              )}
+              <div className="mt-2 text-sm text-gray-600">
                 {product.category_name ?? 'Sin categoría'}
               </div>
-
-              <p className="mt-4 text-white">{product.description}</p>
+              <p className="mt-4 text-gray-700">{product.description}</p>
 
               <div className="mt-6 flex flex-wrap gap-3">
                 {product.category_slug && (
                   <Link
                     href={`/category/${product.category_slug}`}
-                    className="px-4 py-2 rounded-xl border border-white hover:opacity-90"
+                    className="px-4 py-2 rounded-xl border border-gray-300 hover:bg-gray-50"
                   >
                     Ver más en {product.category_name}
                   </Link>
                 )}
                 <Link
                   href="/categories"
-                  className="px-4 py-2 rounded-xl border border-white hover:opacity-90"
+                  className="px-4 py-2 rounded-xl border border-gray-300 hover:bg-gray-50"
                 >
                   Ver categorías
                 </Link>
@@ -104,7 +107,6 @@ export default function ProductPage({ product }: Props) {
           </div>
         </section>
 
-        {/* Espaciador para no tapar contenido con el sticky bar */}
         <div className="h-24 sm:h-20" />
       </main>
 
@@ -122,7 +124,8 @@ export const getServerSideProps: GetServerSideProps<Props> = async ({ params }) 
 
   const rows = await query<Product>(
     `
-    SELECT id, name, slug, image_url, price_eur, price, description, category_name, category_slug
+    SELECT id, name, slug, image_url, price_eur, price, description,
+      category_name, category_slug
     FROM products
     WHERE slug = ?
     LIMIT 1
