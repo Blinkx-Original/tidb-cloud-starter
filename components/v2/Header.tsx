@@ -1,77 +1,34 @@
-// components/v2/Header.tsx
 'use client';
-
 import Link from 'next/link';
-import React from 'react';
-import InlineSearch from './InlineSearch';
+import Image from 'next/image';
 
-function ThemeToggle() {
-  // Simple: respeta data-theme y guarda en localStorage
-  const [theme, setTheme] = React.useState<'light' | 'dark' | 'auto'>('auto');
-
-  React.useEffect(() => {
-    const saved = (localStorage.getItem('themePref') as typeof theme) || 'auto';
-    setTheme(saved);
-  }, []);
-  React.useEffect(() => {
-    localStorage.setItem('themePref', theme);
-    if (theme === 'auto') {
-      document.documentElement.removeAttribute('data-theme');
-    } else {
-      document.documentElement.setAttribute('data-theme', theme);
-    }
-  }, [theme]);
-
-  const Btn = ({
-    val,
-    label,
-  }: {
-    val: 'light' | 'dark' | 'auto';
-    label: string;
-  }) => (
-    <button
-      onClick={() => setTheme(val)}
-      className={`text-xs px-2 py-1 rounded-full border ${theme === val ? 'bg-base-200' : ''}`}
-      aria-pressed={theme === val}
-    >
-      {label}
-    </button>
-  );
-
-  return (
-    <div className="flex gap-2 items-center">
-      <Btn val="light" label="Día" />
-      <Btn val="auto" label="Auto" />
-      <Btn val="dark" label="Noche" />
-    </div>
-  );
-}
-
+/**
+ * Minimal BlinkX header:
+ * - Left: logo linking home
+ * - Right: hamburger link to categories
+ * - No search bar or theme toggle
+ */
 export default function Header() {
   return (
-    <header className="sticky top-0 z-40 bg-base-100/80 backdrop-blur border-b border-base-200">
-      <div className="mx-auto max-w-6xl px-4 h-14 flex items-center gap-3">
-        {/* Izquierda: logo */}
-        <div className="shrink-0">
-          <Link href="/" className="font-semibold">BlinkX</Link>
+    <header className="sticky top-0 z-40 bg-white/80 backdrop-blur border-b border-gray-200">
+      <div className="mx-auto max-w-6xl px-4 h-14 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Link href="/">
+            <Image
+              src="/brand/blinkx.webp"
+              alt="BlinkX"
+              width={120}
+              height={30}
+              className="h-8 w-auto"
+              priority
+            />
+          </Link>
         </div>
 
-        {/* Centro: inline search SIEMPRE visible */}
-        <div className="flex-1 min-w-0">
-          <InlineSearch
-            className="w-full max-w-2xl mx-auto"
-            placeholder="Buscar en catálogo…"
-          />
-        </div>
-
-        {/* Derecha: toggles / menú */}
-        <div className="shrink-0 flex items-center gap-3">
-          <ThemeToggle />
-          <Link
-            href="/categories"
-            className="hidden sm:inline-block text-sm px-3 py-1 rounded-full border hover:bg-base-200"
-          >
-            Categorías
+        <div className="flex items-center">
+          {/* Hamburger icon linking to categories */}
+          <Link href="/categories" aria-label="Menú" className="text-2xl leading-none">
+            ☰
           </Link>
         </div>
       </div>
