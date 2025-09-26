@@ -4,6 +4,7 @@ url: "/statement-against-slavery"
 slug: "/statement-against-slavery"
 lastReviewed: "2025-09-26"
 ---
+
 BLINKX does not tolerate modern slavery or human trafficking in our organization or in our supply chain of goods and services. 
 
 We uphold universal human rights in our conduct, which outlines the standards that we expect of all of our employees. These universal human rights include freedom of speech and association, equal employment opportunity, and cultural, economic, and social well-being. Slavery in any form, servitude, forced or compelled labor, and any kind of human trafficking are categorically unacceptable to us, and we vigorously reject these labor practices.
