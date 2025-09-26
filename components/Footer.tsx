@@ -21,32 +21,20 @@ function isTelOrMail(href: string) {
 export default function Footer() {
   return (
     <footer className="w-full border-t">
-      <nav
-        aria-label="Footer"
-        className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6"
-      >
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
         <ul className="flex flex-wrap gap-x-6 gap-y-3 text-sm">
           {footerLinks.map((link: FooterLink, idx: number) => {
             const external = isExternal(link.href, link.external);
             const telOrMail = isTelOrMail(link.href);
 
-            // Enlaces externos: <a>; internos: <Link>
             if (external || telOrMail) {
               return (
                 <li key={`${link.title}-${idx}`}>
                   <a
                     href={link.href}
-                    // Para tel/mail no abrimos nueva pestaña
-                    target={
-                      external && !telOrMail ? "_blank" : undefined
-                    }
-                    rel={
-                      external && !telOrMail
-                        ? "noopener noreferrer"
-                        : undefined
-                    }
+                    target={external && !telOrMail ? "_blank" : undefined}
+                    rel={external && !telOrMail ? "noopener noreferrer" : undefined}
                     className="hover:underline"
-                    aria-label={link.title}
                   >
                     {link.title}
                   </a>
@@ -54,17 +42,21 @@ export default function Footer() {
               );
             }
 
-            // Internos → Next.js <Link>
             return (
               <li key={`${link.title}-${idx}`}>
-                <Link href={link.href} className="hover:underline" aria-label={link.title}>
+                <Link href={link.href} className="hover:underline">
                   {link.title}
                 </Link>
               </li>
             );
           })}
         </ul>
-      </nav>
+
+        <div className="mt-6 text-xs text-gray-500">
+          © {new Date().getFullYear()} BlinkX. All rights reserved.
+        </div>
+      </div>
     </footer>
   );
 }
+
