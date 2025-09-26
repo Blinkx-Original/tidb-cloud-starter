@@ -4,7 +4,7 @@ url: "/privacy-policy"
 slug: "/privacy-policy"
 lastReviewed: "2025-09-26"
 ---
-Effective date: February 5th, 2023
+Effective date: September 27th, 2025
 
 The Privacy Policy on blinkx.com (hereinafter we, us, our, ours, Website, Site) is the formal document, which determines and explains how the information of the user (hereinafter User, Users, You, Your, Yours) is collected, stored, shared and used on the Website. This document was elaborated to make formal guarantee of the protection and security of the information provided on the Website.
 
