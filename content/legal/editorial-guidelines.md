@@ -4,6 +4,7 @@ url: "/editorial-guidelines"
 slug: "/editorial-guidelines"
 lastReviewed: "2025-09-26"
 ---
+
 These editorial guidelines are our SOP valid since August 14th, 2023. They have to be utilized by our freelance writers, and employees.
 
 These guidelines also follow our [position against modern slavery](https://blinkx.com/statement-against-slavery/), our [diversity policy](https://blinkx.com/diversity-policy/), and our [company values](https://blinkx.com/about/) with our readers, transparency to [our investors](https://blinkx.com/investors/), respect for [our team](https://blinkx.com/meet-our-team/) and objectivity thanks to a [no-gift policy](https://blinkx.com/no-gift-policy/).
