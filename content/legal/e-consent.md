@@ -4,6 +4,7 @@ url: "/e-consent"
 slug: "/e-consent"
 lastReviewed: "2025-09-26"
 ---
+
 ## Consent for Electronic Signatures, Records, Disclosures, Communication
 
 _It is important that you read and understand the information herein prior to submitting any information on the website or starting do business electronically._ 
