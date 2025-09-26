@@ -4,6 +4,7 @@ url: "/marketing-practices"
 slug: "/marketing-practices"
 lastReviewed: "2025-09-26"
 ---
+
 While submitting your information during the registration on the website you agree with these Marketing Practices, the [Terms and Conditions of Use](https://blinkx.com/terms-and-conditions/) and [Privacy Policy](https://blinkx.com/privacy-policy/) on the website.
 
 You agree with the provisions of these documents and acknowledge that your registration is deemed as a request to get matched with one of third party lenders in our network.
