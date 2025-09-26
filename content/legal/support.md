@@ -4,6 +4,7 @@ url: "/support"
 slug: "/support"
 lastReviewed: "2025-09-26"
 ---
+
 At BLINKX it is our utmost priority to provide comprehensive support and exceptional service to our distinguished customers, prospective clientele, and the wider community. We take pride in our unwavering commitment to addressing your queries and ensuring your utmost satisfaction.
 
 Should you find yourself in need of assistance, we cordially invite you to peruse our meticulously curated [Frequently Asked Questions](https://blinkx.com/faq/) section. This invaluable resource has been thoughtfully designed to address a plethora of common inquiries, providing you with prompt and efficient resolutions.
