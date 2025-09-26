@@ -1,13 +1,13 @@
 // tailwind.config.ts
 import type { Config } from 'tailwindcss';
-import typography from '@tailwindcss/typography';
 
 const config: Config = {
+  darkMode: 'class', // ← añade esta línea
   content: [
     './pages/**/*.{js,ts,jsx,tsx,mdx}',
     './components/**/*.{js,ts,jsx,tsx,mdx}',
-    './app/**/*.{js,ts,jsx,tsx,mdx}',   // por si usas App Router en algo
-    './content/**/*.{md,mdx}',          // para detectar estilos en MD
+    './app/**/*.{js,ts,jsx,tsx,mdx}',
+    './content/**/*.{md,mdx}',
   ],
   theme: {
     extend: {
@@ -21,12 +21,11 @@ const config: Config = {
       boxShadow: {
         'accent-glow': '0 0 0 2px rgba(96,165,250,0.35), 0 8px 24px rgba(47,129,247,0.25)',
       },
-      borderRadius: {
-        xl2: '1rem',
-      },
+      borderRadius: { xl2: '1rem' },
     },
   },
-  plugins: [typography],
+  plugins: [], // deja lo que ya tenías si usas otros plugins
 };
 
 export default config;
+
