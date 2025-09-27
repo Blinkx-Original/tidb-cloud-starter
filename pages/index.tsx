@@ -6,6 +6,7 @@ import SearchHero from '@/components/v2/SearchHero';
 import { GetServerSideProps } from 'next';
 import { query, Product } from '@/lib/db';
 import { formatPriceEUR } from '@/lib/price';
+import PillLinks from "@/components/v2/PillLinks";
 
 type CategoryRow = { slug: string; name: string; count: number };
 type Props = { categories: CategoryRow[]; products: Product[] };
@@ -44,6 +45,33 @@ export default function Home({ categories, products }: Props) {
       <div className="mx-auto max-w-6xl px-4 py-4">
         <SearchHero variant="compact" />
       </div>
+
+
+      {/* Row de pastillas tipo Vercel (3 unidades) */}
+<div className="mx-auto max-w-6xl px-4 py-4">
+  <PillLinks
+    items={[
+      {
+        label: "Enterprise",
+        href: "/enterprise",              // ← cámbialo cuando quieras
+        ariaLabel: "Ver soluciones Enterprise",
+        icon: "🏢",
+      },
+      {
+        label: "Security",
+        href: "/security",                // ← cámbialo cuando quieras
+        ariaLabel: "Leer sobre seguridad",
+        icon: "🛡️",
+      },
+      {
+        label: "Docs",
+        href: "/docs/get-started",        // ← cámbialo cuando quieras
+        ariaLabel: "Ir a la documentación",
+        icon: "📚",
+      },
+    ]}
+  />
+</div>
 
       {/* Categorías populares */}
       <section className="mx-auto max-w-6xl px-4 py-8">
