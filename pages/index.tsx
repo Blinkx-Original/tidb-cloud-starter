@@ -24,17 +24,12 @@ export default function Home({ categories, products }: Props) {
       {/* Hero de homepage (sin líneas) */}
       <section className="bg-[#f6f6f6]">
         <div className="mx-auto max-w-6xl px-4 py-10 sm:py-12 text-center">
-          {/* H1: Bold estilo Haas-like */}
           <h1 className="text-4xl sm:text-5xl font-black tracking-tight leading-[1.1]">
             Encuentra tu próximo producto
           </h1>
-
-          {/* H2: también centrado y con buen peso */}
           <h2 className="mt-2 text-lg sm:text-xl font-bold opacity-90 tracking-tight">
             Búsqueda simple y rápida en todo el catálogo.
           </h2>
-
-          {/* Texto común editable */}
           <p className="mt-6 max-w-2xl mx-auto text-base opacity-80 leading-relaxed">
             Este es un texto de ejemplo en la página principal. Aquí puedes
             escribir lo que quieras sobre tu catálogo, tu empresa o cualquier
@@ -69,8 +64,8 @@ export default function Home({ categories, products }: Props) {
                 href={`/category/${c.slug}`}
                 className="rounded-xl border border-black/10 hover:border-black/20 bg-white px-4 py-3"
               >
+                {/* 👇 Solo nombre; SIN contador */}
                 <div className="font-medium">{c.name}</div>
-                <div className="text-xs opacity-70">{c.count} productos</div>
               </Link>
             ))}
           </div>
@@ -147,3 +142,4 @@ export const getServerSideProps: GetServerSideProps = async () => {
 
   return { props: { categories, products } };
 };
+
