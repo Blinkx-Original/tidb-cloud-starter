@@ -2,7 +2,7 @@
 import * as React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import links from "../../content/footer/links.json"; // lee el JSON (tsconfig permite JSON)
+import links from "../../content/footer/links.json";
 
 type FooterLink = {
   title: string;
@@ -18,7 +18,8 @@ export default function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="mt-16 max-w-7xl mx-auto px-4">
+    // 👇 pb-10 asegura espacio extra debajo del recuadro para que no se corte
+    <footer className="mt-16 max-w-7xl mx-auto px-4 pb-10 md:pb-12">
       <div className="rounded-2xl p-8 bg-white text-black border border-black/10">
         <div className="flex items-center gap-4">
           <Image
@@ -52,7 +53,6 @@ export default function Footer() {
                   </li>
                 );
               }
-
               return (
                 <li key={`${link.title}-${idx}`}>
                   <Link href={link.href} className="hover:underline">
