@@ -1,12 +1,12 @@
 // pages/index.tsx
-import Head from 'next/head';
-import Link from 'next/link';
-import CommonLayout from '@/components/v2';
-import SearchHero from '@/components/v2/SearchHero';
-import { GetServerSideProps } from 'next';
-import { query, Product } from '@/lib/db';
-import { formatPriceEUR } from '@/lib/price';
-import PillLinks from "@/components/v2/PillLinks";
+import Head from "next/head";
+import Link from "next/link";
+import CommonLayout from "@/components/v2";
+import SearchHero from "@/components/v2/SearchHero";
+import PillBlock from "@/components/v2/PillBlock"; // 👈 nuevo import
+import { GetServerSideProps } from "next";
+import { query, Product } from "@/lib/db";
+import { formatPriceEUR } from "@/lib/price";
 
 type CategoryRow = { slug: string; name: string; count: number };
 type Props = { categories: CategoryRow[]; products: Product[] };
@@ -22,7 +22,7 @@ export default function Home({ categories, products }: Props) {
         />
       </Head>
 
-      {/* Hero de homepage (sin líneas) */}
+      {/* Hero de homepage */}
       <section className="bg-[#f6f6f6]">
         <div className="mx-auto max-w-6xl px-4 py-10 sm:py-12 text-center">
           <h1 className="text-4xl sm:text-5xl font-black tracking-tight leading-[1.1]">
@@ -35,49 +35,45 @@ export default function Home({ categories, products }: Props) {
             Este es un texto de ejemplo en la página principal. Aquí puedes
             escribir lo que quieras sobre tu catálogo, tu empresa o cualquier
             mensaje de bienvenida para los usuarios. Si más adelante quieres
-            cambiarlo, simplemente edita este archivo <code>pages/index.tsx</code>
-            y reemplaza el texto.
+            cambiarlo, simplemente edita este archivo <code>pages/index.tsx</code>.
           </p>
         </div>
       </section>
 
-      {/* Pastilla centrada, sin líneas alrededor */}
+      {/* Pastilla de búsqueda */}
       <div className="mx-auto max-w-6xl px-4 py-4">
         <SearchHero variant="compact" />
       </div>
 
-
-      {/* Row de pastillas tipo Vercel (3 unidades) */}
-<div className="mx-auto max-w-6xl px-4 py-4">
-  <PillLinks
-    items={[
-      {
-        label: "Enterprise",
-        href: "/enterprise",              // ← cámbialo cuando quieras
-        ariaLabel: "Ver soluciones Enterprise",
-        icon: "🏢",
-      },
-      {
-        label: "Security",
-        href: "/security",                // ← cámbialo cuando quieras
-        ariaLabel: "Leer sobre seguridad",
-        icon: "🛡️",
-      },
-      {
-        label: "Docs",
-        href: "/docs/get-started",        // ← cámbialo cuando quieras
-        ariaLabel: "Ir a la documentación",
-        icon: "📚",
-      },
-    ]}
-  />
-</div>
+      {/* 👇 Nuevo bloque con pills + texto */}
+      <PillBlock
+        segments={[
+          {
+            textBefore: "Scale your",
+            pill: { label: "Enterprise", href: "/enterprise", icon: "🏢" },
+            textAfter: "without compromising",
+          },
+          {
+            pill: { label: "Security", href: "/security", icon: "🛡️" },
+            textAfter: "and explore",
+          },
+          {
+            pill: { label: "Docs", href: "/docs", icon: "📚" },
+            textAfter: "for developers.",
+          },
+        ]}
+      />
 
       {/* Categorías populares */}
       <section className="mx-auto max-w-6xl px-4 py-8">
         <div className="flex items-baseline justify-between">
-          <h3 className="text-xl sm:text-2xl font-semibold">Categorías populares</h3>
-          <Link href="/categories" className="text-sm underline hover:no-underline">
+          <h3 className="text-xl sm:text-2xl font-semibold">
+            Categorías populares
+          </h3>
+          <Link
+            href="/categories"
+            className="text-sm underline hover:no-underline"
+          >
             Ver todas
           </Link>
         </div>
@@ -92,7 +88,6 @@ export default function Home({ categories, products }: Props) {
                 href={`/category/${c.slug}`}
                 className="rounded-xl border border-black/10 hover:border-black/20 bg-white px-4 py-3"
               >
-                {/* 👇 Solo nombre; SIN contador */}
                 <div className="font-medium">{c.name}</div>
               </Link>
             ))}
@@ -126,12 +121,16 @@ export default function Home({ categories, products }: Props) {
                   ) : null}
 
                   <div className="p-4">
-                    <div className="font-semibold group-hover:underline">{p.name}</div>
+                    <div className="font-semibold group-hover:underline">
+                      {p.name}
+                    </div>
                     {p.description && (
-                      <p className="mt-1 text-sm line-clamp-2 opacity-80">{p.description}</p>
+                      <p className="mt-1 text-sm line-clamp-2 opacity-80">
+                        {p.description}
+                      </p>
                     )}
                     <div className="mt-2 text-xs opacity-70">
-                      {p.category_name ?? 'Sin categoría'}
+                      {p.category_name ?? "Sin categoría"}
                     </div>
                     {price && <div className="mt-2 font-medium">{price}</div>}
                   </div>
