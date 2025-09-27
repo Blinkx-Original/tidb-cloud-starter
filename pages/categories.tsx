@@ -1,42 +1,54 @@
 // pages/categories.tsx
-import type { GetServerSideProps } from 'next';
-import Head from 'next/head';
-import Link from 'next/link';
-import CommonLayout from '@/components/v2/Layout';
-import { CatalogRepo } from '@/lib/repositories/catalog';
-import { UI } from '@/lib/uiConfig';
-import type { Category } from '@/lib/domain';
+import Head from "next/head";
+import Link from "next/link";
+import CommonLayout from "@/components/v2";
+import { GetServerSideProps } from "next";
+import { query } from "@/lib/db";
 
-type Props = { categories: Category[] };
+type CategoryRow = { slug: string; name: string; count: number };
 
-export const getServerSideProps: GetServerSideProps<Props> = async () => {
-  const categories = await CatalogRepo.getAllCategories();
-  return { props: { categories } };
-};
-
-export default function CategoriesPage({ categories }: Props) {
-  const TitleTag = UI.headings.categoryTitleTag;
-
+export default function CategoriesPage({ categories }: { categories: CategoryRow[] }) {
   return (
     <CommonLayout>
-      <Head><title>Categories — BlinkX</title></Head>
-      <div className="max-w-5xl mx-auto p-4">
-        <TitleTag className="text-2xl font-semibold mb-4">Categories</TitleTag>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-          {categories.map((c) => (
-            <Link
-              key={c.slug}
-              href={`/category/${c.slug}`}
-              className="card border rounded-2xl p-4 hover:shadow-sm"
-            >
-              <span className="font-medium">{c.name}</span>
-              {typeof c.count === 'number' && (
-                <span className="text-sm opacity-60">{c.count} products</span>
-              )}
-            </Link>
-          ))}
-        </div>
-      </div>
+      <Head>
+        <title>Categorías — BlinkX</title>
+      </Head>
+
+      <section className="mx-auto max-w-6xl px-4 py-10">
+        <h1 className="text-2xl sm:text-3xl font-semibold">Categories</h1>
+
+        {categories.length === 0 ? (
+          <p className="mt-4 opacity-80">Aún no hay categorías.</p>
+        ) : (
+          <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {categories.map((c) => (
+              <Link
+                key={c.slug}
+                href={`/category/${c.slug}`}
+                className="rounded-xl border border-black/10 hover:border-black/20 bg-white px-4 py-3"
+              >
+                {/* 👇 Solo nombre; SIN contador */}
+                <div className="font-medium">{c.name}</div>
+              </Link>
+            ))}
+          </div>
+        )}
+      </section>
     </CommonLayout>
   );
 }
+
+export const getServerSideProps: GetServerSideProps = async () => {
+  const categories = await query<CategoryRow[]>(
+    `
+    SELECT
+      COALESCE(category_slug, 'uncategorized') AS slug,
+      COALESCE(category_name, 'Uncategorized') AS name,
+      COUNT(*) AS count
+    FROM products
+    GROUP BY slug, name
+    ORDER BY count DESC, name ASC
+  `
+  );
+  return { props: { categories } };
+};
