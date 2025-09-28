@@ -52,6 +52,16 @@ export default function PillBlock({
           </React.Fragment>
         ))}
       </div>
+
+      <style jsx>{`
+        @media (max-width: 768px) {
+          section {
+            margin-left: 16px;
+            margin-right: 16px; /* <- el borde ya no se pega al viewport */
+          }
+        }
+      `}</style>
     </section>
   );
 }
+
