@@ -203,7 +203,7 @@ export const getServerSideProps: GetServerSideProps = async () => {
     SELECT id, name, slug, image_url, price_eur, price, description, category_name, category_slug
     FROM products
     ORDER BY id DESC
-    LIMIT 12
+    LIMIT 3
   `
   );
 
