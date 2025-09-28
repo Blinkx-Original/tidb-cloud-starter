@@ -560,6 +560,147 @@ Caching: add SWR on client or server-side caching in repo; UI unaffected.
 By following this structure, we keep a clean, scalable boundary: design moves fast without risking data logic, and data/search optimizes without breaking the UI.
 
 
+Dónde cambiar textos y enlaces
+Home (pages/index.tsx)
+
+Hero (título, subtítulo, placeholder de búsqueda):
+
+Se renderiza con SearchHero.
+
+Cambias los textos en pages/index.tsx al pasarle props:
+
+<SearchHero
+  title="Tu título aquí"
+  subtitle="Tu subtítulo aquí"
+  // si el componente soporta placeholder/ariaLabel, pásalos aquí
+/>
+
+
+“Píldoras” / bloques de links (PillBlock):
+
+También se pasan desde pages/index.tsx como array segments (o lista de pills).
+
+Ahí mismo editas labels y href de cada pill.
+
+Sticky footer (botón azul)
+
+Componente: components/v2/StickyFooterCTA.tsx
+
+Texto y link del botón se pasan desde cada página donde lo uses:
+
+<StickyFooterCTA title="…" buttonLabel="Ir a la oferta" buttonHref="/…" />
+
+
+Activación por defecto (blog, etc.): suele venir de lib/uiConfig.ts (si existe).
+Cambias ahí enabledOnBlog, textos por defecto, color de fondo, etc.
+
+Header / Menú hamburguesa
+
+Logo y items de menú: components/v2/Header.tsx (o Nav.tsx / MobileMenu.tsx).
+
+Edita los labels y href de las entradas del menú dentro del componente.
+(Si hay un archivo lib/nav.ts, los items pueden estar centralizados ahí.)
+
+Footer
+
+Estructura y enlaces: components/v2/Footer.tsx
+
+Dentro verás un array/lista de links (secciones: Company, Legal, etc.). Editas label y href ahí.
+
+Páginas legales (el contenido de esos links):
+
+Archivos Markdown en /content/legal/*.md (o .mdx).
+
+Cambias el texto directamente en esos .md (Title, body, etc.).
+
+La página que los renderiza es pages/[slug].tsx (ya lo tienes).
+
+Página de producto
+
+Archivo: pages/product/[slug].tsx
+
+Columna derecha (título, precio, categoría, descripción corta): vienen de TiDB (tu CSV).
+
+Si necesitas cambiar textos, edítalos en el Excel que importas a TiDB.
+
+Botón único azul (texto y link):
+
+Campos en DB: cta_label, cta_url (si existen, se usan).
+
+Fallback automático: “Ver más en {categoría}” → /category/{slug}.
+
+Cuerpo largo (debajo): hoy usa description como placeholder.
+
+Cuando quieras, podrás usar MDX:
+
+en TiDB (long_content_mdx) o
+
+archivo /content/products/<slug>.mdx si decides tenerlo en repo.
+
+Búsqueda (placeholder del input)
+
+Componente: components/v2/SearchHero.tsx
+
+Dentro verás el placeholder y aria-label. Cámbialos allí si no se pasan por props.
+
+Favicon / OG por defecto
+
+Favicon: public/favicon.ico (ya sirve en /favicon.ico).
+
+OG fallback (Open Graph): public/og-default.png (1200×630).
+
+Se referencia desde tu layout (ver abajo).
+
+Metas globales + canonical
+
+Layout: components/v2/CommonLayout.tsx (o Layout.tsx en esa carpeta)
+
+Ahí están <title>, <meta name="description">, <link rel="canonical">, OG/Twitter fallback.
+
+Cambias los textos globales ahí. Las páginas pueden sobreescribir.
+
+Archivo de colores (azul eléctrico)
+
+Tailwind: tailwind.config.ts
+
+Color accent (azul) y sombras:
+
+colors: { accent: { DEFAULT: '#2f81f7', hover: '#3b82f6', ring: '#60a5fa' } }
+
+
+Si querés otro tono, cámbialo una sola vez aquí.
+
+Rutas “de sistema” (no se tocan casi nunca)
+
+Sitemap dinámico: pages/sitemap.xml.ts
+
+Usa NEXT_PUBLIC_SITE_URL; se actualiza solo con la DB.
+
+Robots.txt: pages/robots.txt.ts
+
+También usa NEXT_PUBLIC_SITE_URL.
+
+Variables de entorno: en Vercel → Project → Settings → Environment Variables
+
+NEXT_PUBLIC_SITE_URL, CLOUDFLARE_ACCOUNT_HASH, TIDB_DATABASE_URL, ALGOLIA_*, etc.
+
+Sugerencia para README (mini checklist al clonar)
+
+Poner env vars (copiar .env.example).
+
+Cambiar hero y pills en pages/index.tsx.
+
+Editar Footer links en components/v2/Footer.tsx.
+
+Revisar Header (items menú) en components/v2/Header.tsx.
+
+Subir favicon y og-default.png a /public/.
+
+Verificar NEXT_PUBLIC_SITE_URL y probar /sitemap.xml + /robots.txt.
+
+Cargar CSV a TiDB (productos, CTAs, imágenes).
+
+(Opcional) Añadir MDX por producto en TiDB o /content/products.
 
 
 
