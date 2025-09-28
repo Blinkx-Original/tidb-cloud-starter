@@ -3,7 +3,7 @@ import Head from "next/head";
 import Link from "next/link";
 import CommonLayout from "@/components/v2";
 import SearchHero from "@/components/v2/SearchHero";
-import PillBlock from "@/components/v2/PillBlock"; // 👈 nuevo import
+import PillBlock from "@/components/v2/PillBlock";
 import { GetServerSideProps } from "next";
 import { query, Product } from "@/lib/db";
 import { formatPriceEUR } from "@/lib/price";
@@ -45,7 +45,7 @@ export default function Home({ categories, products }: Props) {
         <SearchHero variant="compact" />
       </div>
 
-      {/* 👇 Nuevo bloque con pills + texto */}
+      {/* Bloque de pills existente (se mantiene) */}
       <PillBlock
         segments={[
           {
@@ -63,6 +63,37 @@ export default function Home({ categories, products }: Props) {
           },
         ]}
       />
+
+      {/* === NUEVO: bloque estilo Vercel con 2 botones (justo arriba de categorías) === */}
+      <section className="mx-auto max-w-6xl px-4 pt-6 pb-2">
+        <p className="text-base sm:text-lg leading-relaxed text-gray-700">
+          <span className="font-semibold text-black">
+            Deploy once, deliver everywhere.
+          </span>{" "}
+          <span className="text-gray-600">
+            When you push code to Vercel, we make it instantly available across the globe.
+          </span>
+        </p>
+        <div className="mt-4 flex flex-wrap gap-3">
+          <a
+            href="https://vercel.com/infrastructure"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center rounded-full bg-black text-white px-5 py-3 text-sm font-medium border border-black hover:opacity-90 transition"
+          >
+            More about Infrastructure
+          </a>
+          <a
+            href="https://vercel.com/enterprise"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center rounded-full bg-white text-gray-900 px-5 py-3 text-sm font-medium border border-gray-200 hover:border-gray-300 transition"
+          >
+            Learn about Enterprise
+          </a>
+        </div>
+      </section>
+      {/* === FIN bloque Vercel === */}
 
       {/* Categorías populares */}
       <section className="mx-auto max-w-6xl px-4 py-8">
@@ -169,4 +200,3 @@ export const getServerSideProps: GetServerSideProps = async () => {
 
   return { props: { categories, products } };
 };
-
