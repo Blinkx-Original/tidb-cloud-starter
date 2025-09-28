@@ -24,7 +24,8 @@ export default function PillBlock({
   return (
     <section
       className={
-        "mx-auto max-w-4xl mt-10 mb-12 px-6 py-8 rounded-2xl border border-black/10 bg-white " +
+        // ✅ En móvil damos margen horizontal; desde sm volvemos al layout centrado original.
+        "mx-4 sm:mx-auto max-w-4xl mt-10 mb-12 px-4 sm:px-6 py-8 rounded-2xl border border-black/10 bg-white " +
         className
       }
     >
@@ -52,15 +53,6 @@ export default function PillBlock({
           </React.Fragment>
         ))}
       </div>
-
-      <style jsx>{`
-        @media (max-width: 768px) {
-          section {
-            margin-left: 16px;
-            margin-right: 16px; /* <- el borde ya no se pega al viewport */
-          }
-        }
-      `}</style>
     </section>
   );
 }
