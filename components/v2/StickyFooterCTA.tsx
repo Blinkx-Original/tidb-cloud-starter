@@ -28,9 +28,15 @@ export default function StickyFooterCTA({
           </div>
         </div>
 
+        {/* Botón único: azul eléctrico (accent) + pastilla grande */}
         <Link
           href={buttonHref}
-          className="btn w-1/2 sm:w-auto rounded-2xl bg-black text-white border-black hover:opacity-90"
+          className="inline-flex items-center justify-center
+                     rounded-2xl min-w-[10rem]
+                     px-5 sm:px-6 py-3 sm:py-3.5
+                     bg-accent text-white hover:bg-accent-hover
+                     shadow-accent-glow focus:outline-none focus:ring-2 focus:ring-accent-ring
+                     transition-colors text-base sm:text-lg font-semibold"
         >
           {buttonLabel}
         </Link>
