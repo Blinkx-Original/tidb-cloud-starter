@@ -102,39 +102,7 @@ export default function Home({ categories, products }: Props) {
         ]}
       />
 
-      {/* CTA estilo Vercel — centrado, más espaciado, card con borde fino y elevación */}
-      <section className="mx-auto max-w-6xl px-4 mt-12 sm:mt-16 mb-12 sm:mb-16">
-        <div className="rounded-2xl border border-black/10 bg-white shadow-[0_8px_30px_rgba(0,0,0,0.06)]">
-          <div className="px-6 sm:px-10 py-8 sm:py-10 text-center">
-            <h3 className="mx-auto max-w-4xl text-[1.25rem] sm:text-2xl md:text-[28px] font-semibold leading-snug tracking-tight text-gray-900">
-              <span className="font-semibold">Deploy once, deliver everywhere.</span>{" "}
-              <span className="text-gray-600">
-                When you push code to Vercel, we make it instantly available across the globe.
-              </span>
-            </h3>
-
-            <div className="mt-6 flex flex-wrap items-center justify-center gap-3 sm:gap-4">
-              <a
-                href="https://vercel.com/infrastructure"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center rounded-full bg-black text-white px-5 sm:px-6 py-3 text-sm font-medium border border-black hover:opacity-90 transition"
-              >
-                More about Infrastructure
-              </a>
-              <a
-                href="https://vercel.com/enterprise"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center rounded-full bg-white text-gray-900 px-5 sm:px-6 py-3 text-sm font-medium border border-black/10 hover:border-black/20 transition"
-              >
-                Learn about Enterprise
-              </a>
-            </div>
-          </div>
-        </div>
-      </section>
-      {/* FIN CTA */}
+     
 
       {/* Categorías populares */}
       <section className="mx-auto max-w-6xl px-4 py-8">
