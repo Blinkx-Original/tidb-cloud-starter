@@ -49,7 +49,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       'SELECT * FROM admin_algolia_profiles WHERE profile_key=? LIMIT 1',
       [profile_key]
     )
-    const profile = rowsP[0]
+
+    const profile: Profile | undefined = rowsP[0]
     if (!profile) return res.status(404).json({ error: 'Profile not found' })
 
     const db = ident((profile.database_name || process.env.TIDB_DB || process.env.TIDB_DATABASE || '').trim())
