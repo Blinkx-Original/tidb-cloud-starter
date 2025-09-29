@@ -134,12 +134,12 @@ export default function AlgoliaAdmin() {
           <div>
             <label className="block text-sm">Clave primaria *</label>
             <input className="border p-2 w-full" value={form.primary_key || ''} onChange={(e) => handleInput('primary_key', e.target.value)} />
-            <small>Columna que identifica unívocamente.</small>
+            <small>Columna que identifica univocamente.</small>
           </div>
           <div>
             <label className="block text-sm">Columna updated_at</label>
             <input className="border p-2 w-full" value={form.updated_at_col || ''} onChange={(e) => handleInput('updated_at_col', e.target.value)} />
-            <small>Opcional, para sincronización incremental.</small>
+            <small>Opcional, para sincronizacion incremental.</small>
           </div>
           <div>
             <label className="block text-sm">Índice de Algolia *</label>
