@@ -1,5 +1,5 @@
 import algoliasearch from 'algoliasearch/lite'
-import { InstantSearch, SearchBox, Hits, useInstantSearch } from 'react-instantsearch-hooks-web'
+import { InstantSearch, SearchBox, Hits, Pagination, Highlight } from 'react-instantsearch-dom'
 
 /*
  * AlgoliaSearch renders a simple search box with results.
