@@ -154,7 +154,7 @@ export default function AlgoliaAdmin() {
           <div>
             <label className="block text-sm">Filtro SQL</label>
             <input className="border p-2 w-full" value={form.sql_filter || ''} onChange={(e) => handleInput('sql_filter', e.target.value)} />
-            <small>WHERE opcional, ej: category='Avionics'</small>
+            <small>WHERE opcional, ej: field=&apos;valor&apos;</small>
           </div>
           <div>
             <label className="block text-sm">Plantilla de URL</label>
@@ -172,7 +172,9 @@ export default function AlgoliaAdmin() {
           {profiles.map((p) => (
             <li key={p.profile_key} className="border p-3 rounded flex flex-col gap-1">
               <span className="font-medium">{p.name || p.profile_key}</span>
-              <span className="text-sm text-gray-600">Tabla: {p.database_name || process.env.NEXT_PUBLIC_TIDB_DB || ''}.{p.table_name} | Índice: {p.algolia_index}</span>
+              <span className="text-sm text-gray-600">
+                Tabla: {p.database_name || process.env.NEXT_PUBLIC_TIDB_DB || ''}.{p.table_name} | Índice: {p.algolia_index}
+              </span>
               <div className="flex gap-2 mt-2">
                 <button className="px-3 py-1 bg-green-600 text-white rounded text-sm" onClick={() => previewProfile(p)}>Preview</button>
                 <button className="px-3 py-1 bg-indigo-600 text-white rounded text-sm" onClick={() => pushProfile(p)}>Push</button>
