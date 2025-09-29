@@ -159,7 +159,7 @@ export default function AlgoliaAdmin() {
           <div>
             <label className="block text-sm">Plantilla de URL</label>
             <input className="border p-2 w-full" value={form.base_url_template || ''} onChange={(e) => handleInput('base_url_template', e.target.value)} />
-            <small>Ej: /product/{{slug}} o /blog/{{slug}}</small>
+            <small>Ej: /product/&#123;&#123;slug&#125;&#125; o /blog/&#123;&#123;slug&#125;&#125;</small>
           </div>
           <button className="mt-2 px-4 py-2 bg-blue-600 text-white rounded" onClick={saveProfile}>Guardar perfil</button>
           {message && <p className="mt-2 text-red-600 text-sm">{message}</p>}
