@@ -1,3 +1,4 @@
+
 import type { NextApiRequest, NextApiResponse } from 'next';
 import algoliasearch from 'algoliasearch';
 export default async function handler(_: NextApiRequest, res: NextApiResponse) {

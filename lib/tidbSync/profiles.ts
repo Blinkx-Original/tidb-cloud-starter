@@ -1,3 +1,4 @@
+
 import type { Profile } from './types';
 import { slugify } from './slug';
 

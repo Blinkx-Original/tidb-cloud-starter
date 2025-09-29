@@ -1,3 +1,4 @@
+
 import type { NextApiRequest, NextApiResponse } from 'next';
 export function checkAuth(req: NextApiRequest, res: NextApiResponse) {
   const token = (req.headers['x-admin-token'] || req.query.key) as string | undefined;

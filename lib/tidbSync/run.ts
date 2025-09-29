@@ -1,3 +1,4 @@
+
 import algoliasearch from 'algoliasearch';
 import { getDb } from './db';
 import { profiles } from './profiles';
@@ -88,7 +89,7 @@ export async function pushOne(profileKey: string, id: string | number) {
   const p = profiles[profileKey]; if (!p) throw new Error(`Unknown profile: ${profileKey}`);
   const db = getDb();
   const index = getIndex(p.algoliaIndex);
-  const sql = `${buildSelect(p, \`\`${p.primaryKey}\` = ?\`)} LIMIT 1`;
+  const sql = `${buildSelect(p, `\`${p.primaryKey}\` = ?`)} LIMIT 1`;
   const [rows] = await db.query(sql, [id]) as any;
   if (!rows.length) return { ok: false, reason: 'not_found' };
   const obj = mapRow(p, rows[0]);
@@ -99,7 +100,7 @@ export async function pushOne(profileKey: string, id: string | number) {
 export async function preview(profileKey: string, id: string | number) {
   const p = profiles[profileKey]; if (!p) throw new Error(`Unknown profile: ${profileKey}`);
   const db = getDb();
-  const sql = `${buildSelect(p, \`\`${p.primaryKey}\` = ?\`)} LIMIT 1`;
+  const sql = `${buildSelect(p, `\`${p.primaryKey}\` = ?`)} LIMIT 1`;
   const [rows] = await db.query(sql, [id]) as any;
   return rows[0] || null;
 }

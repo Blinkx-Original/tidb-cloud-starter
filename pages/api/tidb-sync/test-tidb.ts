@@ -1,3 +1,4 @@
+
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getDb } from '@/lib/tidbSync/db';
 export default async function handler(_: NextApiRequest, res: NextApiResponse) {

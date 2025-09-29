@@ -1,3 +1,4 @@
+
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { checkAuth } from './_auth';
 import { pushOne } from '@/lib/tidbSync/run';

@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 
 function useAdminToken() {
@@ -43,12 +44,22 @@ export default function TidbSyncAdmin() {
       <section className="border rounded-2xl p-4 space-y-2">
         <h2 className="font-semibold">Connections</h2>
         <div className="flex gap-2">
-          <button className="px-3 py-1 border rounded"
-                  onClick={async()=> setPong(p => ({...p, tidb: await call('/api/tidb-sync/test-tidb')}))}>
+          <button
+            className="px-3 py-1 border rounded"
+            onClick={async () => {
+              const res = await call('/api/tidb-sync/test-tidb');
+              setPong(p => ({ ...p, tidb: res }));
+            }}
+          >
             Test TiDB
           </button>
-          <button className="px-3 py-1 border rounded"
-                  onClick={async()=> setPong(p => ({...p, algolia: await call('/api/tidb-sync/test-algolia')}))}>
+          <button
+            className="px-3 py-1 border rounded"
+            onClick={async () => {
+              const res = await call('/api/tidb-sync/test-algolia');
+              setPong(p => ({ ...p, algolia: res }));
+            }}
+          >
             Test Algolia
           </button>
         </div>
@@ -71,7 +82,10 @@ export default function TidbSyncAdmin() {
             <span>Clear index first</span>
           </label>
           <button className="px-3 py-1 border rounded"
-                  onClick={async()=> setOut(await call('/api/tidb-sync/full', { profile, chunkSize: chunk, clear }))}>
+                  onClick={async()=> {
+                    const res = await call('/api/tidb-sync/full', { profile, chunkSize: chunk, clear });
+                    setOut(res);
+                  }}>
             Start
           </button>
         </div>
@@ -82,7 +96,10 @@ export default function TidbSyncAdmin() {
         <div className="flex gap-2 items-center">
           <input value={id} onChange={e=>setId(e.target.value)} className="border px-2 py-1 rounded w-40" />
           <button className="px-3 py-1 border rounded"
-                  onClick={async()=> setOut(await call('/api/tidb-sync/push-one', { profile, id }))}>
+                  onClick={async()=> {
+                    const res = await call('/api/tidb-sync/push-one', { profile, id });
+                    setOut(res);
+                  }}>
             Push
           </button>
           <a className="px-3 py-1 border rounded"
