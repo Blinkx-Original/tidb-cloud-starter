@@ -1,0 +1,9 @@
+
+{
+  "crons": [
+    {
+      "path": "/api/tidb-sync/run-cron?profile=PROFILE_KEY_HERE&chunkSize=500&clear=false",
+      "schedule": "0 * * * *"
+    }
+  ]
+}
