@@ -45,22 +45,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const { profile_key } = req.body || {}
     if (!profile_key) return res.status(400).json({ error: 'Missing profile_key' })
 
-    const rowsP = await query<Profile[]>(
+    const rowsP = await query(
       'SELECT * FROM admin_algolia_profiles WHERE profile_key=? LIMIT 1',
       [profile_key]
-    )
+    ) as Profile[]
 
-    const profile: Profile | undefined = rowsP[0]
+    const profile = rowsP[0] as Profile | undefined
     if (!profile) return res.status(404).json({ error: 'Profile not found' })
 
     const db = ident((profile.database_name || process.env.TIDB_DB || process.env.TIDB_DATABASE || '').trim())
     const table = ident(profile.table_name)
     const pk = ident(profile.primary_key)
 
-    const mappings = await query<Mapping[]>(
+    const mappings = await query(
       'SELECT * FROM admin_algolia_mappings WHERE profile_key=?',
       [profile_key]
-    )
+    ) as Mapping[]
 
     const where = (profile.sql_filter && profile.sql_filter.trim()) ? ` WHERE ${profile.sql_filter.trim()}` : ''
     const sql = `SELECT * FROM \`${db}\`.\`${table}\`${where}`
