@@ -8,11 +8,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return;
   }
 
-  const indexBase = (req.query.index || req.body?.index || 'blinkx_wp').toString();
-  const prefixRaw = (process.env.NEXT_PUBLIC_ALGOLIA_INDEX_PREFIX || '').trim();
-  const prefix = prefixRaw ? (prefixRaw.endsWith('_') ? prefixRaw : `${prefixRaw}_`) : '';
-  const indexName = `${prefix}${indexBase}`;
-
+  const indexName = (req.query.index || req.body?.index || 'blinkx_wp').toString();
   const appId = process.env.NEXT_PUBLIC_ALGOLIA_APP_ID!;
   const adminKey =
     process.env.ALGOLIA_ADMIN_KEY ||
@@ -28,7 +24,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const index = client.initIndex(indexName);
 
     await index.setSettings({
-      // para facetFilters / filters del front
       attributesForFaceting: [
         'searchable(site)',
         'type',
@@ -38,7 +33,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         'category',
         'brand',
       ],
-      // opcional: mejora búsqueda por nombre/sku
       searchableAttributes: [
         'title',
         'name',
