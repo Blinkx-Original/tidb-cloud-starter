@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import algoliasearch from 'algoliasearch';
 import { getConnection } from '../../../sync-kit/core/db';
-import { resolveIndexName, getIndex } from '../../../sync-kit/core/algolia';
 import { slugify } from '../../../sync-kit/core/slugify';
 
 function resolveSite() {
@@ -9,11 +9,9 @@ function resolveSite() {
 function resolveEnv(): 'prod' | 'dev' {
   const from =
     (process.env.NEXT_PUBLIC_RUNTIME_ENV ||
-      process.env.RUNTIME_ENV ||
-      process.env.VERCEL_ENV ||
-      'prod')
-      .toString()
-      .toLowerCase();
+     process.env.RUNTIME_ENV ||
+     process.env.VERCEL_ENV ||
+     'prod').toString().toLowerCase();
   return /dev|preview|staging/.test(from) ? 'dev' : 'prod';
 }
 function toBool(v: any, fallback = true) {
@@ -23,7 +21,6 @@ function toBool(v: any, fallback = true) {
   return fallback;
 }
 
-/** Push 1 fila a Algolia y revalida la página del producto. */
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET' && req.method !== 'POST') {
     res.setHeader('Allow', ['GET', 'POST']);
@@ -58,15 +55,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     record.objectID = String(`${objectIdPrefix || ''}${row.id}`);
     if (record.updated_at == null) record.updated_at = Math.floor(Date.now() / 1000);
 
-    // ENRICH para filtros del front
+    if (!record.title && record.name) record.title = record.name;
+
     record.site = record.site || resolveSite();
     record.type = 'product';
     record.env = record.env || resolveEnv();
     record.published = toBool(record.published, true);
     record.in_stock = toBool(record.in_stock, true);
 
-    const fullIndexName = resolveIndexName(String(index));
-    const algIndex = getIndex(fullIndexName);
+    const appId = process.env.NEXT_PUBLIC_ALGOLIA_APP_ID!;
+    const adminKey =
+      process.env.ALGOLIA_ADMIN_KEY ||
+      process.env.ALGOLIA_WRITE_KEY ||
+      process.env.ALGOLIA_API_KEY!;
+    const client = algoliasearch(appId, adminKey);
+    const algIndex = client.initIndex(String(index));
+
     await algIndex.saveObject(record, { autoGenerateObjectIDIfNotExist: false });
 
     try {
@@ -77,7 +81,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     res.status(200).json({
       ok: true,
-      index: fullIndexName,
+      index: String(index),
       objectID: record.objectID,
       slug,
       url: record.url,
@@ -92,4 +96,5 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     res.status(500).json({ error: err?.message || 'Failed to push object and revalidate' });
   }
 }
+
 
