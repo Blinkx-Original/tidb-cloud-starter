@@ -23,9 +23,16 @@ type Hit = {
 
 const appId = process.env.NEXT_PUBLIC_ALGOLIA_APP_ID!;
 const searchKey = process.env.NEXT_PUBLIC_ALGOLIA_SEARCH_KEY!;
-const prefix =
-  process.env.NEXT_PUBLIC_ALGOLIA_INDEX_PREFIX || 'catalog';
-const indexName = `${prefix}__items`;
+
+// Nombre base del índice (el tuyo real en Algolia)
+const base = process.env.NEXT_PUBLIC_ALGOLIA_INDEX_BASE || 'blinkx_wp';
+
+// Prefijo opcional (dev_, prod_, etc.). Si no está definido, no se usa.
+const rawPrefix = (process.env.NEXT_PUBLIC_ALGOLIA_INDEX_PREFIX || '').trim();
+const prefix = rawPrefix ? (rawPrefix.endsWith('_') ? rawPrefix : `${rawPrefix}_`) : '';
+
+// Índice final: <prefijo><base>. Ejemplo: "dev_blinkx_wp" o "blinkx_wp"
+const indexName = `${prefix}${base}`;
 
 const searchClient = algoliasearch(appId, searchKey);
 const index = searchClient.initIndex(indexName);
