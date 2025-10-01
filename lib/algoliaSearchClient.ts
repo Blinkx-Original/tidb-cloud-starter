@@ -3,22 +3,28 @@ import algoliasearch, { SearchClient } from 'algoliasearch';
 const appId = process.env.NEXT_PUBLIC_ALGOLIA_APP_ID!;
 const searchKey =
   process.env.NEXT_PUBLIC_ALGOLIA_SEARCH_KEY ||
-  process.env.NEXT_PUBLIC_ALGOLIA_API_KEY || // por si tenías este nombre
+  process.env.NEXT_PUBLIC_ALGOLIA_API_KEY || // fallback por compatibilidad
   '';
 
 if (!appId || !searchKey) {
-  // Evita romper la app, pero lo dejará claro en consola
-  // (puedes cambiar a throw si prefieres crashear).
+  // No romper en producción, pero avisa en consola.
   // eslint-disable-next-line no-console
-  console.warn('Algolia env vars missing: NEXT_PUBLIC_ALGOLIA_APP_ID / NEXT_PUBLIC_ALGOLIA_SEARCH_KEY');
+  console.warn(
+    'Algolia env vars missing: NEXT_PUBLIC_ALGOLIA_APP_ID / NEXT_PUBLIC_ALGOLIA_SEARCH_KEY'
+  );
 }
 
-export const algoliaSearchClient: SearchClient = algoliasearch(appId, searchKey);
+// Cliente de búsqueda
+export const searchClient: SearchClient = algoliasearch(appId, searchKey);
 
+// Función para resolver el nombre de índice con prefijo opcional
 export function resolveIndexName(base: string) {
-  const prefix =
-    (process.env.NEXT_PUBLIC_ALGOLIA_INDEX_PREFIX || '').trim();
-  return prefix ? `${prefix}${base}` : base;
+  const rawPrefix = (process.env.NEXT_PUBLIC_ALGOLIA_INDEX_PREFIX || '').trim();
+  if (!rawPrefix) return base;
+
+  // Aseguramos que termine en "_" para que no quede pegado
+  const prefix = rawPrefix.endsWith('_') ? rawPrefix : `${rawPrefix}_`;
+  return `${prefix}${base}`;
 }
 
-export default algoliaSearchClient;
+export default searchClient;
