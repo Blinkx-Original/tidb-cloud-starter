@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import algoliasearch from 'algoliasearch';
 import { getConnection } from '../../../sync-kit/core/db';
-import { resolveIndexName, getIndex } from '../../../sync-kit/core/algolia';
 import { slugify } from '../../../sync-kit/core/slugify';
 
 function resolveSite() {
@@ -9,11 +9,9 @@ function resolveSite() {
 function resolveEnv(): 'prod' | 'dev' {
   const from =
     (process.env.NEXT_PUBLIC_RUNTIME_ENV ||
-      process.env.RUNTIME_ENV ||
-      process.env.VERCEL_ENV ||
-      'prod')
-      .toString()
-      .toLowerCase();
+     process.env.RUNTIME_ENV ||
+     process.env.VERCEL_ENV ||
+     'prod').toString().toLowerCase();
   return /dev|preview|staging/.test(from) ? 'dev' : 'prod';
 }
 function toBool(v: any, fallback = true) {
@@ -23,7 +21,6 @@ function toBool(v: any, fallback = true) {
   return fallback;
 }
 
-/** Push 1 fila de TiDB a Algolia (con enriquecimiento para filtros del front). */
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET' && req.method !== 'POST') {
     res.setHeader('Allow', ['GET', 'POST']);
@@ -50,30 +47,37 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const row = rows[0];
     const record: any = { ...row };
 
-    // slug & url
     const slug = record.slug || slugify(record.name || record.sku || record.id || String(record.id));
     record.slug = slug;
     const urlPrefix = process.env.NEXT_PUBLIC_PRODUCT_URL_PREFIX || '/product';
     record.url = `${urlPrefix}/${slug}`;
 
-    // objectID, updated_at
     record.objectID = String(`${objectIdPrefix || ''}${row.id}`);
     if (record.updated_at == null) record.updated_at = Math.floor(Date.now() / 1000);
 
-    // ENRICH para cumplir filtros del front
+    // 👇 duplicamos name -> title para no depender de un único campo
+    if (!record.title && record.name) record.title = record.name;
+
+    // 👇 enriquecer para filtros (mismo bug que en WP)
     record.site = record.site || resolveSite();
     record.type = 'product';
     record.env = record.env || resolveEnv();
     record.published = toBool(record.published, true);
     record.in_stock = toBool(record.in_stock, true);
 
-    const fullIndexName = resolveIndexName(String(index));
-    const algIndex = getIndex(fullIndexName);
+    const appId = process.env.NEXT_PUBLIC_ALGOLIA_APP_ID!;
+    const adminKey =
+      process.env.ALGOLIA_ADMIN_KEY ||
+      process.env.ALGOLIA_WRITE_KEY ||
+      process.env.ALGOLIA_API_KEY!;
+    const client = algoliasearch(appId, adminKey);
+    const algIndex = client.initIndex(String(index)); // sin prefijos
+
     await algIndex.saveObject(record, { autoGenerateObjectIDIfNotExist: false });
 
     res.status(200).json({
       ok: true,
-      index: fullIndexName,
+      index: String(index),
       objectID: record.objectID,
       slug,
       url: record.url,
