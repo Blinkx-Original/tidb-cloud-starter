@@ -7,18 +7,29 @@ import { useRouter } from 'next/router';
 
 type Hit = {
   objectID: string;
+  // Algolia (TiDB -> Algolia) trae 'name'; el demo traía 'title'
+  name?: string;
   title?: string;
   description?: string;
   category?: string;
   brand?: string;
-  price?: number;
+  price?: number | string;
   url?: string;
+  slug?: string;
 };
 
+// === Algolia creds ===
 const APP_ID = process.env.NEXT_PUBLIC_ALGOLIA_APP_ID!;
 const SEARCH_KEY = process.env.NEXT_PUBLIC_ALGOLIA_SEARCH_KEY!;
-const INDEX_PREFIX = process.env.NEXT_PUBLIC_ALGOLIA_INDEX_PREFIX || 'catalog';
-const INDEX_NAME = `${INDEX_PREFIX}__items`;
+
+/**
+ * ⚠️ Índice efectivo:
+ * - Por defecto usamos 'blinkx_wp' (el que confirmaste con debug-search).
+ * - Si algún día quieres sobreescribirlo desde Vercel, define NEXT_PUBLIC_ALGOLIA_INDEX.
+ *   (Ignoramos NEXT_PUBLIC_ALGOLIA_INDEX_PREFIX para no volver a caer en 'catalog__items').
+ */
+const INDEX_NAME =
+  (process.env.NEXT_PUBLIC_ALGOLIA_INDEX || '').trim() || 'blinkx_wp';
 
 export default function SearchInline({
   placeholder = 'Buscar por nombre, categoría o descripción…',
@@ -54,6 +65,12 @@ export default function SearchInline({
   const index = useMemo(() => {
     const client = algoliasearch(APP_ID, SEARCH_KEY);
     return client.initIndex(INDEX_NAME);
+  }, []);
+
+  // Log para verificar que este componente usa el índice correcto
+  useEffect(() => {
+    // eslint-disable-next-line no-console
+    console.log('[SearchInline] Algolia index =', INDEX_NAME);
   }, []);
 
   useEffect(() => {
@@ -100,8 +117,12 @@ export default function SearchInline({
   }, []);
 
   function goTo(hit: Hit) {
-    const url = hit.url || `/product/${hit.objectID}`;
-    router.push(url);
+    // Preferimos la URL del objeto (viene desde tu push a Algolia).
+    // Si no existe, construimos una con /p/<slug> como fallback.
+    const href =
+      hit.url ||
+      (hit.slug ? `/p/${hit.slug}` : `/search?q=${encodeURIComponent(q)}`);
+    router.push(href);
     setOpen(false);
   }
 
@@ -149,31 +170,35 @@ export default function SearchInline({
           {!loading && hits.length === 0 && (
             <div className="px-4 py-3 text-sm opacity-70">No results</div>
           )}
-          {!loading && hits.map((hit, i) => (
-            <button
-              key={hit.objectID + i}
-              type="button"
-              onMouseEnter={() => setActive(i)}
-              onMouseDown={(e) => e.preventDefault()}
-              onClick={() => goTo(hit)}
-              className={[
-                'flex w-full items-start gap-3 px-4 py-3 text-left',
-                i === active ? 'bg-[#f6f6f6]' : 'hover:bg-[#f6f6f6]',
-              ].join(' ')}
-              role="option"
-              aria-selected={i === active}
-            >
-              <div className="flex-1">
-                <div className="font-medium">{hit.title || '(untitled)'}</div>
-                <div className="text-xs opacity-70">
-                  {(hit.brand ? `${hit.brand} • ` : '') + (hit.category ?? '')}
+          {!loading && hits.map((hit, i) => {
+            // Mostramos 'name' (tu data real) y caemos a 'title' si viene de un dataset viejo
+            const title = hit.name || hit.title || '(untitled)';
+            const price = typeof hit.price === 'number' ? hit.price.toFixed(2) : hit.price;
+
+            return (
+              <button
+                key={hit.objectID + i}
+                type="button"
+                onMouseEnter={() => setActive(i)}
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => goTo(hit)}
+                className={[
+                  'flex w-full items-start gap-3 px-4 py-3 text-left',
+                  i === active ? 'bg-[#f6f6f6]' : 'hover:bg-[#f6f6f6]',
+                ].join(' ')}
+                role="option"
+                aria-selected={i === active}
+              >
+                <div className="flex-1">
+                  <div className="font-medium truncate">{title}</div>
+                  <div className="text-xs opacity-70 truncate">
+                    {(hit.brand ? `${hit.brand} • ` : '') + (hit.category ?? '')}
+                  </div>
                 </div>
-              </div>
-              {typeof hit.price === 'number' && (
-                <div className="text-sm tabular-nums">€{hit.price}</div>
-              )}
-            </button>
-          ))}
+                {price && <div className="text-sm tabular-nums">€{price}</div>}
+              </button>
+            );
+          })}
           {hits.length > 0 && (
             <div className="flex items-center justify-between px-4 py-2 text-xs opacity-70 border-t border-black/10">
               <span>Press <kbd className="kbd kbd-xs">Enter</kbd> to open first result</span>
@@ -186,3 +211,4 @@ export default function SearchInline({
     </div>
   );
 }
+
