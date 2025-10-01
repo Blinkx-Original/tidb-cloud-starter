@@ -24,14 +24,15 @@ type Hit = {
 const appId = process.env.NEXT_PUBLIC_ALGOLIA_APP_ID!;
 const searchKey = process.env.NEXT_PUBLIC_ALGOLIA_SEARCH_KEY!;
 
-// Nombre base del índice (el tuyo real en Algolia)
+// Nombre base del índice real en Algolia (p. ej. "blinkx_wp")
 const base = process.env.NEXT_PUBLIC_ALGOLIA_INDEX_BASE || 'blinkx_wp';
 
-// Prefijo opcional (dev_, prod_, etc.). Si no está definido, no se usa.
+// Prefijo opcional (dev_, prod_, etc.). Si no hay, queda vacío.
+// Normalizamos para que termine en "_" y no se pegue al base.
 const rawPrefix = (process.env.NEXT_PUBLIC_ALGOLIA_INDEX_PREFIX || '').trim();
 const prefix = rawPrefix ? (rawPrefix.endsWith('_') ? rawPrefix : `${rawPrefix}_`) : '';
 
-// Índice final: <prefijo><base>. Ejemplo: "dev_blinkx_wp" o "blinkx_wp"
+// Índice final: <prefijo><base>  →  "dev_blinkx_wp" o "blinkx_wp"
 const indexName = `${prefix}${base}`;
 
 const searchClient = algoliasearch(appId, searchKey);
@@ -77,9 +78,7 @@ export default function InlineSearch({
     const t = setTimeout(async () => {
       try {
         setLoading(true);
-        const res = await index.search<Hit>(q, {
-          hitsPerPage,
-        });
+        const res = await index.search<Hit>(q, { hitsPerPage });
         if (!cancelled) {
           setHits(res.hits || []);
           setOpen(true);
@@ -125,6 +124,7 @@ export default function InlineSearch({
   }
 
   return (
+    // ⚠️ El wrapper es RELATIVE para anclar el dropdown justo debajo del input
     <div ref={containerRef} className={`relative ${className}`}>
       <div className="flex items-center gap-2 rounded-full border border-base-300 px-3 h-10 bg-base-100">
         <span className="i bi-search opacity-60" aria-hidden />
@@ -154,9 +154,15 @@ export default function InlineSearch({
         )}
       </div>
 
-      {/* Dropdown */}
+      {/* Dropdown anclado al input: absolute + top-full + left/right */}
       {open && (
-        <div className="absolute z-50 mt-2 w-full rounded-2xl border border-base-300 bg-base-100 shadow-xl overflow-hidden">
+        <div
+          className="
+            absolute z-50 left-0 right-0 top-full
+            mt-2 rounded-2xl border border-base-300 bg-base-100
+            shadow-xl overflow-hidden
+          "
+        >
           {loading && (
             <div className="px-4 py-3 text-sm opacity-70">Buscando…</div>
           )}
@@ -214,3 +220,4 @@ export default function InlineSearch({
     </div>
   );
 }
+
