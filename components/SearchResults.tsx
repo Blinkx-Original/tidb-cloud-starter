@@ -13,10 +13,12 @@ import {
 } from 'react-instantsearch-dom';
 import { history } from 'instantsearch.js/es/lib/routers';
 import HitCard from '@/components/HitCard';
-import { searchClient, getIndexName } from '@/lib/algoliaSearchClient';
+import searchClient, { resolveIndexName } from '@/lib/algoliaSearchClient';
 
 export default function SearchResults({ initialQuery = '' }: { initialQuery?: string }) {
-  const indexName = getIndexName('items'); // busca en "<PREFIX>__items" (p.ej. catalog__items)
+  // Antes usabas getIndexName('items'), ahora resolvemos bien el índice real
+  const base = process.env.NEXT_PUBLIC_ALGOLIA_INDEX_BASE || 'blinkx_wp';
+  const indexName = resolveIndexName(base);
 
   return (
     <InstantSearch
@@ -46,7 +48,7 @@ export default function SearchResults({ initialQuery = '' }: { initialQuery?: st
       }}
       insights
     >
-      {/* === CAMBIO #2: comportamiento de búsqueda tipo “fuzzy” y prefijos === */}
+      {/* Configuración avanzada de búsqueda (igual que antes) */}
       <Configure
         hitsPerPage={24}
         queryType="prefixAll"
@@ -98,7 +100,6 @@ export default function SearchResults({ initialQuery = '' }: { initialQuery?: st
         .facet h4 { margin: 8px 0; }
         .results .toolbar { display: flex; justify-content: flex-end; margin-bottom: 12px; }
 
-        /* === CAMBIO #3: quitar bullets feos de la paginación === */
         :global(.ais-Pagination-list){ list-style: none; display: flex; gap: 8px; padding: 0; margin: 8px 0; }
         :global(.ais-Pagination-item){ list-style: none; }
         :global(.ais-Pagination-link){ text-decoration: none; }
