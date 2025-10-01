@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import algoliasearch from 'algoliasearch';
 import { getConnection } from '../../../sync-kit/core/db';
-import { resolveIndexName, getIndex } from '../../../sync-kit/core/algolia';
 import { slugify } from '../../../sync-kit/core/slugify';
 
 function resolveSite() {
@@ -9,11 +9,9 @@ function resolveSite() {
 function resolveEnv(): 'prod' | 'dev' {
   const from =
     (process.env.NEXT_PUBLIC_RUNTIME_ENV ||
-      process.env.RUNTIME_ENV ||
-      process.env.VERCEL_ENV ||
-      'prod')
-      .toString()
-      .toLowerCase();
+     process.env.RUNTIME_ENV ||
+     process.env.VERCEL_ENV ||
+     'prod').toString().toLowerCase();
   return /dev|preview|staging/.test(from) ? 'dev' : 'prod';
 }
 function toBool(v: any, fallback = true) {
@@ -23,7 +21,6 @@ function toBool(v: any, fallback = true) {
   return fallback;
 }
 
-/** Full reindex table → Algolia (enriqueciendo para filtros). */
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET' && req.method !== 'POST') {
     res.setHeader('Allow', ['GET', 'POST']);
@@ -42,17 +39,26 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const clearIndex = clear === 'true' || clear === '1' || clear === true || clear === 'on';
 
   try {
-    const conn = await getConnection(String(db));
-    const fullIndexName = resolveIndexName(String(index));
-    const algIndex = getIndex(fullIndexName);
+    const appId = process.env.NEXT_PUBLIC_ALGOLIA_APP_ID!;
+    const adminKey =
+      process.env.ALGOLIA_ADMIN_KEY ||
+      process.env.ALGOLIA_WRITE_KEY ||
+      process.env.ALGOLIA_API_KEY!;
+    const client = algoliasearch(appId, adminKey);
+    const algIndex = client.initIndex(String(index));
 
     if (clearIndex) await algIndex.clearObjects();
 
+    const conn = await getConnection(String(db));
     const [cnt] = (await conn.query(`SELECT COUNT(*) AS c FROM \`${table}\``)) as any;
     const total = Number(cnt[0]?.c || 0);
 
     let offset = 0;
     let pushed = 0;
+
+    const urlPrefix = process.env.NEXT_PUBLIC_PRODUCT_URL_PREFIX || '/product';
+    const siteVal = resolveSite();
+    const envVal = resolveEnv();
 
     while (offset < total) {
       const [rows] = (await conn.query(
@@ -60,10 +66,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         [chunkSize, offset]
       )) as any;
       if (!rows || !rows.length) break;
-
-      const urlPrefix = process.env.NEXT_PUBLIC_PRODUCT_URL_PREFIX || '/product';
-      const siteVal = resolveSite();
-      const envVal = resolveEnv();
 
       const objects = rows.map((row: any) => {
         const obj: any = { ...row };
@@ -73,13 +75,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         obj.objectID = String(`${objectIdPrefix || ''}${row.id}`);
         if (obj.updated_at == null) obj.updated_at = Math.floor(Date.now() / 1000);
 
-        // ENRICH
+        obj.title = obj.title || obj.name;   // 👈 clave
         obj.site = obj.site || siteVal;
         obj.type = 'product';
         obj.env = obj.env || envVal;
         obj.published = toBool(obj.published, true);
         obj.in_stock = toBool(obj.in_stock, true);
-
         return obj;
       });
 
@@ -89,7 +90,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     await conn.end();
-    res.status(200).json({ ok: true, index: fullIndexName, total, pushed });
+    res.status(200).json({ ok: true, index: String(index), total, pushed });
   } catch (err: any) {
     console.error('full-reindex error', err);
     res.status(500).json({ error: err?.message || 'Failed to reindex' });
