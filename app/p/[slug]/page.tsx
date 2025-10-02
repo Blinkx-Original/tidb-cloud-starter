@@ -31,7 +31,6 @@ export async function generateMetadata({ params }: { params: { slug: string } })
       title: product.name,
       description: description ? description.slice(0, 160) : undefined,
       url: product.url,
-      type: 'product',
       images: product.images?.map((src) => ({ url: src })) || undefined,
     },
   };
