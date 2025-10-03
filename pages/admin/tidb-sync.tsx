@@ -200,7 +200,9 @@ export default function TidbMapping() {
               <input className="border rounded px-2 py-1 w-40" value={previewId} onChange={e=>setPreviewId(e.target.value)} />
               <a className="px-3 py-1 border rounded"
                 href={`/api/tidb-sync/profile/preview?profile=${encodeURIComponent(editingKey)}&id=${encodeURIComponent(previewId)}&key=${encodeURIComponent(token)}`}
-                target="_blank" rel="noreferrer">Preview JSON (row)</a>
+                target="_blank" rel="noopener noreferrer">
+                Preview JSON (row)
+              </a>
               <button className="px-3 py-1 border rounded" onClick={runFull}>Run Full Reindex</button>
             </div>
             <pre className="bg-gray-50 border rounded p-3 text-xs overflow-x-auto">{out ? JSON.stringify(out, null, 2) : '—'}</pre>

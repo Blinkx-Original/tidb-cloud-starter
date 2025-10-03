@@ -23,6 +23,9 @@ export default function Footer() {
             {(links as FooterLink[]).map((link, idx) => {
               if (isExternal(link.href) || link.external) {
                 const newTab = /^https?:\/\//i.test(link.href);
+                const externalAttrs = newTab
+                  ? { target: '_blank' as const, rel: 'noopener noreferrer' }
+                  : {};
                 return (
                   <li key={`${link.title}-${idx}`}>
                     <a
