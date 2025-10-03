@@ -1,4 +1,4 @@
-import { getPool, ensureSyncTables } from './tidb';
+import { getPool } from './tidb';
 import { SyncSummary, SyncTarget } from './types';
 
 type RawLogRow = {
@@ -45,7 +45,6 @@ function mapRow(row: RawLogRow): SyncLogRecord {
 }
 
 export async function createLog(target: SyncTarget): Promise<number> {
-  await ensureSyncTables();
   const [result] = await getPool().execute(
     'INSERT INTO sync_log (target, started_at, ok_count, fail_count) VALUES (?, NOW(), 0, 0)',
     [target],
@@ -63,16 +62,16 @@ export async function finalizeLog(
     error,
   }: { ok: number; failed: number; notes?: Record<string, unknown>; error?: Error | null },
 ): Promise<void> {
-  await ensureSyncTables();
   const finishedAt = new Date();
   const payload = notes ? JSON.stringify(notes) : null;
   const baseSql = `UPDATE sync_log SET finished_at = ?, ok_count = ?, fail_count = ?, notes = ? WHERE id = ?`;
-  const effectiveNotes = error ? JSON.stringify({ ...(notes || {}), error: error.message }) : payload;
+  const effectiveNotes = error
+    ? JSON.stringify({ ...(notes || {}), error: error.message })
+    : payload;
   await getPool().execute(baseSql, [finishedAt, ok, failed, effectiveNotes, id]);
 }
 
 export async function fetchLatestLog(target: SyncTarget): Promise<SyncLogRecord | null> {
-  await ensureSyncTables();
   const [rows] = await getPool().query(
     'SELECT * FROM sync_log WHERE target = ? ORDER BY started_at DESC LIMIT 1',
     [target],
@@ -82,7 +81,6 @@ export async function fetchLatestLog(target: SyncTarget): Promise<SyncLogRecord 
 }
 
 export async function fetchRecentLogs(limit = 50): Promise<SyncLogRecord[]> {
-  await ensureSyncTables();
   const [rows] = await getPool().query(
     'SELECT * FROM sync_log ORDER BY started_at DESC LIMIT ?',
     [limit],

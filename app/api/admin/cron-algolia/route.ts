@@ -4,7 +4,6 @@ import { runAlgoliaSync } from '@/lib/sync/algolia';
 import { withSyncLock } from '@/lib/sync/lock';
 
 export const dynamic = 'force-dynamic';
-export const runtime = 'nodejs';
 
 export async function POST(req: Request) {
   const unauthorized = requireAdmin(req);

@@ -1,14 +1,8 @@
-export type SyncTarget = "algolia";
+export type SyncTarget = 'algolia';
 
 export type SyncCheckpoint = {
   target: SyncTarget;
   lastUpdatedAt: Date;
-};
-
-export type TiDBConfigStatus = {
-  ok: boolean;
-  missing: string[];
-  details?: string;
 };
 
 export type TiDBProductRow = {
@@ -48,7 +42,7 @@ export type ProductDTO = {
   images?: string[];
   isPublished: boolean;
   stockQty?: number;
-  stockStatus?: "instock" | "outofstock" | "onbackorder";
+  stockStatus?: 'instock' | 'outofstock' | 'onbackorder';
   updatedAt: string;
 };
 
