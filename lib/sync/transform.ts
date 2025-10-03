@@ -93,16 +93,12 @@ export function transformRow(row: TiDBProductRow): TransformResult {
 
   const updatedAt = coerceDate(row.updated_at);
   const rawPrice = row.price;
-  let price: number | undefined;
-  if (rawPrice !== null && rawPrice !== undefined) {
-    const parsed = Number(rawPrice);
-    if (Number.isFinite(parsed)) {
-      price = parsed;
-    } else {
-      warnings.push(`Product ${row.id} has an invalid price value (${rawPrice}). It will be indexed without price.`);
-    }
-  }
-
+  const hasPrice =
+    rawPrice !== null &&
+    rawPrice !== undefined &&
+    !(typeof rawPrice === 'string' && rawPrice.trim() === '');
+  const coercedPrice = hasPrice ? Number(rawPrice) : undefined;
+  const price = typeof coercedPrice === 'number' && !Number.isNaN(coercedPrice) ? coercedPrice : undefined;
   const product: ProductDTO = {
     objectID,
     sku: sku || String(row.id),
