@@ -1,9 +1,9 @@
-import { getPool, ensureSyncTables } from "./tidb";
-import { SyncSummary, SyncTarget } from "./types";
+import { getPool, ensureSyncTables } from './tidb';
+import { SyncSummary, SyncTarget } from './types';
 
 type RawLogRow = {
   id: number;
-  target: string;
+  target: SyncTarget;
   started_at: Date;
   finished_at: Date | null;
   ok_count: number | null;
@@ -13,7 +13,7 @@ type RawLogRow = {
 
 export type SyncLogRecord = {
   id: number;
-  target: string;
+  target: SyncTarget;
   startedAt: Date;
   finishedAt: Date | null;
   okCount: number;
@@ -25,8 +25,7 @@ function parseNotes(notes: string | null): Record<string, unknown> | null {
   if (!notes) return null;
   try {
     const parsed = JSON.parse(notes);
-    if (parsed && typeof parsed === "object")
-      return parsed as Record<string, unknown>;
+    if (parsed && typeof parsed === 'object') return parsed as Record<string, unknown>;
     return null;
   } catch {
     return { raw: notes };
@@ -48,7 +47,7 @@ function mapRow(row: RawLogRow): SyncLogRecord {
 export async function createLog(target: SyncTarget): Promise<number> {
   await ensureSyncTables();
   const [result] = await getPool().execute(
-    "INSERT INTO sync_log (target, started_at, ok_count, fail_count) VALUES (?, NOW(), 0, 0)",
+    'INSERT INTO sync_log (target, started_at, ok_count, fail_count) VALUES (?, NOW(), 0, 0)',
     [target],
   );
   const { insertId } = result as { insertId: number };
@@ -62,35 +61,20 @@ export async function finalizeLog(
     failed,
     notes,
     error,
-  }: {
-    ok: number;
-    failed: number;
-    notes?: Record<string, unknown>;
-    error?: Error | null;
-  },
+  }: { ok: number; failed: number; notes?: Record<string, unknown>; error?: Error | null },
 ): Promise<void> {
   await ensureSyncTables();
   const finishedAt = new Date();
   const payload = notes ? JSON.stringify(notes) : null;
   const baseSql = `UPDATE sync_log SET finished_at = ?, ok_count = ?, fail_count = ?, notes = ? WHERE id = ?`;
-  const effectiveNotes = error
-    ? JSON.stringify({ ...(notes || {}), error: error.message })
-    : payload;
-  await getPool().execute(baseSql, [
-    finishedAt,
-    ok,
-    failed,
-    effectiveNotes,
-    id,
-  ]);
+  const effectiveNotes = error ? JSON.stringify({ ...(notes || {}), error: error.message }) : payload;
+  await getPool().execute(baseSql, [finishedAt, ok, failed, effectiveNotes, id]);
 }
 
-export async function fetchLatestLog(
-  target: SyncTarget,
-): Promise<SyncLogRecord | null> {
+export async function fetchLatestLog(target: SyncTarget): Promise<SyncLogRecord | null> {
   await ensureSyncTables();
   const [rows] = await getPool().query(
-    "SELECT * FROM sync_log WHERE target = ? ORDER BY started_at DESC LIMIT 1",
+    'SELECT * FROM sync_log WHERE target = ? ORDER BY started_at DESC LIMIT 1',
     [target],
   );
   const arr = rows as RawLogRow[];
@@ -100,17 +84,14 @@ export async function fetchLatestLog(
 export async function fetchRecentLogs(limit = 50): Promise<SyncLogRecord[]> {
   await ensureSyncTables();
   const [rows] = await getPool().query(
-    "SELECT * FROM sync_log ORDER BY started_at DESC LIMIT ?",
+    'SELECT * FROM sync_log ORDER BY started_at DESC LIMIT ?',
     [limit],
   );
   const arr = rows as RawLogRow[];
   return arr.map(mapRow);
 }
 
-export function toSummary(
-  target: SyncTarget,
-  log: SyncLogRecord | null,
-): SyncSummary | null {
+export function toSummary(target: SyncTarget, log: SyncLogRecord | null): SyncSummary | null {
   if (!log) return null;
   return {
     target,
@@ -119,9 +100,6 @@ export function toSummary(
     ok: log.okCount,
     failed: log.failCount,
     notes: log.notes || undefined,
-    checkpoint:
-      log.notes && typeof log.notes.checkpoint === "string"
-        ? (log.notes.checkpoint as string)
-        : undefined,
+    checkpoint: log.notes && typeof log.notes.checkpoint === 'string' ? (log.notes.checkpoint as string) : undefined,
   };
 }

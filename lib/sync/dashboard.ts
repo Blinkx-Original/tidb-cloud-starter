@@ -1,30 +1,26 @@
-import { fetchRecentLogs, fetchLatestLog } from "./log";
-import { fetchRecentCheckpoints } from "./tidb";
-import { SyncSummary } from "./types";
+import { fetchRecentLogs, fetchLatestLog } from './log';
+import { fetchRecentCheckpoints } from './tidb';
+import { SyncSummary } from './types';
 
 export async function getDashboardData() {
   const [logs, checkpoints, algoliaLog] = await Promise.all([
     fetchRecentLogs(50),
     fetchRecentCheckpoints(),
-    fetchLatestLog("algolia"),
+    fetchLatestLog('algolia'),
   ]);
 
-  const checkpointsMap = new Map(
-    checkpoints.map((c) => [c.target, c.lastUpdatedAt.toISOString()]),
-  );
+  const checkpointsMap = new Map(checkpoints.map((c) => [c.target, c.lastUpdatedAt.toISOString()]));
 
   const summary: Record<string, SyncSummary | null> = {
     algolia: algoliaLog
       ? {
-          target: "algolia",
+          target: 'algolia',
           startedAt: algoliaLog.startedAt.toISOString(),
-          finishedAt: (
-            algoliaLog.finishedAt ?? algoliaLog.startedAt
-          ).toISOString(),
+          finishedAt: (algoliaLog.finishedAt ?? algoliaLog.startedAt).toISOString(),
           ok: algoliaLog.okCount,
           failed: algoliaLog.failCount,
           notes: algoliaLog.notes || undefined,
-          checkpoint: checkpointsMap.get("algolia") || undefined,
+          checkpoint: checkpointsMap.get('algolia') || undefined,
         }
       : null,
   };
@@ -39,12 +35,10 @@ export async function getDashboardData() {
       failed: log.failCount,
       notes: log.notes,
     })),
-    checkpoints: Array.from(checkpointsMap.entries()).map(
-      ([target, value]) => ({
-        target,
-        value,
-      }),
-    ),
+    checkpoints: Array.from(checkpointsMap.entries()).map(([target, value]) => ({
+      target,
+      value,
+    })),
     summary,
   };
 }

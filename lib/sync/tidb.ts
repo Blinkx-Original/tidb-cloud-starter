@@ -1,8 +1,8 @@
-import fs from "fs";
-import mysql, { Pool, PoolConnection } from "mysql2/promise";
-import { SyncCheckpoint, SyncTarget, TiDBProductRow } from "./types";
+import fs from 'fs';
+import mysql, { Pool, PoolConnection } from 'mysql2/promise';
+import { SyncCheckpoint, SyncTarget, TiDBProductRow } from './types';
 
-const REQUIRED_ENV_VARS = ["TIDB_HOST", "TIDB_PORT", "TIDB_USER"] as const;
+const REQUIRED_ENV_VARS = ['TIDB_HOST', 'TIDB_PORT', 'TIDB_USER'] as const;
 
 export type TiDBConfigStatus = {
   ok: boolean;
@@ -11,26 +11,21 @@ export type TiDBConfigStatus = {
 };
 
 export function getTiDBConfigStatus(): TiDBConfigStatus {
-  const missing: string[] = REQUIRED_ENV_VARS.filter(
-    (name) => (process.env[name] || "").trim() === "",
-  );
-  if (!((process.env.TIDB_DATABASE || "").trim() || (process.env.TIDB_DB || "").trim())) {
-    missing.push("TIDB_DATABASE");
+  const missing: string[] = REQUIRED_ENV_VARS.filter((name) => (process.env[name] || '').trim() === '');
+  if (!((process.env.TIDB_DATABASE || '').trim() || (process.env.TIDB_DB || '').trim())) {
+    missing.push('TIDB_DATABASE');
   }
   return {
     ok: missing.length === 0,
     missing,
-    details:
-      missing.length === 0
-        ? undefined
-        : `Faltan variables de entorno de TiDB: ${missing.join(", ")}`,
+    details: missing.length === 0 ? undefined : `Faltan variables de entorno de TiDB: ${missing.join(', ')}`,
   };
 }
 
 function assertTiDBConfig(): void {
   const status = getTiDBConfigStatus();
   if (!status.ok) {
-    throw new Error(status.details || "TiDB environment is not configured");
+    throw new Error(status.details || 'TiDB environment is not configured');
   }
 }
 
@@ -46,17 +41,17 @@ function getEnv(name: string) {
 }
 
 function resolveCa(): string | undefined {
-  const candidate = (process.env.TIDB_SSL_CA_PATH || "").trim();
+  const candidate = (process.env.TIDB_SSL_CA_PATH || '').trim();
   const paths = [
     candidate,
-    "/etc/ssl/certs/ca-certificates.crt",
-    "/etc/pki/tls/certs/ca-bundle.crt",
-    "/etc/ssl/cert.pem",
+    '/etc/ssl/certs/ca-certificates.crt',
+    '/etc/pki/tls/certs/ca-bundle.crt',
+    '/etc/ssl/cert.pem',
   ].filter(Boolean) as string[];
   for (const path of paths) {
     try {
       if (path && fs.existsSync(path)) {
-        return fs.readFileSync(path, "utf8");
+        return fs.readFileSync(path, 'utf8');
       }
     } catch {
       // ignore
@@ -68,14 +63,12 @@ function resolveCa(): string | undefined {
 function buildPool(): Pool {
   if (pool) return pool;
   assertTiDBConfig();
-  const host = getEnv("TIDB_HOST");
-  const port = Number(getEnv("TIDB_PORT"));
-  const user = getEnv("TIDB_USER");
+  const host = getEnv('TIDB_HOST');
+  const port = Number(getEnv('TIDB_PORT'));
+  const user = getEnv('TIDB_USER');
   const database = process.env.TIDB_DATABASE || process.env.TIDB_DB;
   if (!database) {
-    throw new Error(
-      "Missing TiDB database name. Provide TIDB_DATABASE or TIDB_DB",
-    );
+    throw new Error('Missing TiDB database name. Provide TIDB_DATABASE or TIDB_DB');
   }
   const password = process.env.TIDB_PASSWORD || undefined;
   const ca = resolveCa();
@@ -86,16 +79,16 @@ function buildPool(): Pool {
     user,
     password,
     database,
-    decimalNumbers: true,
     waitForConnections: true,
     connectionLimit: 5,
+    decimalNumbers: true,
     ssl: ca
       ? {
           ca,
-          minVersion: "TLSv1.2",
+          minVersion: 'TLSv1.2',
           rejectUnauthorized: true,
         }
-      : { minVersion: "TLSv1.2", rejectUnauthorized: true },
+      : { minVersion: 'TLSv1.2', rejectUnauthorized: true },
   });
   return pool;
 }
@@ -142,9 +135,7 @@ export async function ensureSyncTables(): Promise<void> {
   await ensureSchema();
 }
 
-export async function withConnection<T>(
-  fn: (conn: PoolConnection) => Promise<T>,
-): Promise<T> {
+export async function withConnection<T>(fn: (conn: PoolConnection) => Promise<T>): Promise<T> {
   const conn = await getPool().getConnection();
   try {
     return await fn(conn);
@@ -153,10 +144,7 @@ export async function withConnection<T>(
   }
 }
 
-export async function fetchProductsSince(
-  since: Date | null,
-  limit: number,
-): Promise<TiDBProductRow[]> {
+export async function fetchProductsSince(since: Date | null, limit: number): Promise<TiDBProductRow[]> {
   await ensureSchema();
   const sql = `
     SELECT
@@ -165,7 +153,7 @@ export async function fetchProductsSince(
       is_published, stock_qty, stock_status, canonical_sku,
       created_at, updated_at
     FROM products
-    ${since ? "WHERE updated_at > ?" : ""}
+    ${since ? 'WHERE updated_at > ?' : ''}
     ORDER BY updated_at ASC
     LIMIT ?
   `;
@@ -176,9 +164,7 @@ export async function fetchProductsSince(
   return rows as TiDBProductRow[];
 }
 
-export async function fetchProductBySlug(
-  slug: string,
-): Promise<TiDBProductRow | null> {
+export async function fetchProductBySlug(slug: string): Promise<TiDBProductRow | null> {
   await ensureSchema();
   const sql = `
     SELECT
@@ -195,26 +181,18 @@ export async function fetchProductBySlug(
   return arr[0] || null;
 }
 
-export async function readCheckpoint(
-  target: SyncTarget,
-): Promise<SyncCheckpoint | null> {
+export async function readCheckpoint(target: SyncTarget): Promise<SyncCheckpoint | null> {
   await ensureSchema();
   const [rows] = await getPool().query(
-    "SELECT target, last_updated_at FROM sync_checkpoint WHERE target = ? LIMIT 1",
+    'SELECT target, last_updated_at FROM sync_checkpoint WHERE target = ? LIMIT 1',
     [target],
   );
-  const arr = rows as { target: string; last_updated_at: Date }[];
+  const arr = rows as { target: SyncTarget; last_updated_at: Date }[];
   if (!arr.length) return null;
-  return {
-    target: arr[0].target as SyncTarget,
-    lastUpdatedAt: new Date(arr[0].last_updated_at),
-  };
+  return { target: arr[0].target, lastUpdatedAt: new Date(arr[0].last_updated_at) };
 }
 
-export async function writeCheckpoint(
-  target: SyncTarget,
-  lastUpdatedAt: Date,
-): Promise<void> {
+export async function writeCheckpoint(target: SyncTarget, lastUpdatedAt: Date): Promise<void> {
   await ensureSchema();
   await getPool().execute(
     `INSERT INTO sync_checkpoint (target, last_updated_at)
@@ -227,20 +205,15 @@ export async function writeCheckpoint(
 export async function fetchRecentCheckpoints(): Promise<SyncCheckpoint[]> {
   await ensureSchema();
   const [rows] = await getPool().query(
-    "SELECT target, last_updated_at FROM sync_checkpoint ORDER BY target ASC",
+    'SELECT target, last_updated_at FROM sync_checkpoint ORDER BY target ASC',
   );
-  const arr = rows as { target: string; last_updated_at: Date }[];
+  const arr = rows as { target: SyncTarget; last_updated_at: Date }[];
   return arr
-    .filter((row) => row.target === "algolia")
-    .map((row) => ({
-      target: row.target as SyncTarget,
-      lastUpdatedAt: new Date(row.last_updated_at),
-    }));
+    .filter((row) => row.target === 'algolia')
+    .map((row) => ({ target: row.target, lastUpdatedAt: new Date(row.last_updated_at) }));
 }
 
-export async function fetchProductsMissingSlug(
-  limit = 500,
-): Promise<TiDBProductRow[]> {
+export async function fetchProductsMissingSlug(limit = 500): Promise<TiDBProductRow[]> {
   await ensureSchema();
   const sql = `
     SELECT
@@ -257,13 +230,7 @@ export async function fetchProductsMissingSlug(
   return rows as TiDBProductRow[];
 }
 
-export async function updateProductSlug(
-  id: number,
-  slug: string,
-): Promise<void> {
+export async function updateProductSlug(id: number, slug: string): Promise<void> {
   await ensureSchema();
-  await getPool().execute("UPDATE products SET slug = ? WHERE id = ?", [
-    slug,
-    id,
-  ]);
+  await getPool().execute('UPDATE products SET slug = ? WHERE id = ?', [slug, id]);
 }

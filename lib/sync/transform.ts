@@ -99,11 +99,10 @@ export function transformRow(row: TiDBProductRow): TransformResult {
     if (Number.isFinite(parsed)) {
       price = parsed;
     } else {
-      warnings.push(
-        `Product ${row.id} has an invalid price value (${rawPrice}). It will be indexed without price.`,
-      );
+      warnings.push(`Product ${row.id} has an invalid price value (${rawPrice}). It will be indexed without price.`);
     }
   }
+
   const product: ProductDTO = {
     objectID,
     sku: sku || String(row.id),
