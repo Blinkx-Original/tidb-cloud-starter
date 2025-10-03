@@ -169,10 +169,10 @@ export async function readCheckpoint(
     "SELECT target, last_updated_at FROM sync_checkpoint WHERE target = ? LIMIT 1",
     [target],
   );
-  const arr = rows as { target: SyncTarget; last_updated_at: Date }[];
+  const arr = rows as { target: string; last_updated_at: Date }[];
   if (!arr.length) return null;
   return {
-    target: arr[0].target,
+    target: arr[0].target as SyncTarget,
     lastUpdatedAt: new Date(arr[0].last_updated_at),
   };
 }
@@ -195,12 +195,13 @@ export async function fetchRecentCheckpoints(): Promise<SyncCheckpoint[]> {
   const [rows] = await getPool().query(
     "SELECT target, last_updated_at FROM sync_checkpoint ORDER BY target ASC",
   );
-  return (rows as { target: SyncTarget; last_updated_at: Date }[]).map(
-    (row) => ({
-      target: row.target,
+  const arr = rows as { target: string; last_updated_at: Date }[];
+  return arr
+    .filter((row) => row.target === "algolia")
+    .map((row) => ({
+      target: row.target as SyncTarget,
       lastUpdatedAt: new Date(row.last_updated_at),
-    }),
-  );
+    }));
 }
 
 export async function fetchProductsMissingSlug(

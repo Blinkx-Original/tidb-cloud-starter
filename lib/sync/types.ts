@@ -1,4 +1,4 @@
-export type SyncTarget = 'algolia' | 'woo';
+export type SyncTarget = "algolia";
 
 export type SyncCheckpoint = {
   target: SyncTarget;
@@ -42,7 +42,7 @@ export type ProductDTO = {
   images?: string[];
   isPublished: boolean;
   stockQty?: number;
-  stockStatus?: 'instock' | 'outofstock' | 'onbackorder';
+  stockStatus?: "instock" | "outofstock" | "onbackorder";
   updatedAt: string;
 };
 

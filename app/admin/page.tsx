@@ -100,7 +100,6 @@ export default async function AdminPage() {
   }
 
   const algoliaSummary = data ? getSummary(data.summary.algolia) : null;
-  const wooSummary = data ? getSummary(data.summary.woo) : null;
   const logs = data?.logs ?? [];
 
   return (
@@ -116,7 +115,7 @@ export default async function AdminPage() {
           </p>
         </header>
 
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid gap-6">
           <AdminCard
             title="Algolia"
             subtitle="Sincronización con el índice de búsqueda"
@@ -126,20 +125,6 @@ export default async function AdminPage() {
               <SyncButton
                 endpoint="/api/admin/sync-algolia"
                 label="Sincronizar Algolia"
-                refreshOnSuccess
-              />
-            </div>
-          </AdminCard>
-
-          <AdminCard
-            title="WooCommerce"
-            subtitle="Sincronización con la tienda"
-          >
-            <SummaryRow summary={wooSummary} />
-            <div className="pt-4">
-              <SyncButton
-                endpoint="/api/admin/sync-woo"
-                label="Sincronizar WooCommerce"
                 refreshOnSuccess
               />
             </div>

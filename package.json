@@ -12,7 +12,6 @@
     "vercel-build": "yarn run build",
     "reindex": "node scripts/reindexAlgolia.mjs",
     "sync:algolia": "tsx scripts/sync-tidb-to-algolia.ts",
-    "sync:woo": "tsx scripts/sync-tidb-to-woocommerce.ts",
     "sync:slugs": "tsx scripts/backfill-build-slugs.ts"
   },
   "dependencies": {

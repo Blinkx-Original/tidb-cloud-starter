@@ -3,7 +3,7 @@ import { SyncSummary, SyncTarget } from "./types";
 
 type RawLogRow = {
   id: number;
-  target: SyncTarget;
+  target: string;
   started_at: Date;
   finished_at: Date | null;
   ok_count: number | null;
@@ -13,7 +13,7 @@ type RawLogRow = {
 
 export type SyncLogRecord = {
   id: number;
-  target: SyncTarget;
+  target: string;
   startedAt: Date;
   finishedAt: Date | null;
   okCount: number;
