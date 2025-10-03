@@ -1,4 +1,3 @@
-
 # 📘 Catalog Architecture – Governance & SOP
 
 This document explains the **architecture, naming conventions, and workflow** for our Catalog system.  
@@ -8,111 +7,112 @@ It is the **reference guide** for development, SEO, affiliate integration, and l
 
 ## 1. Concept
 
-The Catalog is the **core of SEO Armageddon**.  
-- Every **Product** represents an opportunity to monetize:  
-  - Affiliate item (Amazon, Capterra, SaaS tools, etc.)  
-  - Lead Management offer (ice machines, forklifts for rent, etc.)  
-  - Dropshipping item (this is real supplier inventory).  
-- Products are always grouped into **Categories**.  
-- Each Product automatically generates:  
-  1. A **Card** (square on the homepage or category page).  
-  2. A **Detail Page** (`/product/[slug]`).  
+The Catalog is the **core of SEO Armageddon**.
+- Every **Product** represents an opportunity to monetize:
+  - Affiliate item (Amazon, Capterra, SaaS tools, and so on.)
+  - Lead Management offer (ice machines, forklifts for rent, etc.)
+  - Dropshipping item (this is real supplier inventory).
+- Products are always grouped into **Categories**.
+- Each Product automatically generates:
+  1. A **Card** (square on the homepage or category page).
+  2. A **Detail Page** (`/product/[slug]`).
   3. Zero or more **Listings** (affiliate links, offers, vendors).
 
 ---
 
 ## 2. Key Definitions
 
-- **Product**  
-  - Stored in the database table `products`.  
-  - Columns: `id, sku, name, slug, description, price, price_eur, image_url, category_name, category_slug`.  
-  - Can be affiliate, lead management, or dropshipping. We always call it *Product*.  
+- **Product**
+  - Stored in the database table `products`.
+  - Columns: `id, sku, name, slug, description, price, price_eur, image_url, category_name, category_slug`.
+  - Can be affiliate, lead management, or dropshipping. We always call it _Product_.
 
-- **Card**  
-  - The visual square on the homepage or category page.  
-  - Displays `image_url`, `name`, `category_name`, `price`.  
-  - Clicking a card opens the Product’s **Detail Page**.  
+- **Card**
+  - The visual square on the homepage or category page.
+  - Displays `image_url`, `name`, `category_name`, `price`.
+  - Clicking a card opens the Product’s **Detail Page**.
 
-- **Detail Page**  
-  - File: `pages/product/[slug].tsx`.  
-  - URL format: `/product/<slug>`.  
-  - Shows product info and its **Listings**.  
-  - Works like Capterra or Amazon product pages.  
+- **Detail Page**
+  - File: `pages/product/[slug].tsx`.
+  - URL format: `/product/<slug>`.
+  - Shows product info and its **Listings**.
+  - Works like Capterra or Amazon product pages.
 
-- **Listing**  
-  - Stored in the `listings` table.  
-  - Linked to a product by `product_id`.  
-  - Columns: `id, product_id, title, url, price, source`.  
-  - Each listing represents one offer (affiliate program, lead form, supplier link).  
+- **Listing**
+  - Stored in the `listings` table.
+  - Linked to a product by `product_id`.
+  - Columns: `id, product_id, title, url, price, source`.
+  - Each listing represents one offer (affiliate program, lead form, supplier link).
 
-- **Category Page**  
-  - Future implementation: `pages/category/[slug].tsx`.  
-  - Shows only products with the same `category_slug`.  
+- **Category Page**
+  - Future implementation: `pages/category/[slug].tsx`.
+  - Shows only products with the same `category_slug`.
 
-- **Homepage**  
-  - File: `pages/index.tsx`.  
-  - Displays a feed of product cards (paginated).  
+- **Homepage**
+  - File: `pages/index.tsx`.
+  - Displays a feed of product cards (paginated).
   - This is the current Vercel homepage.
 
 ---
 
 ## 3. Technical Architecture
 
-- **Frontend**: Next.js 13 + React 18, deployed on Vercel.  
-- **Database**: TiDB Cloud (schema `bookshop`).  
-- **DB Access**: `lib/db.ts` using `mysql2/promise`.  
-- **API Endpoints**:  
-  - `pages/api/products.ts` → Returns products (paginated).  
-  - `pages/api/product/[slug].ts` (optional) → Returns single product + listings.  
+- **Frontend**: Next.js 13 + React 18, deployed on Vercel.
+- **Database**: TiDB Cloud (schema `bookshop`).
+- **DB Access**: `lib/db.ts` using `mysql2/promise`.
+- **API Endpoints**:
+  - `pages/api/products.ts` → Returns products (paginated).
+  - `pages/api/product/[slug].ts` (optional) → Returns single product + listings.
 
 ---
 
 ## 4. Workflow
 
-1. **Upload Products**  
-   - Data comes from CSV import into `bookshop.products`.  
+1. **Upload Products**
+   - Data comes from CSV import into `bookshop.products`.
 
-2. **Create Listings**  
-   - Add affiliate offers or lead management offers into `bookshop.listings`.  
-   - Example:  
+2. **Create Listings**
+   - Add affiliate offers or lead management offers into `bookshop.listings`.
+   - Example:
      ```sql
      INSERT INTO listings (product_id, title, url, price, source)
      VALUES (1, 'Demo Offer', 'https://example.com', 1499.00, 'Affiliate');
      ```
 
-3. **Homepage**  
-   - Displays products as cards.  
+3. **Homepage**
+   - Displays products as cards.
 
-4. **Detail Page**  
-   - `/product/[slug]` shows the product’s info and its listings.  
+4. **Detail Page**
+   - `/product/[slug]` shows the product’s info and its listings.
 
 ---
 
 ## 5. Naming Conventions
 
-We always use the same words:  
+We always use the same words:
 
-- **Product** = any item in the system (affiliate, dropshipping, lead).  
-- **Card** = the homepage/category square.  
-- **Detail Page** = `/product/[slug].tsx`.  
-- **Listing** = one affiliate/offer entry linked to a Product.  
-- **Category Page** = product cards filtered by category.  
+- **Product** = any item in the system (affiliate, dropshipping, lead).
+- **Card** = the homepage/category square.
+- **Detail Page** = `/product/[slug].tsx`.
+- **Listing** = one affiliate/offer entry linked to a Product.
+- **Category Page** = product cards filtered by category.
 
 ---
 
 ## 6. Editing Guidelines
 
-- **Homepage design** → `pages/index.tsx`.  
-- **Card design** → `components/v2/Cards/ShoppingItemCardList.tsx`.  
-- **Detail Page design** → `pages/product/[slug].tsx`.  
-- **Categories**  
-  - Currently still use “Bookshop / Bookstore” text.  
-  - Must be replaced with our categories.  
-  - File: `pages/index.tsx` and `components/v2/Layout.tsx`.  
-- **Menus / Headers** → Defined in `components/v2/Layout.tsx`.  
-- **Site Title** → `<title>` in `pages/index.tsx` and `[slug].tsx`.  
+- **Homepage design** → `pages/index.tsx`.
+- **Card design** → `components/v2/Cards/ShoppingItemCardList.tsx`.
+- **Detail Page design** → `pages/product/[slug].tsx`.
+- **Categories**
+  - Currently still use “Bookshop / Bookstore” text.
+  - Must be replaced with our categories.
+  - File: `pages/index.tsx` and `components/v2/Layout.tsx`.
+- **Menus / Headers** → Defined in `components/v2/Layout.tsx`.
+- **Site Title** → `<title>` in `pages/index.tsx` and `[slug].tsx`.
 
 ---
+
 # 🔝 Header & Homepage Title Customization (Copy–paste this whole block into your README)
 
 This section explains how to customize the **site header** (logo + title) and the **homepage heading/subtitle**. Both are at the very top of the site.
@@ -123,11 +123,13 @@ This section explains how to customize the **site header** (logo + title) and th
 
 **File:** `components/v2/Layout/Header.tsx`  
 Contains:
+
 - Logo icon (currently `BookOpenIcon` from `@heroicons/react`)
 - Site title text (currently `BlinkX`)
 - Navigation (menu, cart, etc.)
 
 ### Change the site title
+
 Open `components/v2/Layout/Header.tsx` and find the brand block:
 
 <NextLink href='/' className='btn btn-ghost normal-case text-xl'>
@@ -139,6 +141,7 @@ Replace `BlinkX` with your brand (e.g., `BlinkX Catalog`, `Industrial Marketplac
 Longer text works, but keep it short for headers.
 
 ### Change the logo (icon → PNG/JPG/SVG)
+
 Current line:
 
 <BookOpenIcon className='w-6 h-6' />
@@ -196,49 +199,47 @@ Example in `pages/product/[slug].tsx`:
 - Homepage H1/subtitle → edit in `pages/index.tsx`
 - Browser tab `<title>`/description → edit `<Head>` in each page
 
-
 ---
 
 ## 7. Content Structure
 
-- Above the cards (homepage or category) we must have:  
-  - An **H1** → main keyword / intro.  
-  - Optional **H2/H3** → supporting text.  
-- This header text is editable directly in the React components.  
+- Above the cards (homepage or category) we must have:
+  - An **H1** → main keyword / intro.
+  - Optional **H2/H3** → supporting text.
+- This header text is editable directly in the React components.
 
 ---
 
 ## 8. Dummy vs Real Data
 
-- **Dummy Data**: used for testing (e.g., `Demo Offer`, `https://example.com`).  
-- **Real Data**: loaded by CSV or direct SQL insert.  
+- **Dummy Data**: used for testing (e.g., `Demo Offer`, `https://example.com`).
+- **Real Data**: loaded by CSV or direct SQL insert.
 
 ---
 
 ## 9. Vision
 
-- Extend with:  
-  - **Category pages** (`/category/[slug]`).  
-  - **Search and filters** (by category, price, attributes).  
-  - **Affiliate monetization**: every listing links to external programs.  
-  - **Lead management**: listings become quote forms (RFP / RFQ).  
+- Extend with:
+  - **Category pages** (`/category/[slug]`).
+  - **Search and filters** (by category, price, attributes).
+  - **Affiliate monetization**: every listing links to external programs.
+  - **Lead management**: listings become quote forms (RFP / RFQ).
 - Unified Catalog → covers affiliate, dropshipping, and lead management.
 
 ---
 
 # ✅ Summary
 
-- Every **Product** = card + detail page + listings.  
-- Homepage shows **Cards**.  
-- Cards link to **Detail Pages**.  
-- Detail Pages show **Listings**.  
-- Categories group Products.  
-- All content editable via specific React files and TiDB tables.  
+- Every **Product** = card + detail page + listings.
+- Homepage shows **Cards**.
+- Cards link to **Detail Pages**.
+- Detail Pages show **Listings**.
+- Categories group Products.
+- All content editable via specific React files and TiDB tables.
 
 This is the **Catalog Architecture SOP**.  
 It defines naming, structure, and workflow to avoid confusion.  
 Always refer here before making changes.
-
 
 # Catalog Architecture: Domain (Products/Categories) vs Presentation (UI/Analytics)
 
@@ -278,32 +279,32 @@ If you touch how things look/animate/track, change UI + uiConfig only.
 
 Folder Map (key files)
 lib/
-  domain.ts                 # Product & Category TypeScript types
-  dbClient.ts               # MySQL/TiDB pool + query helper
-  analytics.ts              # client-only safe wrapper for @vercel/analytics track()
-  uiConfig.ts               # presentation knobs (headings, sticky footer options)
-  repositories/
-    catalog.ts              # all SQL for products/categories/search
+domain.ts # Product & Category TypeScript types
+dbClient.ts # MySQL/TiDB pool + query helper
+analytics.ts # client-only safe wrapper for @vercel/analytics track()
+uiConfig.ts # presentation knobs (headings, sticky footer options)
+repositories/
+catalog.ts # all SQL for products/categories/search
 
 components/
-  v2/
-    Layout/
-      Header.tsx            # navbar; uses SearchBar
-      index.tsx             # CommonLayout wrapper (Header + Footer)
-    StickyFooterCTA.tsx     # presentational sticky CTA bar (animated)
-    breadcrumbs.tsx         # UI-only breadcrumbs
-    SearchBar.tsx           # presentational; routes to /search; tracks submit
-    trackers/
-      SearchAnalytics.tsx   # fires 'search' event on results page
+v2/
+Layout/
+Header.tsx # navbar; uses SearchBar
+index.tsx # CommonLayout wrapper (Header + Footer)
+StickyFooterCTA.tsx # presentational sticky CTA bar (animated)
+breadcrumbs.tsx # UI-only breadcrumbs
+SearchBar.tsx # presentational; routes to /search; tracks submit
+trackers/
+SearchAnalytics.tsx # fires 'search' event on results page
 
 pages/
-  index.tsx                 # home (uses repo only via dedicated loaders if needed)
-  categories.tsx            # lists categories via CatalogRepo
-  category/[slug].tsx       # lists products in a category via CatalogRepo
-  product/[slug].tsx        # product detail via CatalogRepo; mounts StickyFooterCTA
-  search.tsx                # server-rendered search using CatalogRepo.searchProducts
-  blog/index.tsx            # blog listing (markdown metadata)
-  blog/[slug].tsx           # blog detail; mounts StickyFooterCTA
+index.tsx # home (uses repo only via dedicated loaders if needed)
+categories.tsx # lists categories via CatalogRepo
+category/[slug].tsx # lists products in a category via CatalogRepo
+product/[slug].tsx # product detail via CatalogRepo; mounts StickyFooterCTA
+search.tsx # server-rendered search using CatalogRepo.searchProducts
+blog/index.tsx # blog listing (markdown metadata)
+blog/[slug].tsx # blog detail; mounts StickyFooterCTA
 
 Ownership & Boundaries
 Domain/Data Layer (authoritative)
@@ -311,14 +312,13 @@ Domain/Data Layer (authoritative)
 lib/domain.ts
 
 export type Product = {
-  id: number; name: string; slug: string;
-  image_url: string | null;
-  price_eur: number | null; description: string | null;
-  category_name: string | null; category_slug: string | null;
+id: number; name: string; slug: string;
+image_url: string | null;
+price_eur: number | null; description: string | null;
+category_name: string | null; category_slug: string | null;
 };
 
 export type Category = { name: string; slug: string; count?: number };
-
 
 lib/dbClient.ts
 Centralizes the MySQL/TiDB pool and exposes a typed query<T>().
@@ -344,18 +344,17 @@ Presentation Layer (pure UI)
 lib/uiConfig.ts controls appearance/behavior knobs:
 
 export const UI = {
-  headings: {
-    homeTitleTag: 'h1' as const,
-    productTitleTag: 'h2' as const,
-    categoryTitleTag: 'h2' as const,
-  },
-  stickyFooter: {
-    enabledOnProduct: true,
-    enabledOnBlog: true,
-    background: 'bg-gray-100',
-  },
+headings: {
+homeTitleTag: 'h1' as const,
+productTitleTag: 'h2' as const,
+categoryTitleTag: 'h2' as const,
+},
+stickyFooter: {
+enabledOnProduct: true,
+enabledOnBlog: true,
+background: 'bg-gray-100',
+},
 };
-
 
 Pages/components read from UI but never embed SQL or domain rules.
 
@@ -376,9 +375,9 @@ Render UI using components + UI config.
 Example (excerpt from pages/category/[slug].tsx):
 
 export const getServerSideProps = async (ctx) => {
-  const slug = String(ctx.params?.slug || '');
-  const products = await CatalogRepo.getProductsByCategorySlug(slug);
-  return { props: { slug, products } };
+const slug = String(ctx.params?.slug || '');
+const products = await CatalogRepo.getProductsByCategorySlug(slug);
+return { props: { slug, products } };
 };
 
 Telemetry Layer
@@ -405,19 +404,18 @@ Database (TiDB) migration (done)
 We added generated lowercase columns and indexes:
 
 ALTER TABLE products
-  ADD COLUMN IF NOT EXISTS name_lower VARCHAR(255)
-  GENERATED ALWAYS AS (LOWER(name)) VIRTUAL;
+ADD COLUMN IF NOT EXISTS name_lower VARCHAR(255)
+GENERATED ALWAYS AS (LOWER(name)) VIRTUAL;
 
 CREATE INDEX IF NOT EXISTS idx_products_name_lower
-  ON products (name_lower);
+ON products (name_lower);
 
 ALTER TABLE products
-  ADD COLUMN IF NOT EXISTS description_lower TEXT
-  GENERATED ALWAYS AS (LOWER(description)) VIRTUAL;
+ADD COLUMN IF NOT EXISTS description_lower TEXT
+GENERATED ALWAYS AS (LOWER(description)) VIRTUAL;
 
 CREATE INDEX IF NOT EXISTS idx_products_description_lower_prefix
-  ON products (description_lower(191));
-
+ON products (description_lower(191));
 
 Why:
 
@@ -430,12 +428,11 @@ Repository query (index-friendly)
 lib/repositories/catalog.ts uses UNION to allow the name index to be used:
 
 async searchProducts(q: string): Promise<Product[]> {
-  const trimmed = (q || '').trim().toLowerCase();
-  if (!trimmed) return [];
-  const term = `%${trimmed}%`;
+const trimmed = (q || '').trim().toLowerCase();
+if (!trimmed) return [];
+const term = `%${trimmed}%`;
 
-  const sql = `
-    SELECT id, name, slug, image_url, price_eur, description, category_name, category_slug
+const sql = `     SELECT id, name, slug, image_url, price_eur, description, category_name, category_slug
     FROM products
     WHERE name_lower LIKE ?
     UNION
@@ -446,9 +443,8 @@ async searchProducts(q: string): Promise<Product[]> {
     LIMIT 100
   `;
 
-  return await query<Product>(sql, [term, term]);
+return await query<Product>(sql, [term, term]);
 }
-
 
 Behavior
 
@@ -520,7 +516,7 @@ UI decisions centralized in lib/uiConfig.ts (headings, sticky settings, classes)
 
 Types live in lib/domain.ts (single source of truth).
 
-All external links use target="_blank" + rel="noopener noreferrer".
+All external links use target="\_blank" + rel="noopener noreferrer".
 
 Environment (for completeness)
 
@@ -531,23 +527,49 @@ TIDB_PORT=4000
 TIDB_USER=<user>
 TIDB_PASSWORD=<maybe empty>
 TIDB_DB=bookshop
-
+ALGOLIA_APP_ID=<algolia app id>
+ALGOLIA_ADMIN_API_KEY=<algolia admin key>
+ALGOLIA_SEARCH_API_KEY=<algolia search-only key>
+ALGOLIA_INDEX_PRIMARY=products_primary
+ALGOLIA_INDEX_BLUE=products_blue
+ALGOLIA_INDEX_GREEN=products_green
+NEXT_PUBLIC_ALGOLIA_APP_ID=<algolia app id>
+NEXT_PUBLIC_ALGOLIA_SEARCH_API_KEY=<algolia search-only key>
+NEXT_PUBLIC_ALGOLIA_INDEX_PRIMARY=products_primary
+ADMIN_DASH_PASSWORD=<strong random password>
 
 Optional:
 
 NEXT_PUBLIC_SITE_URL=<for canonical URLs/OG tags/sitemaps>
+REVALIDATE_SECRET=<if you will call /api/admin/revalidate>
+
+### Sync orchestrator (TiDB ⇄ Algolia ⇄ Next.js)
+
+- **Panel `/admin`**: protegido por `ADMIN_DASH_PASSWORD`. Permite lanzar sincronizaciones manuales, ver checkpoints y consultar los últimos registros.
+- **Endpoints API**
+  - `POST /api/admin/sync-algolia` – lanza sincronización manual Algolia.
+  - `POST /api/admin/cron-algolia` – pensado para Vercel Cron/Cloudways (acepta `batchSize` y `maxDurationMs`).
+  - `GET /api/admin/sync-algolia` – resumen del último run + flag `running`.
+  - `GET /api/admin/revalidate?secret=...&path=/p/slug` – revalida ISR cuando haya cambios (opcional).
+- **Checkpoints**: tabla `sync_checkpoint` se actualiza con `last_updated_at` para el destino `algolia`.
+- **Logs**: tabla `sync_log` almacena `ok`, `failed`, notas y `targetIndex` (Algolia blue/green).
+- **Scripts CLI**
+  - `yarn sync:algolia` → ejecuta `scripts/sync-tidb-to-algolia.ts`.
+  - `yarn sync:slugs` → ejecuta `scripts/backfill-build-slugs.ts` para autogenerar slugs faltantes.
+- **Algolia**: estrategia blue/green. Se clona el índice primario al alterno, se aplican cambios incrementales y luego se copia al alias `ALGOLIA_INDEX_PRIMARY`, preservando réplicas (`_price_asc`, `_price_desc`).
+- **Next.js**: las páginas `/p/[slug]` usan Incremental Static Regeneration (ISR) y pueden revalidarse con el endpoint opcional cuando cambian los datos.
 
 Testing Checklist
 
- Can change UI.headings.* (e.g., h2 → h1) with no repo code touched.
+Can change UI.headings.\* (e.g., h2 → h1) with no repo code touched.
 
- Style changes to Header/Sticky don’t affect query results.
+Style changes to Header/Sticky don’t affect query results.
 
- /search?q=hyd returns same results regardless of case.
+/search?q=hyd returns same results regardless of case.
 
- EXPLAIN SELECT ... WHERE name_lower LIKE '%term%'; shows idx_products_name_lower.
+EXPLAIN SELECT ... WHERE name_lower LIKE '%term%'; shows idx_products_name_lower.
 
- Adding a new field to Product only requires changing lib/domain.ts + repo SELECTs.
+Adding a new field to Product only requires changing lib/domain.ts + repo SELECTs.
 
 Future Extensions
 
@@ -559,7 +581,6 @@ Caching: add SWR on client or server-side caching in repo; UI unaffected.
 
 By following this structure, we keep a clean, scalable boundary: design moves fast without risking data logic, and data/search optimizes without breaking the UI.
 
-
 Dónde cambiar textos y enlaces
 Home (pages/index.tsx)
 
@@ -570,11 +591,10 @@ Se renderiza con SearchHero.
 Cambias los textos en pages/index.tsx al pasarle props:
 
 <SearchHero
-  title="Tu título aquí"
-  subtitle="Tu subtítulo aquí"
-  // si el componente soporta placeholder/ariaLabel, pásalos aquí
+title="Tu título aquí"
+subtitle="Tu subtítulo aquí"
+// si el componente soporta placeholder/ariaLabel, pásalos aquí
 />
-
 
 “Píldoras” / bloques de links (PillBlock):
 
@@ -589,7 +609,6 @@ Componente: components/v2/StickyFooterCTA.tsx
 Texto y link del botón se pasan desde cada página donde lo uses:
 
 <StickyFooterCTA title="…" buttonLabel="Ir a la oferta" buttonHref="/…" />
-
 
 Activación por defecto (blog, etc.): suele venir de lib/uiConfig.ts (si existe).
 Cambias ahí enabledOnBlog, textos por defecto, color de fondo, etc.
@@ -609,7 +628,7 @@ Dentro verás un array/lista de links (secciones: Company, Legal, etc.). Editas 
 
 Páginas legales (el contenido de esos links):
 
-Archivos Markdown en /content/legal/*.md (o .mdx).
+Archivos Markdown en /content/legal/\*.md (o .mdx).
 
 Cambias el texto directamente en esos .md (Title, body, etc.).
 
@@ -667,7 +686,6 @@ Color accent (azul) y sombras:
 
 colors: { accent: { DEFAULT: '#2f81f7', hover: '#3b82f6', ring: '#60a5fa' } }
 
-
 Si querés otro tono, cámbialo una sola vez aquí.
 
 Rutas “de sistema” (no se tocan casi nunca)
@@ -682,7 +700,7 @@ También usa NEXT_PUBLIC_SITE_URL.
 
 Variables de entorno: en Vercel → Project → Settings → Environment Variables
 
-NEXT_PUBLIC_SITE_URL, CLOUDFLARE_ACCOUNT_HASH, TIDB_DATABASE_URL, ALGOLIA_*, etc.
+NEXT*PUBLIC_SITE_URL, CLOUDFLARE_ACCOUNT_HASH, TIDB_DATABASE_URL, ALGOLIA*\*, etc.
 
 Sugerencia para README (mini checklist al clonar)
 
@@ -702,11 +720,7 @@ Cargar CSV a TiDB (productos, CTAs, imágenes).
 
 (Opcional) Añadir MDX por producto en TiDB o /content/products.
 
-
-
-
 # OLDER VERSION UNTIL SEPTEMBER 19, 2025
-
 
 # Bookshop Demo
 
@@ -831,5 +845,3 @@ Open the browser and visit `http://<ip>:3000`.
 ### Bookshop Schema
 
 [Bookshop Schema Design](https://docs.pingcap.com/tidbcloud/dev-guide-bookshop-schema-design)
-
-
