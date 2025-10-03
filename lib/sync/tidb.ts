@@ -2,6 +2,38 @@ import fs from "fs";
 import mysql, { Pool, PoolConnection } from "mysql2/promise";
 import { SyncCheckpoint, SyncTarget, TiDBProductRow } from "./types";
 
+const REQUIRED_ENV_VARS = ["TIDB_HOST", "TIDB_PORT", "TIDB_USER"] as const;
+
+export type TiDBConfigStatus = {
+  ok: boolean;
+  missing: string[];
+  details?: string;
+};
+
+export function getTiDBConfigStatus(): TiDBConfigStatus {
+  const missing: string[] = REQUIRED_ENV_VARS.filter(
+    (name) => (process.env[name] || "").trim() === "",
+  );
+  if (!((process.env.TIDB_DATABASE || "").trim() || (process.env.TIDB_DB || "").trim())) {
+    missing.push("TIDB_DATABASE");
+  }
+  return {
+    ok: missing.length === 0,
+    missing,
+    details:
+      missing.length === 0
+        ? undefined
+        : `Faltan variables de entorno de TiDB: ${missing.join(", ")}`,
+  };
+}
+
+function assertTiDBConfig(): void {
+  const status = getTiDBConfigStatus();
+  if (!status.ok) {
+    throw new Error(status.details || "TiDB environment is not configured");
+  }
+}
+
 let pool: Pool | null = null;
 let schemaPromise: Promise<void> | null = null;
 
@@ -35,6 +67,7 @@ function resolveCa(): string | undefined {
 
 function buildPool(): Pool {
   if (pool) return pool;
+  assertTiDBConfig();
   const host = getEnv("TIDB_HOST");
   const port = Number(getEnv("TIDB_PORT"));
   const user = getEnv("TIDB_USER");

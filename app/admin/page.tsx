@@ -4,6 +4,7 @@ import AdminCard from "@/components/AdminCard";
 import SyncButton from "@/components/SyncButton";
 import { expectedCookieToken } from "@/lib/sync/auth";
 import { getDashboardData } from "@/lib/sync/dashboard";
+import { getTiDBConfigStatus } from "@/lib/sync/tidb";
 
 export const dynamic = "force-dynamic";
 
@@ -89,8 +90,16 @@ export default async function AdminPage() {
 
   let data: Awaited<ReturnType<typeof getDashboardData>> | null = null;
   let loadError: string | null = null;
+  const tidbStatus = getTiDBConfigStatus();
+  if (!tidbStatus.ok) {
+    loadError =
+      tidbStatus.details ||
+      "Variables de entorno de TiDB incompletas. Revisa la configuración.";
+  }
   try {
-    data = await getDashboardData();
+    if (!loadError) {
+      data = await getDashboardData();
+    }
   } catch (error) {
     console.error("Failed to load dashboard data", error);
     loadError =
