@@ -85,7 +85,6 @@ export default async function AdminPage() {
 
   const data = await getDashboardData();
   const algoliaSummary = getSummary(data.summary.algolia);
-  const wooSummary = getSummary(data.summary.woo);
 
   return (
     <div className="min-h-screen bg-gray-50 py-10">
@@ -97,18 +96,11 @@ export default async function AdminPage() {
           </p>
         </header>
 
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid gap-6">
           <AdminCard title="Algolia" subtitle="Sincronización con el índice de búsqueda">
             <SummaryRow summary={algoliaSummary} />
             <div className="pt-4">
               <SyncButton endpoint="/api/admin/sync-algolia" label="Sincronizar Algolia" refreshOnSuccess />
-            </div>
-          </AdminCard>
-
-          <AdminCard title="WooCommerce" subtitle="Sincronización con la tienda">
-            <SummaryRow summary={wooSummary} />
-            <div className="pt-4">
-              <SyncButton endpoint="/api/admin/sync-woo" label="Sincronizar WooCommerce" refreshOnSuccess />
             </div>
           </AdminCard>
         </div>
