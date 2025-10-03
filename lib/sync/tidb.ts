@@ -52,6 +52,7 @@ function buildPool(): Pool {
     database,
     waitForConnections: true,
     connectionLimit: 5,
+    decimalNumbers: true,
     ssl: ca
       ? {
           ca,

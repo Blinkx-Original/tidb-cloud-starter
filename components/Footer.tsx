@@ -28,7 +28,7 @@ export default function Footer() {
                     <a
                       href={link.href}
                       target={newTab ? "_blank" : undefined}
-                      rel={newTab ? "noopener noreferrer" : undefined}
+                      rel="noreferrer"
                       className="hover:underline"
                     >
                       {link.title}
