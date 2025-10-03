@@ -4,10 +4,8 @@ import AdminCard from '@/components/AdminCard';
 import SyncButton from '@/components/SyncButton';
 import { expectedCookieToken } from '@/lib/sync/auth';
 import { getDashboardData } from '@/lib/sync/dashboard';
-import { getTiDBConfigStatus } from '@/lib/sync/tidb';
 
 export const dynamic = 'force-dynamic';
-export const runtime = 'nodejs';
 
 function formatDate(value?: string | null) {
   if (!value) return '—';
@@ -18,20 +16,11 @@ function formatDate(value?: string | null) {
   }
 }
 
-function getSummary(summary: any | null) {
-  if (!summary) return null;
-  return {
-    startedAt: summary.startedAt as string,
-    finishedAt: summary.finishedAt as string,
-    ok: Number(summary.ok || 0),
-    failed: Number(summary.failed || 0),
-    checkpoint: summary.checkpoint as string | undefined,
-  };
-}
-
 function SummaryRow({ summary }: { summary: ReturnType<typeof getSummary> }) {
   if (!summary) {
-    return <div className="text-sm text-gray-500">Sin ejecuciones registradas todavía.</div>;
+    return (
+      <div className="text-sm text-gray-500">Sin ejecuciones registradas todavía.</div>
+    );
   }
   return (
     <dl className="grid grid-cols-2 gap-2 text-sm">
@@ -59,11 +48,21 @@ function SummaryRow({ summary }: { summary: ReturnType<typeof getSummary> }) {
   );
 }
 
+function getSummary(summary: any | null) {
+  if (!summary) return null;
+  return {
+    startedAt: summary.startedAt as string,
+    finishedAt: summary.finishedAt as string,
+    ok: Number(summary.ok || 0),
+    failed: Number(summary.failed || 0),
+    checkpoint: summary.checkpoint as string | undefined,
+  };
+}
+
 export default async function AdminPage() {
   const cookieStore = cookies();
   let authorized = false;
   let authError: string | null = null;
-
   try {
     const token = cookieStore.get('admin-auth')?.value;
     authorized = token === expectedCookieToken();
@@ -84,28 +83,8 @@ export default async function AdminPage() {
     );
   }
 
-  let data: Awaited<ReturnType<typeof getDashboardData>> | null = null;
-  let loadError: string | null = null;
-  const tidbStatus = getTiDBConfigStatus();
-
-  if (!tidbStatus.ok) {
-    loadError =
-      tidbStatus.details ||
-      'Variables de entorno de TiDB incompletas. Revisa la configuración.';
-  } else {
-    try {
-      data = await getDashboardData();
-    } catch (error) {
-      console.error('Failed to load dashboard data', error);
-      loadError =
-        error instanceof Error
-          ? error.message
-          : 'No se pudo cargar la información desde la base de datos.';
-    }
-  }
-
-  const algoliaSummary = data ? getSummary(data.summary.algolia) : null;
-  const logs = data?.logs ?? [];
+  const data = await getDashboardData();
+  const algoliaSummary = getSummary(data.summary.algolia);
 
   return (
     <div className="min-h-screen bg-gray-50 py-10">
@@ -126,17 +105,6 @@ export default async function AdminPage() {
           </AdminCard>
         </div>
 
-        {loadError && (
-          <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4 text-sm text-yellow-800">
-            <p className="font-medium">No se pudo conectar con TiDB</p>
-            <p className="mt-1 text-yellow-700">{loadError}</p>
-            <p className="mt-2 text-yellow-700">
-              Verifica las variables de entorno de TiDB y que las tablas <code>sync_log</code> y <code>sync_checkpoint</code>
-              existan. Se crearán automáticamente en el próximo intento si la conexión es exitosa.
-            </p>
-          </div>
-        )}
-
         <AdminCard title="Historial de ejecuciones" subtitle="Últimos 50 registros">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200 text-sm">
@@ -152,14 +120,14 @@ export default async function AdminPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 bg-white">
-                {logs.length === 0 && (
+                {data.logs.length === 0 && (
                   <tr>
                     <td colSpan={7} className="px-3 py-6 text-center text-gray-500">
                       Sin ejecuciones registradas todavía.
                     </td>
                   </tr>
                 )}
-                {logs.map((log) => (
+                {data.logs.map((log) => (
                   <tr key={log.id} className="hover:bg-gray-50">
                     <td className="px-3 py-2 font-mono text-xs text-gray-500">{log.id}</td>
                     <td className="px-3 py-2 capitalize">{log.target}</td>
@@ -167,7 +135,9 @@ export default async function AdminPage() {
                     <td className="px-3 py-2">{formatDate(log.finishedAt)}</td>
                     <td className="px-3 py-2 text-green-600">{log.ok}</td>
                     <td className="px-3 py-2 text-red-600">{log.failed}</td>
-                    <td className="px-3 py-2 text-xs text-gray-500">{log.notes ? JSON.stringify(log.notes) : '—'}</td>
+                    <td className="px-3 py-2 text-xs text-gray-500">
+                      {log.notes ? JSON.stringify(log.notes) : '—'}
+                    </td>
                   </tr>
                 ))}
               </tbody>

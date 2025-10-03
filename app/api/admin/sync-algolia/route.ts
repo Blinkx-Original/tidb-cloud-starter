@@ -4,7 +4,6 @@ import { runAlgoliaSync, getAlgoliaStatus } from '@/lib/sync/algolia';
 import { withSyncLock, isSyncRunning } from '@/lib/sync/lock';
 
 export const dynamic = 'force-dynamic';
-export const runtime = 'nodejs';
 
 export async function GET(req: Request) {
   const unauthorized = requireAdmin(req);
