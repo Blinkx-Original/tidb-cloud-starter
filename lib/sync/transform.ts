@@ -92,6 +92,18 @@ export function transformRow(row: TiDBProductRow): TransformResult {
   }
 
   const updatedAt = coerceDate(row.updated_at);
+  const rawPrice = row.price;
+  let price: number | undefined;
+  if (rawPrice !== null && rawPrice !== undefined) {
+    const parsed = Number(rawPrice);
+    if (Number.isFinite(parsed)) {
+      price = parsed;
+    } else {
+      warnings.push(
+        `Product ${row.id} has an invalid price value (${rawPrice}). It will be indexed without price.`,
+      );
+    }
+  }
   const product: ProductDTO = {
     objectID,
     sku: sku || String(row.id),
@@ -101,7 +113,7 @@ export function transformRow(row: TiDBProductRow): TransformResult {
     brand: row.brand?.trim() || undefined,
     shortDescription: row.short_description || undefined,
     longDescription: row.long_description || undefined,
-    price: typeof row.price === 'number' ? row.price : undefined,
+    price,
     currency: row.currency?.trim() || undefined,
     categories: normalizeCategories(row.categories),
     attributes: normalizeAttributes(row.attributes),
@@ -122,7 +134,7 @@ export function transformRow(row: TiDBProductRow): TransformResult {
     product.stockStatus = product.stockQty && product.stockQty > 0 ? 'instock' : 'outofstock';
   }
 
-  if (!product.price) {
+  if (price === undefined) {
     warnings.push(`Product ${row.id} has no price. It will be indexed without price.`);
   }
 

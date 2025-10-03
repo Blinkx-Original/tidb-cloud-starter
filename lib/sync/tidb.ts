@@ -86,6 +86,7 @@ function buildPool(): Pool {
     user,
     password,
     database,
+    decimalNumbers: true,
     waitForConnections: true,
     connectionLimit: 5,
     ssl: ca
