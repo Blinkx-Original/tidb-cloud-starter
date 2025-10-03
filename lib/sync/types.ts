@@ -1,4 +1,4 @@
-export type SyncTarget = 'algolia' | 'woo';
+export type SyncTarget = 'algolia';
 
 export type SyncCheckpoint = {
   target: SyncTarget;

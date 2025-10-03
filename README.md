@@ -541,10 +541,6 @@ NEXT_PUBLIC_ALGOLIA_APP_ID=<algolia app id>
 NEXT_PUBLIC_ALGOLIA_SEARCH_API_KEY=<algolia search-only key>
 NEXT_PUBLIC_ALGOLIA_INDEX_PRIMARY=products_primary
 ADMIN_DASH_PASSWORD=<strong random password>
-WOO_BASE_URL=https://your-wordpress-site.com
-WOO_CONSUMER_KEY=<woocommerce consumer key>
-WOO_CONSUMER_SECRET=<woocommerce consumer secret>
-WOO_VERSION=v3
 
 
 Optional:
@@ -552,23 +548,20 @@ Optional:
 NEXT_PUBLIC_SITE_URL=<for canonical URLs/OG tags/sitemaps>
 REVALIDATE_SECRET=<if you will call /api/admin/revalidate>
 
-### Sync orchestrator (TiDB ⇄ Algolia ⇄ WooCommerce)
+### Sync orchestrator (TiDB ⇄ Algolia)
 
 - **Panel `/admin`**: protegido por `ADMIN_DASH_PASSWORD`. Permite lanzar sincronizaciones manuales, ver checkpoints y consultar los últimos registros.
 - **Endpoints API**
   - `POST /api/admin/sync-algolia` – lanza sincronización manual Algolia.
-  - `POST /api/admin/sync-woo` – lanza sincronización manual WooCommerce.
-  - `POST /api/admin/cron-algolia` y `POST /api/admin/cron-woo` – pensados para Vercel Cron/Cloudways (aceptan `batchSize` y `maxDurationMs`).
-  - `GET /api/admin/sync-algolia` y `GET /api/admin/sync-woo` – resumen del último run + flag `running`.
+  - `POST /api/admin/cron-algolia` – pensado para Vercel Cron/Cloudways (acepta `batchSize` y `maxDurationMs`).
+  - `GET /api/admin/sync-algolia` – resumen del último run + flag `running`.
   - `GET /api/admin/revalidate?secret=...&path=/p/slug` – revalida ISR cuando haya cambios (opcional).
-- **Checkpoints**: tabla `sync_checkpoint` se actualiza con `last_updated_at` por destino (`algolia`, `woo`).
+- **Checkpoints**: tabla `sync_checkpoint` se actualiza con `last_updated_at` por destino (`algolia`).
 - **Logs**: tabla `sync_log` almacena `ok`, `failed`, notas y `targetIndex` (Algolia blue/green).
 - **Scripts CLI**
   - `yarn sync:algolia` → ejecuta `scripts/sync-tidb-to-algolia.ts`.
-  - `yarn sync:woo` → ejecuta `scripts/sync-tidb-to-woocommerce.ts`.
   - `yarn sync:slugs` → ejecuta `scripts/backfill-build-slugs.ts` para autogenerar slugs faltantes.
 - **Algolia**: estrategia blue/green. Se clona el índice primario al alterno, se aplican cambios incrementales y luego se copia al alias `ALGOLIA_INDEX_PRIMARY`, preservando réplicas (`_price_asc`, `_price_desc`).
-- **WooCommerce**: idempotencia por `sku`, saneado HTML, creación automática de categorías faltantes, throttling y reintentos ante `429`.
 
 Testing Checklist
 
