@@ -13,7 +13,7 @@ export type TiDBProductRow = {
   brand: string | null;
   short_description: string | null;
   long_description: string | null;
-  price: number | null;
+  price: number | string | null;
   currency: string | null;
   categories: string | null;
   attributes: string | null;
