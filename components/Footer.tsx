@@ -28,12 +28,7 @@ export default function Footer() {
                   : {};
                 return (
                   <li key={`${link.title}-${idx}`}>
-                    <a
-                      href={link.href}
-                      target={newTab ? "_blank" : undefined}
-                      rel="noreferrer"
-                      className="hover:underline"
-                    >
+                    <a href={link.href} {...externalAttrs} className="hover:underline">
                       {link.title}
                     </a>
                   </li>

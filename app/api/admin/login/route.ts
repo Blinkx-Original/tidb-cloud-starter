@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createAuthCookieResponse, clearAuthCookieResponse } from '@/lib/sync/auth';
 
 export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 function getPassword(): string {
   const password = process.env.ADMIN_DASH_PASSWORD;

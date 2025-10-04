@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/sync/auth";
 import { getDashboardData } from "@/lib/sync/dashboard";
-import { getTiDBConfigStatus } from "@/lib/sync/tidb";
+import { getTiDBConfigStatus } from "@/lib/sync/tidb-status";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";

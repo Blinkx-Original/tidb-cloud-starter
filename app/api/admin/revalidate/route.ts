@@ -3,6 +3,7 @@ import { revalidatePath } from 'next/cache';
 import { requireAdmin } from '@/lib/sync/auth';
 
 export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);

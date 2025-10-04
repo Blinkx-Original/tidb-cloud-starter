@@ -4,6 +4,7 @@ import { fetchProductBySlug } from '@/lib/sync/tidb';
 import { transformRow } from '@/lib/sync/transform';
 import { sanitizeRichText } from '@/lib/sync/html';
 
+export const runtime = 'nodejs';
 export const revalidate = 3600;
 
 export async function generateStaticParams() {
@@ -31,6 +32,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
       title: product.name,
       description: description ? description.slice(0, 160) : undefined,
       url: product.url,
+      type: 'website',
       images: product.images?.map((src) => ({ url: src })) || undefined,
     },
   };

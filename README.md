@@ -7,15 +7,15 @@ It is the **reference guide** for development, SEO, affiliate integration, and l
 
 ## 1. Concept
 
-The Catalog is the **core of SEO Armageddon**.  
-- Every **Product** represents an opportunity to monetize:  
-  - Affiliate item (Amazon, Capterra, SaaS tools, and so on.)  
-  - Lead Management offer (ice machines, forklifts for rent, etc.)  
-  - Dropshipping item (this is real supplier inventory).  
-- Products are always grouped into **Categories**.  
-- Each Product automatically generates:  
-  1. A **Card** (square on the homepage or category page).  
-  2. A **Detail Page** (`/product/[slug]`).  
+The Catalog is the **core of SEO Armageddon**.
+- Every **Product** represents an opportunity to monetize:
+  - Affiliate item (Amazon, Capterra, SaaS tools, and so on.)
+  - Lead Management offer (ice machines, forklifts for rent, etc.)
+  - Dropshipping item (this is real supplier inventory).
+- Products are always grouped into **Categories**.
+- Each Product automatically generates:
+  1. A **Card** (square on the homepage or category page).
+  2. A **Detail Page** (`/product/[slug]`).
   3. Zero or more **Listings** (affiliate links, offers, vendors).
 
 ---
@@ -538,13 +538,12 @@ NEXT_PUBLIC_ALGOLIA_SEARCH_API_KEY=<algolia search-only key>
 NEXT_PUBLIC_ALGOLIA_INDEX_PRIMARY=products_primary
 ADMIN_DASH_PASSWORD=<strong random password>
 
-
 Optional:
 
 NEXT_PUBLIC_SITE_URL=<for canonical URLs/OG tags/sitemaps>
 REVALIDATE_SECRET=<if you will call /api/admin/revalidate>
 
-### Sync orchestrator (TiDB ⇄ Algolia)
+### Sync orchestrator (TiDB ⇄ Algolia ⇄ Next.js)
 
 - **Panel `/admin`**: protegido por `ADMIN_DASH_PASSWORD`. Permite lanzar sincronizaciones manuales, ver checkpoints y consultar los últimos registros.
 - **Endpoints API**
@@ -552,12 +551,13 @@ REVALIDATE_SECRET=<if you will call /api/admin/revalidate>
   - `POST /api/admin/cron-algolia` – pensado para Vercel Cron/Cloudways (acepta `batchSize` y `maxDurationMs`).
   - `GET /api/admin/sync-algolia` – resumen del último run + flag `running`.
   - `GET /api/admin/revalidate?secret=...&path=/p/slug` – revalida ISR cuando haya cambios (opcional).
-- **Checkpoints**: tabla `sync_checkpoint` se actualiza con `last_updated_at` por destino (`algolia`).
+- **Checkpoints**: tabla `sync_checkpoint` se actualiza con `last_updated_at` para el destino `algolia`.
 - **Logs**: tabla `sync_log` almacena `ok`, `failed`, notas y `targetIndex` (Algolia blue/green).
 - **Scripts CLI**
   - `yarn sync:algolia` → ejecuta `scripts/sync-tidb-to-algolia.ts`.
   - `yarn sync:slugs` → ejecuta `scripts/backfill-build-slugs.ts` para autogenerar slugs faltantes.
 - **Algolia**: estrategia blue/green. Se clona el índice primario al alterno, se aplican cambios incrementales y luego se copia al alias `ALGOLIA_INDEX_PRIMARY`, preservando réplicas (`_price_asc`, `_price_desc`).
+- **Next.js**: las páginas `/p/[slug]` usan Incremental Static Regeneration (ISR) y pueden revalidarse con el endpoint opcional cuando cambian los datos.
 
 Testing Checklist
 
