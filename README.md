@@ -7,6 +7,20 @@ It is the **reference guide** for development, SEO, affiliate integration, and l
 
 ## 1. Concept
 
+### Sprint 0 — Next.js MDX Catalog Skeleton
+
+The repository now ships with the Sprint 0 deliverables for the MDX-first Virtual Product Pages:
+
+- `/app/p/[slug]/page.tsx` renders real static product pages (ISR) backed by TiDB, with optional MDX compilation and an HTML fallback.
+- `/lib/db.ts` provides a TLS-ready mysql2 pool plus helpers such as `getProductBySlug`, `iterPublishedForSitemaps`, and `updateProduct`.
+- `/lib/seo.ts` exposes `buildMeta(product)` which guarantees a non-empty `<meta name="description">` and canonical URL generation.
+- `/lib/mdx-components.tsx` registers the allowlisted MDX components rendered by `next-mdx-remote/rsc`.
+- Admin stubs live under `/app/admin/vpp/edit/page.tsx`; they fetch a product by slug (read-only) and will evolve into the full editor.
+- `POST /api/admin/revalidate` revalidates `/p/[slug]` and accepts either the `REVALIDATE_SECRET` or the admin header credential.
+- `.env.example` documents the TiDB, Algolia, Cloudflare, and admin variables required to run the workflow locally or on Vercel.
+
+Use `/admin/vpp/edit?slug=demo-slug` to confirm TiDB connectivity and to preview the computed frontmatter/body before extending the editor.
+
 The Catalog is the **core of SEO Armageddon**.
 - Every **Product** represents an opportunity to monetize:
   - Affiliate item (Amazon, Capterra, SaaS tools, and so on.)

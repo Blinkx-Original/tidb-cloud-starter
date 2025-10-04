@@ -17,6 +17,7 @@
   "dependencies": {
     "@faker-js/faker": "^7.6.0",
     "@heroicons/react": "^2.0.18",
+    "@mdx-js/mdx": "^2.3.0",
     "@mui/lab": "^5.0.0-alpha.93",
     "@prisma/client": "^4.5.0",
     "@tailwindcss/typography": "^0.5.9",
@@ -30,6 +31,7 @@
     "lodash": "^4.17.21",
     "mysql2": "^3.10.0",
     "next": "^13.4.13",
+    "next-mdx-remote": "^5.0.0",
     "notistack": "^3.0.1",
     "postcss": "^8.4.27",
     "react": "18.2.0",
