@@ -40,14 +40,12 @@ export default function Footer() {
               const external = link.external || isExternalHref(link.href);
               if (external) {
                 const isHttp = /^https?:\/\//i.test(link.href);
+                const externalAttrs = isHttp
+                  ? { target: '_blank' as const, rel: 'noopener noreferrer' }
+                  : {};
                 return (
                   <li key={`${link.title}-${idx}`}>
-                    <a
-                      href={link.href}
-                      target={isHttp ? "_blank" : undefined}
-                      rel={isHttp ? "noopener noreferrer" : undefined}
-                      className="hover:underline"
-                    >
+                    <a href={link.href} {...externalAttrs} className="hover:underline">
                       {link.title}
                     </a>
                   </li>
