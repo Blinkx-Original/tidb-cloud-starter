@@ -559,14 +559,18 @@ REVALIDATE_SECRET=<if you will call /api/admin/revalidate>
 
 ### Sync orchestrator (TiDB ⇄ Algolia ⇄ Next.js)
 
-- **Panel `/admin`**: protegido por `ADMIN_DASH_PASSWORD`. Permite lanzar sincronizaciones manuales, ver checkpoints y consultar los últimos registros.
+- **Panel `/admin`**: protegido por `ADMIN_DASH_PASSWORD`. Permite lanzar sincronizaciones manuales, ver checkpoints y consultar los últimos registros. La sección superior incluye un formulario "Product Pages Push" con:
+  - Campo **Chunk size** editable (default 300) para controlar el tamaño de los lotes.
+  - Textarea para **IDs o slugs separados por coma** si quieres publicar sólo algunos productos.
+  - Botones **Push Selected** (IDs/slugs) y **Push All** (full reindex con chunking) que marcan `is_published=1` y revalidan `/p/[slug]`.
 - **Endpoints API**
+  - `POST /api/admin/push-product-pages` – recibe `{ mode: 'selected' | 'all', chunkSize?, identifiers? }` y ejecuta el push a páginas de producto.
   - `POST /api/admin/sync-algolia` – lanza sincronización manual Algolia.
   - `POST /api/admin/cron-algolia` – pensado para Vercel Cron/Cloudways (acepta `batchSize` y `maxDurationMs`).
   - `GET /api/admin/sync-algolia` – resumen del último run + flag `running`.
   - `GET /api/admin/revalidate?secret=...&path=/p/slug` – revalida ISR cuando haya cambios (opcional).
 - **Checkpoints**: tabla `sync_checkpoint` se actualiza con `last_updated_at` para el destino `algolia`.
-- **Logs**: tabla `sync_log` almacena `ok`, `failed`, notas y `targetIndex` (Algolia blue/green).
+- **Logs**: tabla `sync_log` almacena `ok`, `failed`, notas y `target` (`algolia` o `product-pages`).
 - **Scripts CLI**
   - `yarn sync:algolia` → ejecuta `scripts/sync-tidb-to-algolia.ts`.
   - `yarn sync:slugs` → ejecuta `scripts/backfill-build-slugs.ts` para autogenerar slugs faltantes.

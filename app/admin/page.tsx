@@ -3,6 +3,7 @@
 import React from "react";
 import AdminCard from "@/components/AdminCard";
 import AdminLoginForm from "@/components/AdminLoginForm";
+import ProductPushControls from "@/components/ProductPushControls";
 import SyncButton from "@/components/SyncButton";
 
 const STORAGE_KEY = "tidb-sync-admin-key";
@@ -27,7 +28,7 @@ type DashboardLog = {
 
 type DashboardResponse = {
   ok: boolean;
-  summary: { algolia: Summary | null };
+  summary: { algolia: Summary | null; productPages: Summary | null };
   logs: DashboardLog[];
   tidbStatus: {
     ok: boolean;
@@ -172,6 +173,7 @@ export default function AdminPage() {
 
   const tidbStatus = dashboard?.tidbStatus;
   const algoliaSummary = dashboard?.summary.algolia ?? null;
+  const productPagesSummary = dashboard?.summary.productPages ?? null;
   const logs = dashboard?.logs ?? [];
 
   if (!authKey) {
@@ -207,7 +209,19 @@ export default function AdminPage() {
           </div>
         </header>
 
-        <div className="grid gap-6">
+        <AdminCard
+          title="Product Pages Push"
+          subtitle="Publish TiDB products into /p/[slug] pages"
+        >
+          <ProductPushControls
+            authKey={authKey}
+            onCompleted={() => {
+              fetchDashboard(authKey).catch((error) => console.error(error));
+            }}
+          />
+        </AdminCard>
+
+        <div className="grid gap-6 lg:grid-cols-2">
           <AdminCard
             title="Algolia"
             subtitle="Sincronización con el índice de búsqueda"
@@ -229,6 +243,16 @@ export default function AdminPage() {
                 }}
               />
             </div>
+          </AdminCard>
+          <AdminCard
+            title="Product Pages"
+            subtitle="Last publish runs"
+          >
+            {loading && !hasAttemptedRef.current ? (
+              <div className="text-sm text-gray-500">Cargando…</div>
+            ) : (
+              <SummaryRow summary={productPagesSummary} />
+            )}
           </AdminCard>
         </div>
 

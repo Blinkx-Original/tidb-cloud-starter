@@ -14,7 +14,7 @@ export async function GET(req: Request) {
   if (!tidbStatus.ok) {
     return NextResponse.json({
       ok: false,
-      summary: { algolia: null },
+      summary: { algolia: null, productPages: null },
       logs: [],
       tidbStatus,
     });
@@ -38,7 +38,7 @@ export async function GET(req: Request) {
       {
         ok: false,
         error: message,
-        summary: { algolia: null },
+        summary: { algolia: null, productPages: null },
         logs: [],
         tidbStatus,
       },

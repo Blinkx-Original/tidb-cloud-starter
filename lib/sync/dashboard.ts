@@ -3,10 +3,11 @@ import { fetchRecentCheckpoints } from './tidb';
 import { SyncSummary } from './types';
 
 export async function getDashboardData() {
-  const [logs, checkpoints, algoliaLog] = await Promise.all([
+  const [logs, checkpoints, algoliaLog, productPagesLog] = await Promise.all([
     fetchRecentLogs(50),
     fetchRecentCheckpoints(),
     fetchLatestLog('algolia'),
+    fetchLatestLog('product-pages'),
   ]);
 
   const checkpointsMap = new Map(checkpoints.map((c) => [c.target, c.lastUpdatedAt.toISOString()]));
@@ -21,6 +22,16 @@ export async function getDashboardData() {
           failed: algoliaLog.failCount,
           notes: algoliaLog.notes || undefined,
           checkpoint: checkpointsMap.get('algolia') || undefined,
+        }
+      : null,
+    productPages: productPagesLog
+      ? {
+          target: 'product-pages',
+          startedAt: productPagesLog.startedAt.toISOString(),
+          finishedAt: (productPagesLog.finishedAt ?? productPagesLog.startedAt).toISOString(),
+          ok: productPagesLog.okCount,
+          failed: productPagesLog.failCount,
+          notes: productPagesLog.notes || undefined,
         }
       : null,
   };
