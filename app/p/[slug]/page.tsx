@@ -1,5 +1,6 @@
 import { MDXRemote } from 'next-mdx-remote/rsc';
 import type { Metadata } from 'next';
+import type { ReactNode } from 'react';
 import { notFound } from 'next/navigation';
 import sanitizeHtml from 'sanitize-html';
 import mdxComponents from '@/lib/mdx-components';
@@ -64,6 +65,57 @@ function guardMdx(body: string | null | undefined): string | null {
 
 type CTAKey = 'lead' | 'stripe' | 'affiliate' | 'paypal';
 
+type ProductFetchResult = {
+  product: Product | null;
+  error: Error | null;
+};
+
+function toError(error: unknown): Error {
+  if (error instanceof Error) {
+    return error;
+  }
+  if (typeof error === 'object' && error && 'message' in error) {
+    const message = (error as { message?: unknown }).message;
+    if (typeof message === 'string' && message.trim()) {
+      return new Error(message);
+    }
+  }
+  if (typeof error === 'string') {
+    return new Error(error);
+  }
+  try {
+    return new Error(JSON.stringify(error));
+  } catch {
+    return new Error('Unknown error');
+  }
+}
+
+async function loadProduct(slug: string): Promise<ProductFetchResult> {
+  try {
+    const product = await getProductBySlug(slug);
+    return { product, error: null };
+  } catch (error) {
+    const normalized = toError(error);
+    console.error(`Failed to load product slug "${slug}"`, normalized);
+    return { product: null, error: normalized };
+  }
+}
+
+function ProductErrorState({ message }: { message: string }) {
+  return (
+    <div className="flex min-h-[50vh] flex-col items-center justify-center gap-4 px-6 text-center">
+      <h1 className="text-3xl font-semibold text-slate-900">No pudimos cargar el producto</h1>
+      <p className="max-w-xl text-base text-slate-600">{message}</p>
+      <a
+        href="/"
+        className="inline-flex items-center justify-center rounded-full bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/40 transition hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+      >
+        Volver a la página principal
+      </a>
+    </div>
+  );
+}
+
 function resolveCtas(product: Product, frontmatter: Record<string, any>) {
   const overrides = ensureRecord(frontmatter.cta_overrides);
   const base: Record<CTAKey, string | null | undefined> = {
@@ -100,7 +152,7 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
-  const product = await getProductBySlug(params.slug);
+  const { product } = await loadProduct(params.slug);
   if (!product || product.is_published !== 1) {
     return {};
   }
@@ -126,8 +178,15 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 }
 
 export default async function ProductPage({ params }: { params: { slug: string } }) {
-  const product = await getProductBySlug(params.slug);
+  const { product, error } = await loadProduct(params.slug);
   if (!product || product.is_published !== 1) {
+    if (error) {
+      return (
+        <ProductErrorState
+          message="Revisa la conexión con TiDB o vuelve a intentarlo desde el panel de administración."
+        />
+      );
+    }
     notFound();
   }
 
@@ -136,6 +195,19 @@ export default async function ProductPage({ params }: { params: { slug: string }
   const fallbackHtml = sanitizeHtmlBody(product.desc_html);
   const ctas = resolveCtas(product, frontmatter);
   const primaryHref = ctas.primary ? (ctas as Record<CTAKey, string | null | undefined>)[ctas.primary] : null;
+
+  let mdxContent: ReactNode | null = null;
+  if (mdxBody) {
+    try {
+      mdxContent = (
+        // @ts-expect-error Async server component from next-mdx-remote
+        <MDXRemote source={mdxBody} components={mdxComponents} />
+      );
+    } catch (mdxError) {
+      console.error(`Failed to render MDX for slug "${product.slug}"`, mdxError);
+      mdxContent = null;
+    }
+  }
 
   return (
     <div className="bg-slate-950/3 py-12">
@@ -206,9 +278,8 @@ export default async function ProductPage({ params }: { params: { slug: string }
         </header>
 
         <section className="prose prose-blue mx-auto w-full max-w-none prose-headings:font-semibold prose-p:text-slate-700">
-          {mdxBody ? (
-            // @ts-expect-error Async server component from next-mdx-remote
-            <MDXRemote source={mdxBody} components={mdxComponents} />
+          {mdxContent ? (
+            mdxContent
           ) : fallbackHtml ? (
             <div dangerouslySetInnerHTML={{ __html: fallbackHtml }} />
           ) : (
