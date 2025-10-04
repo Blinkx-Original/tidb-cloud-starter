@@ -14,9 +14,9 @@ export default async function handler(_req: NextApiRequest, res: NextApiResponse
 
   try {
     // Import dinámico evita que Webpack intente meter mysql2 en el bundle del cliente
-    const { pool } = await import('../../lib/db');
+    const { query } = await import('../../lib/db');
 
-    const [cats]: any = await pool.query(
+    const cats = await query<{ slug: string }>(
       `SELECT DISTINCT COALESCE(category_slug,'uncategorized') AS slug
        FROM products WHERE category_slug IS NOT NULL`
     );
@@ -24,7 +24,7 @@ export default async function handler(_req: NextApiRequest, res: NextApiResponse
       urls.push(`${host}/category/${encodeURIComponent(row.slug)}`);
     }
 
-    const [prods]: any = await pool.query(
+    const prods = await query<{ slug: string }>(
       `SELECT slug
        FROM products
        WHERE slug IS NOT NULL`
