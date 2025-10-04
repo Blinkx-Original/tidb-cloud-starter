@@ -1,4 +1,3 @@
-import fs from "fs";
 import type { Pool, PoolConnection } from "mysql2/promise";
 import { assertTiDBConfig } from "./tidb-status";
 export { getTiDBConfigStatus } from "./tidb-status";
@@ -41,23 +40,13 @@ function getEnv(name: string) {
 }
 
 function resolveCa(): string | undefined {
-  const candidate = (process.env.TIDB_SSL_CA_PATH || "").trim();
-  const paths = [
-    candidate,
-    "/etc/ssl/certs/ca-certificates.crt",
-    "/etc/pki/tls/certs/ca-bundle.crt",
-    "/etc/ssl/cert.pem",
-  ].filter(Boolean) as string[];
-  for (const path of paths) {
-    try {
-      if (path && fs.existsSync(path)) {
-        return fs.readFileSync(path, "utf8");
-      }
-    } catch {
-      // ignore
-    }
-  }
-  return undefined;
+  const value =
+    process.env.TIDB_SSL_CA_PEM ||
+    process.env.TIDB_SSL_CA ||
+    process.env.TIDB_SSL_CA_CERT ||
+    "";
+  const trimmed = value.trim();
+  return trimmed.length ? trimmed : undefined;
 }
 
 function buildPool(): Pool {
@@ -73,7 +62,11 @@ function buildPool(): Pool {
       "Missing TiDB database name. Provide TIDB_DATABASE or TIDB_DB",
     );
   }
-  const password = process.env.TIDB_PASSWORD || undefined;
+  const password =
+    process.env.TIDB_PASS ||
+    process.env.TIDB_PASSWORD ||
+    process.env.TIDB_DB_PASSWORD ||
+    undefined;
   const ca = resolveCa();
 
   pool = mysql.createPool({

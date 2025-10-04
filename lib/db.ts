@@ -1,56 +1,48 @@
-import fs from 'fs';
-import path from 'path';
 import type { Pool, PoolOptions, RowDataPacket } from 'mysql2/promise';
 import mysql from 'mysql2/promise';
 import type { Product, SitemapProduct } from './types';
 
 let pool: Pool | null = null;
 
-function requiredEnv(name: string): string {
-  const value = process.env[name] ?? '';
-  if (!value) {
-    throw new Error(`${name} environment variable is required`);
+function getRequiredEnv(...candidates: string[]): string {
+  for (const name of candidates) {
+    const value = process.env[name];
+    if (value && value.trim()) {
+      return value.trim();
+    }
   }
-  return value;
+  throw new Error(`${candidates[0]} environment variable is required`);
+}
+
+function getOptionalEnv(...candidates: string[]): string | undefined {
+  for (const name of candidates) {
+    const value = process.env[name];
+    if (value && value.trim()) {
+      return value.trim();
+    }
+  }
+  return undefined;
 }
 
 function getSslConfig() {
-  const caRaw = process.env.TIDB_SSL_CA?.trim();
-  if (!caRaw) return undefined;
-  if (caRaw.includes('-----BEGIN')) {
-    return { ca: caRaw };
+  const ca =
+    getOptionalEnv('TIDB_SSL_CA_PEM', 'TIDB_SSL_CA', 'TIDB_SSL_CA_CERT')?.trim();
+  if (!ca) {
+    return { rejectUnauthorized: true };
   }
-  try {
-    const filePath = path.resolve(caRaw);
-    const caFromFile = fs.readFileSync(filePath, 'utf8');
-    if (caFromFile) {
-      return { ca: caFromFile };
-    }
-  } catch (error) {
-    console.warn('TiDB SSL CA file not found, falling back to inline value.');
-  }
-  return { ca: caRaw };
+  return { ca, rejectUnauthorized: true };
 }
 
 function createPool(): Pool {
   const config: PoolOptions = {
-    host: process.env.TIDB_HOST || process.env.TIDB_SERVER_HOST || '127.0.0.1',
-    port: Number(process.env.TIDB_PORT || process.env.TIDB_SERVER_PORT || 4000),
-    user:
-      process.env.TIDB_USER ||
-      process.env.TIDB_USERNAME ||
-      process.env.TIDB_DB_USER ||
-      requiredEnv('TIDB_USER'),
-    password:
-      process.env.TIDB_PASS ||
-      process.env.TIDB_PASSWORD ||
-      process.env.TIDB_DB_PASSWORD ||
-      requiredEnv('TIDB_PASSWORD'),
-    database:
-      process.env.TIDB_DB ||
-      process.env.TIDB_DATABASE ||
-      process.env.TIDB_DB_NAME ||
-      requiredEnv('TIDB_DATABASE'),
+    host: getOptionalEnv('TIDB_HOST', 'TIDB_SERVER_HOST') ?? '127.0.0.1',
+    port: Number.parseInt(
+      getOptionalEnv('TIDB_PORT', 'TIDB_SERVER_PORT') ?? '4000',
+      10,
+    ),
+    user: getRequiredEnv('TIDB_USER', 'TIDB_USERNAME', 'TIDB_DB_USER'),
+    password: getOptionalEnv('TIDB_PASS', 'TIDB_PASSWORD', 'TIDB_DB_PASSWORD'),
+    database: getRequiredEnv('TIDB_DATABASE', 'TIDB_DB', 'TIDB_DB_NAME'),
     waitForConnections: true,
     connectionLimit: Number(process.env.TIDB_POOL_LIMIT || 8),
     queueLimit: 0,
@@ -138,6 +130,10 @@ export async function updateProduct(id: number, patch: Partial<Product>): Promis
 export async function query<T = any>(sql: string, params: any[] = []): Promise<T[]> {
   const [rows] = await getPool().query(sql, params);
   return rows as T[];
+}
+
+export async function pingDb(): Promise<void> {
+  await getPool().query('SELECT 1');
 }
 
 export async function closeDbPool() {

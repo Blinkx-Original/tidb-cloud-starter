@@ -541,6 +541,7 @@ TIDB_PORT=4000
 TIDB_USER=<user>
 TIDB_PASSWORD=<maybe empty>
 TIDB_DB=bookshop
+TIDB_SSL_CA_PEM=<inline PEM certificate>
 ALGOLIA_APP_ID=<algolia app id>
 ALGOLIA_ADMIN_API_KEY=<algolia admin key>
 ALGOLIA_SEARCH_API_KEY=<algolia search-only key>
@@ -569,6 +570,7 @@ REVALIDATE_SECRET=<if you will call /api/admin/revalidate>
   - `POST /api/admin/cron-algolia` – pensado para Vercel Cron/Cloudways (acepta `batchSize` y `maxDurationMs`).
   - `GET /api/admin/sync-algolia` – resumen del último run + flag `running`.
   - `GET /api/admin/revalidate?secret=...&path=/p/slug` – revalida ISR cuando haya cambios (opcional).
+  - `GET /api/health/db` – ping a TiDB; responde `{ ok: true }` cuando la conexión y el certificado TLS son válidos.
 - **Checkpoints**: tabla `sync_checkpoint` se actualiza con `last_updated_at` para el destino `algolia`.
 - **Logs**: tabla `sync_log` almacena `ok`, `failed`, notas y `target` (`algolia` o `product-pages`).
 - **Scripts CLI**

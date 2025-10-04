@@ -34,7 +34,7 @@ function takeSample<T>(items: T[], limit = NOTE_SAMPLE_LIMIT): T[] {
 async function markProductsPublished(ids: number[]): Promise<number> {
   if (!ids.length) return 0;
   const [result] = await getPool().execute(
-    'UPDATE products SET is_published = 1 WHERE id IN (?)',
+    'UPDATE products SET is_published = 1, last_tidb_update_at = NOW() WHERE id IN (?)',
     [ids],
   );
   const { affectedRows } = result as { affectedRows?: number };
@@ -42,7 +42,10 @@ async function markProductsPublished(ids: number[]): Promise<number> {
 }
 
 function normalizeIdentifier(value: string): string {
-  return value.trim();
+  return value
+    .replace(/[\u2013\u2014]/g, '-')
+    .replace(/[\s\u00A0]+/g, ' ')
+    .trim();
 }
 
 type SelectedRow = BasicProductRow & { identifier: string };
