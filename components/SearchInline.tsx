@@ -19,8 +19,16 @@ type Hit = {
 };
 
 // === Algolia creds ===
-const APP_ID = process.env.NEXT_PUBLIC_ALGOLIA_APP_ID!;
-const SEARCH_KEY = process.env.NEXT_PUBLIC_ALGOLIA_SEARCH_KEY!;
+function normalize(value?: string | null): string | undefined {
+  if (!value) return undefined;
+  const trimmed = value.trim();
+  return trimmed ? trimmed : undefined;
+}
+
+const APP_ID = normalize(process.env.NEXT_PUBLIC_ALGOLIA_APP_ID);
+const SEARCH_KEY =
+  normalize(process.env.NEXT_PUBLIC_ALGOLIA_SEARCH_KEY) ||
+  normalize(process.env.NEXT_PUBLIC_ALGOLIA_API_KEY);
 
 /**
  * ⚠️ Índice efectivo:
@@ -28,8 +36,8 @@ const SEARCH_KEY = process.env.NEXT_PUBLIC_ALGOLIA_SEARCH_KEY!;
  * - Si algún día quieres sobreescribirlo desde Vercel, define NEXT_PUBLIC_ALGOLIA_INDEX.
  *   (Ignoramos NEXT_PUBLIC_ALGOLIA_INDEX_PREFIX para no volver a caer en 'catalog__items').
  */
-const INDEX_NAME =
-  (process.env.NEXT_PUBLIC_ALGOLIA_INDEX || '').trim() || 'blinkx_wp';
+const INDEX_NAME = normalize(process.env.NEXT_PUBLIC_ALGOLIA_INDEX) || 'blinkx_wp';
+const SEARCH_ENABLED = Boolean(APP_ID && SEARCH_KEY);
 
 export default function SearchInline({
   placeholder = 'Buscar por nombre, categoría o descripción…',
@@ -63,19 +71,29 @@ export default function SearchInline({
   };
 
   const index = useMemo(() => {
+    if (!APP_ID || !SEARCH_KEY) {
+      return null;
+    }
     const client = algoliasearch(APP_ID, SEARCH_KEY);
     return client.initIndex(INDEX_NAME);
   }, []);
 
   // Log para verificar que este componente usa el índice correcto
   useEffect(() => {
+    if (!index) return;
     // eslint-disable-next-line no-console
     console.log('[SearchInline] Algolia index =', INDEX_NAME);
-  }, []);
+  }, [index]);
 
   useEffect(() => {
     let cancelled = false;
     const t = setTimeout(async () => {
+      if (!index) {
+        setHits([]);
+        setOpen(false);
+        return;
+      }
+
       if (!q.trim()) {
         setHits([]); setOpen(false); return;
       }
@@ -141,7 +159,10 @@ export default function SearchInline({
         ref={inputRef}
         value={q}
         onChange={(e) => setQ(e.target.value)}
-        onFocus={() => { if (q && hits.length) { setOpen(true); updateRect(); } }}
+        onFocus={() => {
+          if (!index) return;
+          if (q && hits.length) { setOpen(true); updateRect(); }
+        }}
         onKeyDown={onKeyDown}
         placeholder={placeholder}
         className="
@@ -150,6 +171,8 @@ export default function SearchInline({
           focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/40
           transition
         "
+        disabled={!SEARCH_ENABLED}
+        title={!SEARCH_ENABLED ? 'Configura Algolia para habilitar la búsqueda instantánea.' : undefined}
         aria-autocomplete="list"
         aria-expanded={open}
         aria-controls="algolia-autocomplete-listbox"
@@ -157,7 +180,7 @@ export default function SearchInline({
       />
 
       {/* Dropdown blanco opaco */}
-      {open && typeof window !== 'undefined' && createPortal(
+      {open && index && typeof window !== 'undefined' && createPortal(
         <div
           ref={portalRef}
           className="fixed z-[9999] rounded-2xl border border-black/10 bg-white shadow-xl"
@@ -207,6 +230,11 @@ export default function SearchInline({
           )}
         </div>,
         document.body
+      )}
+      {!SEARCH_ENABLED && (
+        <p className="mt-2 text-xs opacity-70">
+          La búsqueda instantánea se activará cuando configures Algolia.
+        </p>
       )}
     </div>
   );

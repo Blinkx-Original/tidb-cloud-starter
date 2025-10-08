@@ -3,6 +3,7 @@ import mysql from 'mysql2/promise';
 import type { Product, SitemapProduct } from './types';
 
 let pool: Pool | null = null;
+let poolInitError: Error | null = null;
 
 function getRequiredEnv(...candidates: string[]): string {
   for (const name of candidates) {
@@ -53,11 +54,29 @@ function createPool(): Pool {
   return mysql.createPool(config);
 }
 
-function getPool(): Pool {
-  if (!pool) {
-    pool = createPool();
+function getPool(): Pool | null {
+  if (pool) {
+    return pool;
   }
-  return pool;
+
+  if (poolInitError) {
+    return null;
+  }
+
+  try {
+    pool = createPool();
+    poolInitError = null;
+    return pool;
+  } catch (error) {
+    const normalizedError =
+      error instanceof Error ? error : new Error(String(error));
+    poolInitError = normalizedError;
+    console.warn(
+      '[db] Unable to initialize TiDB connection. Returning empty results.',
+      normalizedError.message,
+    );
+    return null;
+  }
 }
 
 type ProductRow = Product & RowDataPacket;
@@ -81,7 +100,12 @@ function coerceJsonField<T>(value: unknown): T | undefined {
 }
 
 export async function getProductBySlug(slug: string): Promise<Product | null> {
-  const [rows] = await getPool().execute<ProductRow[]>(
+  const pool = getPool();
+  if (!pool) {
+    return null;
+  }
+
+  const [rows] = await pool.execute<ProductRow[]>(
     `SELECT id, slug, name, title_h1, brand, model, sku, images_json, desc_html, short_summary, meta_description,
             mdx_body, mdx_frontmatter_json, mdx_updated_at, cta_lead_url, cta_stripe_url,
             cta_affiliate_url, cta_paypal_url, is_published, last_tidb_update_at
@@ -105,7 +129,12 @@ export async function iterPublishedForSitemaps(
   offset: number,
   limit: number,
 ): Promise<SitemapProduct[]> {
-  const [rows] = await getPool().execute<SitemapRow[]>(
+  const pool = getPool();
+  if (!pool) {
+    return [];
+  }
+
+  const [rows] = await pool.execute<SitemapRow[]>(
     `SELECT slug,
             DATE_FORMAT(GREATEST(COALESCE(last_tidb_update_at, '1970-01-01'), COALESCE(mdx_updated_at, '1970-01-01')), '%Y-%m-%dT%H:%i:%sZ') AS lastmod
        FROM products
@@ -124,16 +153,31 @@ export async function updateProduct(id: number, patch: Partial<Product>): Promis
   if (!entries.length) return;
   const columns = entries.map(([key]) => `${key} = ?`).join(', ');
   const values = entries.map(([, value]) => value);
-  await getPool().execute(`UPDATE products SET ${columns} WHERE id = ?`, [...values, id]);
+  const pool = getPool();
+  if (!pool) {
+    console.warn('[db] Skipping updateProduct because the database is not configured.');
+    return;
+  }
+  await pool.execute(`UPDATE products SET ${columns} WHERE id = ?`, [...values, id]);
 }
 
 export async function query<T = any>(sql: string, params: any[] = []): Promise<T[]> {
-  const [rows] = await getPool().query(sql, params);
+  const pool = getPool();
+  if (!pool) {
+    console.warn('[db] Returning empty result for query because the database is not configured.');
+    return [];
+  }
+
+  const [rows] = await pool.query(sql, params);
   return rows as T[];
 }
 
 export async function pingDb(): Promise<void> {
-  await getPool().query('SELECT 1');
+  const pool = getPool();
+  if (!pool) {
+    return;
+  }
+  await pool.query('SELECT 1');
 }
 
 export async function closeDbPool() {
@@ -141,6 +185,7 @@ export async function closeDbPool() {
     await pool.end();
     pool = null;
   }
+  poolInitError = null;
 }
 
 export type { Product } from './types';
