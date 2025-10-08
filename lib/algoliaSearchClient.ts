@@ -1,25 +1,47 @@
 import algoliasearch, { SearchClient } from 'algoliasearch';
 
-const appId = process.env.NEXT_PUBLIC_ALGOLIA_APP_ID!;
-const searchKey =
-  process.env.NEXT_PUBLIC_ALGOLIA_SEARCH_KEY ||
-  process.env.NEXT_PUBLIC_ALGOLIA_API_KEY || // fallback por compatibilidad
-  '';
-
-if (!appId || !searchKey) {
-  // No romper en producción, pero avisa en consola.
-  // eslint-disable-next-line no-console
-  console.warn(
-    'Algolia env vars missing: NEXT_PUBLIC_ALGOLIA_APP_ID / NEXT_PUBLIC_ALGOLIA_SEARCH_KEY'
-  );
+function normalize(value?: string | null): string | undefined {
+  if (!value) return undefined;
+  const trimmed = value.trim();
+  return trimmed ? trimmed : undefined;
 }
 
-// Cliente de búsqueda
-export const searchClient: SearchClient = algoliasearch(appId, searchKey);
+const appId = normalize(process.env.NEXT_PUBLIC_ALGOLIA_APP_ID);
+const searchKey =
+  normalize(process.env.NEXT_PUBLIC_ALGOLIA_SEARCH_KEY) ||
+  normalize(process.env.NEXT_PUBLIC_ALGOLIA_API_KEY);
+
+let cachedClient: SearchClient | null | undefined;
+let warnedMissingCredentials = false;
+
+export function isAlgoliaConfigured(): boolean {
+  return Boolean(appId && searchKey);
+}
+
+export function getSearchClient(): SearchClient | null {
+  if (cachedClient !== undefined) {
+    return cachedClient;
+  }
+
+  if (!appId || !searchKey) {
+    if (!warnedMissingCredentials) {
+      warnedMissingCredentials = true;
+      // eslint-disable-next-line no-console
+      console.warn(
+        '[algolia] Search disabled: NEXT_PUBLIC_ALGOLIA_APP_ID and NEXT_PUBLIC_ALGOLIA_SEARCH_KEY are not fully configured.',
+      );
+    }
+    cachedClient = null;
+    return cachedClient;
+  }
+
+  cachedClient = algoliasearch(appId, searchKey);
+  return cachedClient;
+}
 
 // Función para resolver el nombre de índice con prefijo opcional
 export function resolveIndexName(base: string) {
-  const rawPrefix = (process.env.NEXT_PUBLIC_ALGOLIA_INDEX_PREFIX || '').trim();
+  const rawPrefix = normalize(process.env.NEXT_PUBLIC_ALGOLIA_INDEX_PREFIX);
   if (!rawPrefix) return base;
 
   // Aseguramos que termine en "_" para que no quede pegado
@@ -27,4 +49,4 @@ export function resolveIndexName(base: string) {
   return `${prefix}${base}`;
 }
 
-export default searchClient;
+export default getSearchClient;

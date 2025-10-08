@@ -13,12 +13,25 @@ import {
 } from 'react-instantsearch-dom';
 import { history } from 'instantsearch.js/es/lib/routers';
 import HitCard from '@/components/HitCard';
-import searchClient, { resolveIndexName } from '@/lib/algoliaSearchClient';
+import { getSearchClient, isAlgoliaConfigured, resolveIndexName } from '@/lib/algoliaSearchClient';
 
 export default function SearchResults({ initialQuery = '' }: { initialQuery?: string }) {
   // Antes usabas getIndexName('items'), ahora resolvemos bien el índice real
   const base = process.env.NEXT_PUBLIC_ALGOLIA_INDEX_BASE || 'blinkx_wp';
   const indexName = resolveIndexName(base);
+  const searchClient = getSearchClient();
+
+  if (!searchClient || !isAlgoliaConfigured()) {
+    return (
+      <div className="rounded-xl border border-black/10 bg-white p-6 text-sm opacity-80">
+        La búsqueda está deshabilitada porque Algolia no está configurado. Define{' '}
+        <code className="mx-1 rounded bg-black/5 px-1 py-0.5 text-[0.75rem]">NEXT_PUBLIC_ALGOLIA_APP_ID</code>
+        {' '}y{' '}
+        <code className="mx-1 rounded bg-black/5 px-1 py-0.5 text-[0.75rem]">NEXT_PUBLIC_ALGOLIA_SEARCH_KEY</code>
+        {' '}para activarla.
+      </div>
+    );
+  }
 
   return (
     <InstantSearch
